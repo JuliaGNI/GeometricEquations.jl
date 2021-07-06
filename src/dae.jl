@@ -101,8 +101,8 @@ struct DAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
            uType <: Function, ūType <: OptionalFunction,
            ϕType <: Function, ψType <: OptionalFunction,
            v̄Type <: Function,
-           invType <: OptionalNamedTuple,
-           parType <: OptionalNamedTuple,
+           invType <: OptionalInvariants,
+           parType <: OptionalParameters,
            perType <: OptionalArray{arrayType}} <: AbstractEquationDAE{dType, tType}
 
     d::Int
@@ -126,15 +126,12 @@ struct DAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
 
     function DAE(v::vType, u::uType, ū::ūType, ϕ::ϕType, ψ::ψType, v̄::v̄Type,
                  t₀::tType, q₀::Vector{arrayType}, λ₀::Vector{arrayType}, μ₀::Vector{arrayType},
-                 invariants::invType, parameters::parType, periodicity::perType) where {
+                 invariants, parameters, periodicity) where {
                 dType <: Number, tType <: Number, arrayType <: AbstractArray{dType},
                 vType <: Function,
                 uType <: Function, ūType <: OptionalFunction,
                 ϕType <: Function, ψType <: OptionalFunction,
-                v̄Type <: Function,
-                invType <: OptionalNamedTuple,
-                parType <: OptionalNamedTuple,
-                perType <: OptionalArray{arrayType}}
+                v̄Type <: Function}
 
         d = length(q₀[begin])
         m = length(λ₀[begin])
@@ -145,11 +142,12 @@ struct DAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
 
         @assert all([ndims(q) == ndims(λ) == ndims(μ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)])
 
-        new{dType, tType, arrayType, vType, uType, ūType, ϕType, ψType, v̄Type, invType, parType, perType}(d, m, v, u, ū, ϕ, ψ, v̄, t₀, q₀, λ₀, μ₀, invariants, parameters, periodicity)
+        new{dType, tType, arrayType, vType, uType, ūType, ϕType, ψType, v̄Type,
+            typeof(invariants), typeof(parameters), typeof(periodicity)}(d, m, v, u, ū, ϕ, ψ, v̄, t₀, q₀, λ₀, μ₀, invariants, parameters, periodicity)
     end
 end
 
-_DAE(v, u, ū, ϕ, ψ, t₀, q₀, λ₀, μ₀; v̄=v, invariants=nothing, parameters=nothing, periodicity=nothing) = DAE(v, u, ū, ϕ, ψ, v̄, t₀, q₀, λ₀, μ₀, invariants, parameters, periodicity)
+_DAE(v, u, ū, ϕ, ψ, t₀, q₀, λ₀, μ₀; v̄=v, invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = DAE(v, u, ū, ϕ, ψ, v̄, t₀, q₀, λ₀, μ₀, invariants, parameters, periodicity)
 
 DAE(v, u, ϕ, t₀, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _DAE(v, u, nothing, ϕ, nothing, t₀, q₀, λ₀, μ₀; kwargs...)
 DAE(v, u, ϕ, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = DAE(v, u, ϕ, 0.0, q₀, λ₀, μ₀; kwargs...)
@@ -203,10 +201,10 @@ Base.similar(equ::DAE, t₀::Real, q₀::State, λ₀::State=get_λ₀(q₀, equ
 hassecondary(::DAEpsiType{<:Nothing}) = false
 hassecondary(::DAEpsiType{<:Function}) = true
 
-hasinvariants(::DAEinvType{<:Nothing}) = false
+hasinvariants(::DAEinvType{<:NullInvariants}) = false
 hasinvariants(::DAEinvType{<:NamedTuple}) = true
 
-hasparameters(::DAEparType{<:Nothing}) = false
+hasparameters(::DAEparType{<:NullParameters}) = false
 hasparameters(::DAEparType{<:NamedTuple}) = true
 
 hasperiodicity(::DAEperType{<:Nothing}) = false

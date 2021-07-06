@@ -10,10 +10,10 @@ include("initial_conditions.jl")
 @testset "$(rpad("Differential Algebraic Equations (DAE)",80))" begin
 
     dae_eqs  = (dae_v, dae_u, nothing, dae_ϕ, nothing, dae_v)
-    dae_eqs1 = (dae_v, dae_u, dae_ϕ)
-    dae_eqs2 = (dae_v, dae_u, nothing, dae_ϕ, nothing)
+    dae_eqs1 = (dae_v, dae_u, nothing, dae_ϕ, nothing)
+    dae_eqs2 = (dae_v, dae_u, dae_ϕ)
 
-    dae = DAE(dae_eqs..., t₀, [x₀], [λ₀], [λ₀], nothing, nothing, nothing)
+    dae = DAE(dae_eqs..., t₀, [x₀], [λ₀], [λ₀], NullInvariants(), NullParameters(), nothing)
 
     @test axes(dae) == axes(x₀)
     @test ndims(dae) == 2
@@ -117,10 +117,10 @@ end
 @testset "$(rpad("Partitioned Differential Algebraic Equations (PDAE)",80))" begin
 
     pdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_v, pdae_f)
-    pdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ)
-    pdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing)
+    pdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing)
+    pdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ)
 
-    pdae  = PDAE(pdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], nothing, nothing, nothing)
+    pdae  = PDAE(pdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], NullInvariants(), NullParameters(), nothing)
 
     @test axes(pdae) == axes(q₀)
     @test ndims(pdae) == 1
@@ -245,10 +245,10 @@ end
 @testset "$(rpad("Implicit Differential Algebraic Equations (IDAE)",80))" begin
 
     idae_eqs  = (pdae_p, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_v, pdae_f)
-    idae_eqs1 = (pdae_p, pdae_f, pdae_u, pdae_g, pdae_ϕ)
-    idae_eqs2 = (pdae_p, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing)
+    idae_eqs1 = (pdae_p, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing)
+    idae_eqs2 = (pdae_p, pdae_f, pdae_u, pdae_g, pdae_ϕ)
 
-    idae  = IDAE(idae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], nothing, nothing, nothing)
+    idae  = IDAE(idae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], NullInvariants(), NullParameters(), nothing)
 
     @test axes(idae) == axes(q₀)
     @test ndims(idae) == 1
@@ -373,10 +373,10 @@ end
 @testset "$(rpad("Hamiltonian Differential Algebraic Equations (HDAE)",80))" begin
 
     hdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_v, pdae_f, symplectic_matrix)
-    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_h)
-    hdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_h)
+    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_h)
+    hdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_h)
 
-    hdae  = HDAE(hdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], pdae_h, nothing, nothing, nothing)
+    hdae  = HDAE(hdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], pdae_h, NullInvariants(), NullParameters(), nothing)
 
     @test axes(hdae) == axes(q₀)
     @test ndims(hdae) == 1
@@ -503,10 +503,10 @@ end
 @testset "$(rpad("Variational Differential Algebraic Equations (LDAE)",80))" begin
 
     ldae_eqs  = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, nothing, nothing, nothing, lode_ω)
-    ldae_eqs1 = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, lode_l, lode_ω)
-    ldae_eqs2 = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, nothing, nothing, nothing, lode_l, lode_ω)
+    ldae_eqs1 = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, nothing, nothing, nothing, lode_l, lode_ω)
+    ldae_eqs2 = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, lode_l, lode_ω)
 
-    ldae = LDAE(ldae_eqs..., iode_v, iode_f, t₀, [q₀], [p₀], [λ₀], [λ₀], lode_l, nothing, nothing, nothing)
+    ldae = LDAE(ldae_eqs..., iode_v, iode_f, t₀, [q₀], [p₀], [λ₀], [λ₀], lode_l, NullInvariants(), NullParameters(), nothing)
 
     @test ndims(ldae) == 1
     @test nsamples(ldae) == 1
@@ -635,7 +635,7 @@ end
     spdae_f = (pdae_f, pdae_g, pdae_g)
     spdae_eqs = (spdae_v, spdae_f, pdae_ϕ, pdae_ψ)
 
-    spdae = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], nothing, nothing, nothing)
+    spdae = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], NullInvariants(), NullParameters(), nothing)
 
     @test ndims(spdae) == 1
     @test nsamples(spdae) == 1

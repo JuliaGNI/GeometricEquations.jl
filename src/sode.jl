@@ -84,8 +84,8 @@ SODE(v, q₀::State; kwargs...)
 """
 struct SODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing},
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationODE{dType, tType}
 
     d::Int
@@ -104,8 +104,8 @@ struct SODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                  invariants::invType, parameters::parType, periodicity::perType) where {
                         dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                         vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing},
-                        invType <: OptionalNamedTuple,
-                        parType <: OptionalNamedTuple,
+                        invType <: OptionalInvariants,
+                        parType <: OptionalParameters,
                         perType <: OptionalArray{arrayType}}
 
         d = length(q₀[begin])
@@ -118,7 +118,7 @@ struct SODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_SODE(v, q::Union{Tuple,Nothing}, t₀::Real, q₀::StateVector; invariants=nothing, parameters=nothing, periodicity=nothing) = SODE(v, q, t₀, q₀, invariants, parameters, periodicity)
+_SODE(v, q::Union{Tuple,Nothing}, t₀::Real, q₀::StateVector; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = SODE(v, q, t₀, q₀, invariants, parameters, periodicity)
 
 SODE(v, q::Union{Tuple,Nothing}, t₀::Real, q₀::StateVector; kwargs...) = _SODE(v, q, t₀, q₀; kwargs...)
 SODE(v, q::Union{Tuple,Nothing}, q₀::StateVector; kwargs...) = SODE(v, q, 0.0, q₀; kwargs...)
@@ -170,10 +170,10 @@ hasvectorfield(::SODEVT{<:Tuple}) = true # && all(typeof(V) <: Function for V in
 hasvectorfield(::SODEVT{<:Nothing}, i) = false
 hasvectorfield(equ::SODEVT{<:Tuple}, i) = i ≤ length(equ.v) && typeof(equ.v[i]) <: Function
 
-hasinvariants(::SODEinvType{<:Nothing}) = false
+hasinvariants(::SODEinvType{<:NullInvariants}) = false
 hasinvariants(::SODEinvType{<:NamedTuple}) = true
 
-hasparameters(::SODEparType{<:Nothing}) = false
+hasparameters(::SODEparType{<:NullParameters}) = false
 hasparameters(::SODEparType{<:NamedTuple}) = true
 
 hasperiodicity(::SODEperType{<:Nothing}) = false

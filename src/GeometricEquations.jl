@@ -1,6 +1,8 @@
 module GeometricEquations
 
 
+    export NullInvariants, NullParameters
+
     export OptionalAbstractArray, OptionalArray,
            OptionalFunction, OptionalNamedTuple
     

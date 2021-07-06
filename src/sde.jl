@@ -41,7 +41,7 @@ or the column col of the matrix B (if col>0).
 ### Constructors
 
 ```julia
-SDE(m, ns, v, B, t₀, q₀; parameters=nothing, periodicity=zero(q₀[begin]))
+SDE(m, ns, v, B, t₀, q₀; parameters=NullParameters(), periodicity=zero(q₀[begin]))
 SDE(m, ns, v, B, q₀::StateVector; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...)
 SDE(m, ns, v, B, t₀, q₀::State; kwargs...) = SDE(m, ns, v, B, t₀, [q₀]; kwargs...)
 SDE(m, ns, v, B, q₀::State; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...)
@@ -77,7 +77,7 @@ SDE(m, ns, v, B, q₀::State; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...
 """
 struct SDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
            vType <: Function, BType <: Function,
-           pType <: Union{NamedTuple,Nothing}} <: AbstractEquationSDE{dType, tType}
+           pType <: OptionalParameters} <: AbstractEquationSDE{dType, tType}
 
     d::Int
     m::Int
@@ -90,10 +90,9 @@ struct SDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     periodicity::arrayType
 
     function SDE(m, ns, v::vType, B::BType, t₀::tType, q₀::Vector{arrayType};
-                 parameters::pType=nothing, periodicity=zero(q₀[begin])) where {
+                 parameters=NullParameters(), periodicity=zero(q₀[begin])) where {
                         dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-                        vType <: Function, BType <: Function,
-                        pType <: Union{NamedTuple,Nothing}}
+                        vType <: Function, BType <: Function}
 
         d  = length(q₀[begin])
         ni = length(q₀)
@@ -105,7 +104,7 @@ struct SDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
         # either multiple deterministic initial conditions and one sample path
         # or one deterministic initial condition and multiple sample paths
 
-        new{dType,tType,arrayType,vType,BType,pType}(d, m, ns, v, B, t₀, q₀, parameters, periodicity)
+        new{dType,tType,arrayType,vType,BType,typeof(parameters)}(d, m, ns, v, B, t₀, q₀, parameters, periodicity)
     end
 end
 
@@ -151,7 +150,7 @@ initial_conditions(equ::SDE) = (equ.t₀, equ.q₀)
 # hashamiltonian(::SDEHT{<:Nothing}) = false
 # hashamiltonian(::SDEHT{<:Function}) = true
 
-hasparameters(::SDEPT{<:Nothing}) = false
+hasparameters(::SDEPT{<:NullParameters}) = false
 hasparameters(::SDEPT{<:NamedTuple}) = true
 
 _get_v(equ::SDE) = hasparameters(equ) ? (t,q,v) -> equ.v(t, q, v, equ.parameters) : equ.v

@@ -109,8 +109,8 @@ IODE(ϑ, f, q₀::State, p₀::State, λ₀::StateVector=zero(q₀); kwargs...)
 struct IODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             ϑType <: Function, fType <: Function, gType <: Function,
             v̄Type <: Function, f̄Type <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationPODE{dType, tType}
 
     d::Int
@@ -151,7 +151,7 @@ struct IODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_IODE(ϑ, f, g, t₀, q₀, p₀, λ₀; invariants=nothing, parameters=nothing, periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = IODE(ϑ, f, g, v̄, f̄, t₀, q₀, p₀, λ₀, invariants, parameters, periodicity)
+_IODE(ϑ, f, g, t₀, q₀, p₀, λ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = IODE(ϑ, f, g, v̄, f̄, t₀, q₀, p₀, λ₀, invariants, parameters, periodicity)
 
 IODE(ϑ, f, g, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = _IODE(ϑ, f, g, t₀, q₀, p₀, λ₀; kwargs...)
 IODE(ϑ, f, g, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = IODE(ϑ, f, g, 0.0, q₀, p₀, λ₀; kwargs...)
@@ -194,10 +194,10 @@ end
 Base.similar(equ::IODE, q₀, p₀, λ₀=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
 Base.similar(equ::IODE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
 
-hasinvariants(::IODEinvType{<:Nothing}) = false
+hasinvariants(::IODEinvType{<:NullInvariants}) = false
 hasinvariants(::IODEinvType{<:NamedTuple}) = true
 
-hasparameters(::IODEparType{<:Nothing}) = false
+hasparameters(::IODEparType{<:NullParameters}) = false
 hasparameters(::IODEparType{<:NamedTuple}) = true
 
 hasperiodicity(::IODEperType{<:Nothing}) = false

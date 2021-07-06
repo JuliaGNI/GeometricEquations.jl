@@ -66,8 +66,8 @@ SPDAE(v, f, ϕ, ψ, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...
 """
 struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
              vType <: Tuple, fType <: Tuple, ϕType <: Function, ψType <: OptionalFunction,
-             invType <: OptionalNamedTuple,
-             parType <: OptionalNamedTuple,
+             invType <: OptionalInvariants,
+             parType <: OptionalParameters,
              perType <: OptionalArray{arrayType}} <: AbstractEquationPDAE{dType, tType}
 
     d::Int
@@ -93,8 +93,8 @@ struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                    invariants::invType, parameters::parType, periodicity::perType) where {
                         dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                         vType <: Tuple, fType <: Tuple, ϕType <: Function, ψType <: Function,
-                        invType <: OptionalNamedTuple,
-                        parType <: OptionalNamedTuple,
+                        invType <: OptionalInvariants,
+                        parType <: OptionalParameters,
                         perType <: OptionalArray{arrayType}}
 
         d = length(q₀[begin])
@@ -116,7 +116,7 @@ struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=nothing, parameters=nothing, periodicity=nothing) = SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
+_SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
 
 SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
 SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
@@ -160,10 +160,10 @@ end
 Base.similar(equ::SPDAE, q₀, p₀, λ₀=get_λ₀(q₀, equ.λ₀), μ₀=get_λ₀(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
 Base.similar(equ::SPDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀), μ₀::State=get_λ₀(λ₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
 
-hasinvariants(::SPDAEinvType{<:Nothing}) = false
+hasinvariants(::SPDAEinvType{<:NullInvariants}) = false
 hasinvariants(::SPDAEinvType{<:NamedTuple}) = true
 
-hasparameters(::SPDAEparType{<:Nothing}) = false
+hasparameters(::SPDAEparType{<:NullParameters}) = false
 hasparameters(::SPDAEparType{<:NamedTuple}) = true
 
 hasperiodicity(::SPDAEperType{<:Nothing}) = false
@@ -177,11 +177,11 @@ hasperiodicity(::SPDAEperType{<:AbstractArray}) = true
 @inline periodicity(equation::SPDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::SPDAE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀, equation.μ₀)
 
-function get_functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,Nothing}) where {DT, TT, AT, VT, FT, ϕT, ψT}
+function get_functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NullParameters}
     NamedTuple{(:v, :f, :ϕ, :ψ)}((equation.v, equation.f, equation.ϕ, equation.ψ))
 end
 
-function get_functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, PT <: NamedTuple}
+function get_functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NamedTuple}
     vₚ = (t,q,p,v)   -> equation.v(t, q, p, v, equation.parameters)
     fₚ = (t,q,p,f)   -> equation.f(t, q, p, f, equation.parameters)
     ϕₚ = (t,q,p,ϕ)   -> equation.ϕ(t, q, p, ϕ, equation.parameters)

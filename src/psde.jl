@@ -46,7 +46,7 @@ of evaluating the vector fields ``v``, ``f`` and the matrices ``B``, ``G`` on `t
 ### Constructors
 
 ```julia
-PSDE(m, ns, v, f, B, G, t₀, q₀, p₀; parameters=nothing, periodicity=zero(q₀[begin]))
+PSDE(m, ns, v, f, B, G, t₀, q₀, p₀; parameters=NullParameters(), periodicity=zero(q₀[begin]))
 PSDE(m, ns, v, f, B, G, q₀::StateVector, p₀::StateVector; kwargs...) = PSDE(m, ns, v, f, B, G, 0.0, q₀, p₀; kwargs...)
 PSDE(m, ns, v, f, B, G, t₀, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f, B, G, t₀, [q₀], [p₀]; kwargs...)
 PSDE(m, ns, v, f, B, G, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f, B, G, 0.0, q₀, p₀; kwargs...)
@@ -79,7 +79,7 @@ PSDE(m, ns, v, f, B, G, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f,
 struct PSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             vType <: Function, fType <: Function,
             BType <: Function, GType <: Function,
-            pType <: Union{NamedTuple,Nothing}} <: AbstractEquationPSDE{dType, tType}
+            pType <: OptionalParameters} <: AbstractEquationPSDE{dType, tType}
 
     d::Int
     m::Int
@@ -96,11 +96,10 @@ struct PSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
 
     function PSDE(m, ns, v::vType, f::fType, B::BType, G::GType,
                   t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType};
-                  parameters::pType=nothing, periodicity=zero(q₀[begin])) where {
+                  parameters=NullParameters(), periodicity=zero(q₀[begin])) where {
                         dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                         vType <: Function, fType <: Function,
-                        BType <: Function, GType <: Function,
-                        pType <: Union{NamedTuple,Nothing}}
+                        BType <: Function, GType <: Function}
 
         d  = length(q₀[begin])
         ni = length(q₀)
@@ -114,7 +113,7 @@ struct PSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
         # either multiple deterministic initial conditions and one sample path
         # or one deterministic initial condition and multiple sample paths
 
-        new{dType, tType, arrayType, vType, fType, BType, GType, pType}(d, m, ns, v, f, B, G, t₀, q₀, p₀, parameters, periodicity)
+        new{dType, tType, arrayType, vType, fType, BType, GType, typeof(parameters)}(d, m, ns, v, f, B, G, t₀, q₀, p₀, parameters, periodicity)
     end
 end
 
@@ -165,7 +164,7 @@ initial_conditions(equ::PSDE) = (equ.t₀, equ.q₀, equ.p₀)
 # hashamiltonian(::PSDEHT{<:Nothing}) = false
 # hashamiltonian(::PSDEHT{<:Function}) = true
 
-hasparameters(::PSDEPT{<:Nothing}) = false
+hasparameters(::PSDEPT{<:NullParameters}) = false
 hasparameters(::PSDEPT{<:NamedTuple}) = true
 
 _get_v(equ::PSDE) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, equ.parameters) : equ.v

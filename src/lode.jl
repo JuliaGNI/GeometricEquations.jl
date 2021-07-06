@@ -110,8 +110,8 @@ struct LODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             ϑType <: Function, fType <: Function, gType <: Function,
             ωType <: Function, v̄Type <: Function, f̄Type <: Function,
             lagType <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationPODE{dType, tType}
 
     d::Int
@@ -153,7 +153,7 @@ struct LODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_LODE(ϑ, f, g, lagrangian, ω, t₀, q₀, p₀, λ₀; invariants=nothing, parameters=nothing, periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, t₀, q₀, p₀, λ₀, lagrangian, invariants, parameters, periodicity)
+_LODE(ϑ, f, g, lagrangian, ω, t₀, q₀, p₀, λ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, t₀, q₀, p₀, λ₀, lagrangian, invariants, parameters, periodicity)
 
 LODE(ϑ, f, g, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = _LODE(ϑ, f, g, l, ω, t₀, q₀, p₀, λ₀; kwargs...)
 LODE(ϑ, f, g, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = LODE(ϑ, f, g, l, ω, 0.0, q₀, p₀, λ₀; kwargs...)
@@ -198,10 +198,10 @@ end
 Base.similar(equ::LODE, q₀, p₀, λ₀=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
 Base.similar(equ::LODE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
 
-hasinvariants(::LODEinvType{<:Nothing}) = false
+hasinvariants(::LODEinvType{<:NullInvariants}) = false
 hasinvariants(::LODEinvType{<:NamedTuple}) = true
 
-hasparameters(::LODEparType{<:Nothing}) = false
+hasparameters(::LODEparType{<:NullParameters}) = false
 hasparameters(::LODEparType{<:NamedTuple}) = true
 
 hasperiodicity(::LODEperType{<:Nothing}) = false

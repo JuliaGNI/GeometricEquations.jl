@@ -76,8 +76,8 @@ PODE(v, f, q₀::State, p₀::State; kwargs...)
 """
 struct PODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             vType <: Function, fType <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationPODE{dType, tType}
 
     d::Int
@@ -112,7 +112,7 @@ struct PODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_PODE(v, f, t₀, q₀, p₀; invariants=nothing, parameters=nothing, periodicity=nothing) = PODE(v, f, t₀, q₀, p₀, invariants, parameters, periodicity)
+_PODE(v, f, t₀, q₀, p₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = PODE(v, f, t₀, q₀, p₀, invariants, parameters, periodicity)
 
 PODE(v, f, t₀, q₀::StateVector, p₀::StateVector; kwargs...) = _PODE(v, f, t₀, q₀, p₀; kwargs...)
 PODE(v, f, q₀::StateVector, p₀::StateVector; kwargs...) = PODE(v, f, 0.0, q₀, p₀; kwargs...)
@@ -151,10 +151,10 @@ Base.similar(equ::PODE, t₀::Real, q₀::State, p₀::State; kwargs...) = simil
 
 hashamiltonian(::PODE) = false
 
-hasinvariants(::PODEinvType{<:Nothing}) = false
+hasinvariants(::PODEinvType{<:NullInvariants}) = false
 hasinvariants(::PODEinvType{<:NamedTuple}) = true
 
-hasparameters(::PODEparType{<:Nothing}) = false
+hasparameters(::PODEparType{<:NullParameters}) = false
 hasparameters(::PODEparType{<:NamedTuple}) = true
 
 hasperiodicity(::PODEperType{<:Nothing}) = false

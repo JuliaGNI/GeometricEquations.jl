@@ -88,8 +88,8 @@ struct HDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             v̄Type <: Function, f̄Type <: Function,
             PType <: Function,
             hamType <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationPDAE{dType, tType}
 
     d::Int
@@ -148,7 +148,7 @@ struct HDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, t₀, q₀, p₀, λ₀, μ₀; v̄=v, f̄=f, P=symplectic_matrix, invariants=nothing, parameters=nothing, periodicity=nothing) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, P, t₀, q₀, p₀, λ₀, μ₀, hamiltonian, invariants, parameters, periodicity)
+_HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, t₀, q₀, p₀, λ₀, μ₀; v̄=v, f̄=f, P=symplectic_matrix, invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, P, t₀, q₀, p₀, λ₀, μ₀, hamiltonian, invariants, parameters, periodicity)
 
 HDAE(v, f, u, g, ϕ, h, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, h, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
 HDAE(v, f, u, g, ϕ, h, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = HDAE(v, f, u, g, ϕ, h, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
@@ -214,10 +214,10 @@ hashamiltonian(::HDAE) = true
 hassecondary(::HDAEpsiType{<:Nothing}) = false
 hassecondary(::HDAEpsiType{<:Function}) = true
 
-hasinvariants(::HDAEinvType{<:Nothing}) = false
+hasinvariants(::HDAEinvType{<:NullInvariants}) = false
 hasinvariants(::HDAEinvType{<:NamedTuple}) = true
 
-hasparameters(::HDAEparType{<:Nothing}) = false
+hasparameters(::HDAEparType{<:NullParameters}) = false
 hasparameters(::HDAEparType{<:NamedTuple}) = true
 
 hasperiodicity(::HDAEperType{<:Nothing}) = false

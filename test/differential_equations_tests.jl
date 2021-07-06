@@ -9,7 +9,7 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Ordinary Differential Equations (ODE)",80))" begin
 
-    ode  = ODE(ode_v, t₀, [x₀], nothing, nothing, nothing)
+    ode  = ODE(ode_v, t₀, [x₀], NullInvariants(), NullParameters(), nothing)
 
     ode1 = ODE(ode_v, t₀, [x₀])
     ode2 = ODE(ode_v, [x₀])
@@ -50,7 +50,7 @@ end
     v_sode = (v_sode_1, v_sode_2)
     q_sode = (q_sode_1, q_sode_2)
 
-    sode  = SODE(v_sode, nothing, t₀, [x₀], nothing, nothing, nothing)
+    sode  = SODE(v_sode, nothing, t₀, [x₀], NullInvariants(), NullParameters(), nothing)
     sode1 = SODE(v_sode, t₀, [x₀])
     sode2 = SODE(v_sode, [x₀])
     sode3 = SODE(v_sode, t₀, x₀)
@@ -100,7 +100,7 @@ end
 
     pode_eqs = (pode_v, pode_f)
 
-    pode  = PODE(pode_eqs..., t₀, [q₀], [p₀], nothing, nothing, nothing)
+    pode  = PODE(pode_eqs..., t₀, [q₀], [p₀], NullInvariants(), NullParameters(), nothing)
 
     pode1 = PODE(pode_eqs..., t₀, [q₀], [p₀])
     pode2 = PODE(pode_eqs..., [q₀], [p₀])
@@ -161,7 +161,7 @@ end
 
     iode_eqs = (iode_ϑ, iode_f, iode_g)
 
-    iode  = IODE(iode_eqs..., iode_v, iode_f, t₀, [q₀], [p₀], [λ₀], nothing, nothing, nothing)
+    iode  = IODE(iode_eqs..., iode_v, iode_f, t₀, [q₀], [p₀], [λ₀], NullInvariants(), NullParameters(), nothing)
 
     iode1 = IODE(iode_eqs..., t₀, [q₀], [p₀], [λ₀]; v̄=iode_v)
     iode2 = IODE(iode_eqs..., t₀, q₀, p₀, λ₀; v̄=iode_v)
@@ -207,7 +207,7 @@ end
 
     hode_eqs = (pode_v, pode_f, pode_h)
 
-    hode  = HODE(pode_v, pode_f, symplectic_matrix, t₀, [q₀], [p₀], pode_h, nothing, nothing, nothing)
+    hode  = HODE(pode_v, pode_f, symplectic_matrix, t₀, [q₀], [p₀], pode_h, NullInvariants(), NullParameters(), nothing)
 
     hode1 = HODE(hode_eqs..., t₀, [q₀], [p₀])
     hode2 = HODE(hode_eqs..., [q₀], [p₀])
@@ -281,7 +281,7 @@ end
 
     lode_eqs = (iode_ϑ, iode_f, iode_g, lode_l, lode_ω)
 
-    lode = LODE(iode_ϑ, iode_f, iode_g, lode_ω, iode_v, iode_f, t₀, [q₀], [p₀], [λ₀], lode_l, nothing, nothing, nothing)
+    lode = LODE(iode_ϑ, iode_f, iode_g, lode_ω, iode_v, iode_f, t₀, [q₀], [p₀], [λ₀], lode_l, NullInvariants(), NullParameters(), nothing)
 
     lode1 = LODE(lode_eqs..., t₀, [q₀], [p₀], [λ₀]; v̄=iode_v)
     lode2 = LODE(lode_eqs..., t₀, q₀, p₀, λ₀; v̄=iode_v)

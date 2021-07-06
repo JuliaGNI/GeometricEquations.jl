@@ -89,8 +89,8 @@ struct IDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             uType <: Function, gType <: Function, ϕType <: Function,
             ūType <: OptionalFunction, ḡType <: OptionalFunction, ψType <: OptionalFunction,
             v̄Type <: Function, f̄Type <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationPDAE{dType, tType}
 
     d::Int
@@ -116,15 +116,12 @@ struct IDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
 
     function IDAE(ϑ::ϑType, f::fType, u::uType, g::gType, ϕ::ϕType, ū::ūType, ḡ::ḡType, ψ::ψType, v̄::v̄Type, f̄::f̄Type,
                   t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType}, λ₀::Vector{arrayType}, μ₀::Vector{arrayType},
-                  invariants::invType, parameters::parType, periodicity::perType) where {
+                  invariants, parameters, periodicity) where {
                         dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                         ϑType <: Function, fType <: Function,
                         uType <: Function, gType <: Function, ϕType <: Function,
                         ūType <: OptionalFunction, ḡType <: OptionalFunction, ψType <: OptionalFunction,
-                        v̄Type <: Function, f̄Type <: Function,
-                        invType <: OptionalNamedTuple,
-                        parType <: OptionalNamedTuple,
-                        perType <: OptionalArray{arrayType}}
+                        v̄Type <: Function, f̄Type <: Function}
 
         d = length(q₀[begin])
         m = length(λ₀[begin])
@@ -140,11 +137,12 @@ struct IDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
 
         @assert all([ndims(q) == ndims(p) == ndims(λ) == ndims(μ) for (q,p,λ,μ) in zip(q₀,p₀,λ₀,μ₀)])
 
-        new{dType, tType, arrayType, ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, v̄Type, f̄Type, invType, parType, perType}(d, m, ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
+        new{dType, tType, arrayType, ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, v̄Type, f̄Type,
+            typeof(invariants), typeof(parameters), typeof(periodicity)}(d, m, ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
     end
 end
 
-_IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=nothing, parameters=nothing, periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
+_IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
 
 IDAE(ϑ, f, u, g, ϕ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
 IDAE(ϑ, f, u, g, ϕ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = IDAE(ϑ, f, u, g, ϕ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
@@ -205,10 +203,10 @@ Base.similar(equ::IDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_�
 hassecondary(::IDAEpsiType{<:Nothing}) = false
 hassecondary(::IDAEpsiType{<:Function}) = true
 
-hasinvariants(::IDAEinvType{<:Nothing}) = false
+hasinvariants(::IDAEinvType{<:NullInvariants}) = false
 hasinvariants(::IDAEinvType{<:NamedTuple}) = true
 
-hasparameters(::IDAEparType{<:Nothing}) = false
+hasparameters(::IDAEparType{<:NullParameters}) = false
 hasparameters(::IDAEparType{<:NamedTuple}) = true
 
 hasperiodicity(::IDAEperType{<:Nothing}) = false

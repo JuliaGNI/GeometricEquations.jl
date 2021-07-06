@@ -69,8 +69,8 @@ struct HODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             vType <: Function, fType <: Function, 
             PType <: Function,
             hamType <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationPODE{dType, tType}
 
     d::Int
@@ -106,7 +106,7 @@ struct HODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_HODE(v, f, hamiltonian, t₀, q₀, p₀; poisson=symplectic_matrix, invariants=nothing, parameters=nothing, periodicity=nothing) = HODE(v, f, poisson, t₀, q₀, p₀, hamiltonian, invariants, parameters, periodicity)
+_HODE(v, f, hamiltonian, t₀, q₀, p₀; poisson=symplectic_matrix, invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = HODE(v, f, poisson, t₀, q₀, p₀, hamiltonian, invariants, parameters, periodicity)
 
 HODE(v, f, h, t₀, q₀::StateVector, p₀::StateVector; kwargs...) = _HODE(v, f, h, t₀, q₀, p₀; kwargs...)
 HODE(v, f, h, q₀::StateVector, p₀::StateVector; kwargs...) = HODE(v, f, h, 0.0, q₀, p₀; kwargs...)
@@ -147,10 +147,10 @@ Base.similar(equ::HODE, t₀::Real, q₀::State, p₀::State; kwargs...) = simil
 
 hashamiltonian(::HODE) = true
 
-hasinvariants(::HODEinvType{<:Nothing}) = false
+hasinvariants(::HODEinvType{<:NullInvariants}) = false
 hasinvariants(::HODEinvType{<:NamedTuple}) = true
 
-hasparameters(::HODEparType{<:Nothing}) = false
+hasparameters(::HODEparType{<:NullParameters}) = false
 hasparameters(::HODEparType{<:NamedTuple}) = true
 
 hasperiodicity(::HODEperType{<:Nothing}) = false

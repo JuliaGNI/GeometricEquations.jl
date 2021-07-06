@@ -59,8 +59,8 @@ ODE(v, q₀::State; kwargs...)
 
 """
 struct ODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}, vType <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationODE{dType, tType}
 
     d::Int
@@ -88,7 +88,7 @@ struct ODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}, vT
     end
 end
 
-_ODE(v, t₀, q₀; invariants=nothing, parameters=nothing, periodicity=nothing) = ODE(v, t₀, q₀, invariants, parameters, periodicity)
+_ODE(v, t₀, q₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = ODE(v, t₀, q₀, invariants, parameters, periodicity)
 
 ODE(v, t₀, q₀::StateVector; kwargs...) = _ODE(v, t₀, q₀; kwargs...)
 ODE(v, q₀::StateVector; kwargs...) = ODE(v, 0.0, q₀; kwargs...)
@@ -122,10 +122,10 @@ Base.similar(equ::ODE, t₀::Real, q₀::State; kwargs...) = similar(equ, t₀, 
 
 hashamiltonian(::ODE) = false
 
-hasinvariants(::ODEinvType{<:Nothing}) = false
+hasinvariants(::ODEinvType{<:NullInvariants}) = false
 hasinvariants(::ODEinvType{<:NamedTuple}) = true
 
-hasparameters(::ODEparType{<:Nothing}) = false
+hasparameters(::ODEparType{<:NullParameters}) = false
 hasparameters(::ODEparType{<:NamedTuple}) = true
 
 hasperiodicity(::ODEperType{<:Nothing}) = false

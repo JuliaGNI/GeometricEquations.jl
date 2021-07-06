@@ -136,8 +136,8 @@ struct LDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             ūType <: OptionalFunction, ḡType <: OptionalFunction, ψType <: OptionalFunction,
             ωType <: Function, v̄Type <: Function, f̄Type <: Function,
             lagType <: Function,
-            invType <: OptionalNamedTuple,
-            parType <: OptionalNamedTuple,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
             perType <: OptionalArray{arrayType}} <: AbstractEquationPDAE{dType, tType}
 
     d::Int
@@ -197,7 +197,7 @@ struct LDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, lagrangian, ω, t₀, q₀, p₀, λ₀, μ₀; invariants=nothing, parameters=nothing, periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, lagrangian, invariants, parameters, periodicity)
+_LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, lagrangian, ω, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, lagrangian, invariants, parameters, periodicity)
 
 LDAE(ϑ, f, u, g, ϕ, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _LDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, l, ω, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
 LDAE(ϑ, f, u, g, ϕ, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = LDAE(ϑ, f, u, g, ϕ, l, ω, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
@@ -261,10 +261,10 @@ Base.similar(equ::LDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_�
 hassecondary(::LDAEpsiType{<:Nothing}) = false
 hassecondary(::LDAEpsiType{<:Function}) = true
 
-hasinvariants(::LDAEinvType{<:Nothing}) = false
+hasinvariants(::LDAEinvType{<:NullInvariants}) = false
 hasinvariants(::LDAEinvType{<:NamedTuple}) = true
 
-hasparameters(::LDAEparType{<:Nothing}) = false
+hasparameters(::LDAEparType{<:NullParameters}) = false
 hasparameters(::LDAEparType{<:NamedTuple}) = true
 
 hasperiodicity(::LDAEperType{<:Nothing}) = false

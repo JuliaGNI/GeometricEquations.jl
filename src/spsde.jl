@@ -51,7 +51,7 @@ of evaluating the vector fields ``v``, ``f`` and the matrices ``B``, ``G`` on `t
 ### Constructors
 
 ```julia
-SPSDE(m, ns, v, f1, f2, B, G1, G2, t₀, q₀, p₀; parameters=nothing, periodicity=zero(q₀[begin]))
+SPSDE(m, ns, v, f1, f2, B, G1, G2, t₀, q₀, p₀; parameters=NullParameters(), periodicity=zero(q₀[begin]))
 SPSDE(m, ns, v, f1, f2, B, G1, G2, q₀::StateVector, p₀::StateVector; kwargs...) = SPSDE(m, ns, v, f1, f2, B, G1, G2, 0.0, q₀, p₀; kwargs...)
 SPSDE(m, ns, v, f1, f2, B, G1, G2, t₀, q₀::State, p₀::State; kwargs...) = SPSDE(m, ns, v, f1, f2, B, G1, G2, t₀, [q₀], [p₀]; kwargs...)
 SPSDE(m, ns, v, f1, f2, B, G1, G2, q₀::State, p₀::State; kwargs...) = SPSDE(m, ns, v, f1, f2, B, G1, G2, 0.0, q₀, p₀; kwargs...)
@@ -84,7 +84,7 @@ SPSDE(m, ns, v, f1, f2, B, G1, G2, q₀::State, p₀::State; kwargs...) = SPSDE(
 struct SPSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
              vType <: Function, f1Type <: Function, f2Type <: Function,
              BType <: Function, G1Type <: Function, G2Type <: Function,
-             pType <: Union{NamedTuple,Nothing}} <: AbstractEquationPSDE{dType, tType}
+             pType <: OptionalParameters} <: AbstractEquationPSDE{dType, tType}
     d::Int
     m::Int
     ns::Int
@@ -104,11 +104,10 @@ struct SPSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                     v::vType, f1::f1Type, f2::f2Type,
                     B::BType, G1::G1Type, G2::G2Type,
                     t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType};
-                    parameters::pType=nothing, periodicity=zero(q₀[begin])) where {
+                    parameters=NullParameters(), periodicity=zero(q₀[begin])) where {
                         dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                         vType <: Function, f1Type <: Function, f2Type <: Function,
-                        BType <: Function, G1Type <: Function, G2Type <: Function,
-                        pType <: Union{NamedTuple,Nothing}}
+                        BType <: Function, G1Type <: Function, G2Type <: Function}
 
         d  = length(q₀[begin])
         ni = length(q₀)
@@ -122,7 +121,7 @@ struct SPSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
         # either multiple deterministic initial conditions and one sample path
         # or one deterministic initial condition and multiple sample paths
 
-        new{dType,tType,arrayType,vType,f1Type,f2Type,BType,G1Type,G2Type,pType}(d, m, ns, v, f1, f2, B, G1, G2, t₀, q₀, p₀, parameters, periodicity)
+        new{dType,tType,arrayType,vType,f1Type,f2Type,BType,G1Type,G2Type,typeof(parameters)}(d, m, ns, v, f1, f2, B, G1, G2, t₀, q₀, p₀, parameters, periodicity)
     end
 end
 
@@ -170,7 +169,7 @@ periodicity(equ::SPSDE) = equ.periodicity
 
 initial_conditions(equ::SPSDE) = (equ.t₀, equ.q₀, equ.p₀)
 
-hasparameters(::SPSDEPT{<:Nothing}) = false
+hasparameters(::SPSDEPT{<:NullParameters}) = false
 hasparameters(::SPSDEPT{<:NamedTuple}) = true
 
 _get_v( equ::SPSDE) = hasparameters(equ) ? (t,q,p,v) -> equ.v( t, q, p, v, equ.parameters) : equ.v
