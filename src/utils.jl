@@ -19,11 +19,7 @@ function get_λ₀(q₀::AbstractVector{AT}, λ₀::AbstractVector{AT}) where {D
 end
 
 
-function symplectic_matrix(t, q::AbstractVector{DT}, p::AbstractVector{DT}) where {DT}
-    @assert length(q) == length(p)
-
-    local d = length(q)
-
+function symplectic_matrix(::Type{DT}, d::Int) where {DT}
     ω = zeros(DT, 2d, 2d)
 
     for i in 1:d
@@ -32,4 +28,9 @@ function symplectic_matrix(t, q::AbstractVector{DT}, p::AbstractVector{DT}) wher
     end
 
     return ω
+end
+
+function symplectic_matrix(::Number, q::AbstractVector{DT}, p::AbstractVector{DT}) where {DT}
+    @assert length(q) == length(p)
+    symplectic_matrix(DT, length(q))
 end
