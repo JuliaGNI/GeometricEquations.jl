@@ -133,9 +133,9 @@ hasperiodicity(::ODEperType{<:AbstractArray}) = true
 
 Base.axes(equ::ODE) = axes(equ.q₀[begin])
 Base.ndims(equ::ODE) = equ.d
-nsamples(equ::ODE) = length(equ.q₀)
+GeometricBase.nsamples(equ::ODE) = length(equ.q₀)
 
-@inline periodicity(equation::ODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::ODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::ODE) = (equation.t₀, equation.q₀)
 
 _get_v(equ::ODE) = hasparameters(equ) ? (t,q,v) -> equ.v(t, q, v, equ.parameters) : equ.v

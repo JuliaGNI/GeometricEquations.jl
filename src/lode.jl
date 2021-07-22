@@ -209,9 +209,9 @@ hasperiodicity(::LODEperType{<:AbstractArray}) = true
 
 Base.axes(equ::LODE) = axes(equ.q₀[begin])
 Base.ndims(equ::LODE) = equ.d
-nsamples(equ::LODE) = length(equ.q₀)
+GeometricBase.nsamples(equ::LODE) = length(equ.q₀)
 
-@inline periodicity(equation::LODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::LODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::LODE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀)
 
 _get_ϑ(equ::LODE) = hasparameters(equ) ? (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, equ.parameters) : equ.ϑ

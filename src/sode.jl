@@ -181,9 +181,9 @@ hasperiodicity(::SODEperType{<:AbstractArray}) = true
 
 Base.axes(equ::SODE) = axes(equ.q₀[begin])
 Base.ndims(equ::SODE) = equ.d
-nsamples(equ::SODE) = length(equ.q₀)
+GeometricBase.nsamples(equ::SODE) = length(equ.q₀)
 
-@inline periodicity(equation::SODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::SODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::SODE) = (equation.t₀, equation.q₀)
 
 _get_v(equ::SODE) = hasparameters(equ) ? Tuple(typeof(V) <: Function ? (t,q,v) -> V(t, q, v, equ.parameters) : V for V in equ.v) : equ.v

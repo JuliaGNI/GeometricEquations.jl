@@ -212,10 +212,10 @@ hasperiodicity(::DAEperType{<:AbstractArray}) = true
 
 @inline Base.axes(equation::DAE) = axes(equation.q₀[begin])
 @inline Base.ndims(equation::DAE) = equation.d
-@inline nsamples(equation::DAE) = length(eachindex(equation.q₀))
-@inline nconstraints(equation::DAE) = equation.m
+@inline GeometricBase.nsamples(equation::DAE) = length(eachindex(equation.q₀))
+@inline GeometricBase.nconstraints(equation::DAE) = equation.m
 
-@inline periodicity(equation::DAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::DAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::DAE) = (equation.t₀, equation.q₀, equation.λ₀, equation.μ₀)
 
 _get_v(equ::DAE) = hasparameters(equ) ? (t,q,v)   -> equ.v(t, q, v, equ.parameters) : equ.v

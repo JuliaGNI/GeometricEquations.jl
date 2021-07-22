@@ -1,13 +1,15 @@
 module GeometricEquations
 
+    using GeometricBase
 
     export NullInvariants, NullParameters
 
     export OptionalAbstractArray, OptionalArray,
-           OptionalFunction, OptionalNamedTuple
+           OptionalFunction, OptionalNamedTuple,
+           OptionalInvariants, OptionalParameters
     
     export State, StateVector
-
+    
     export Equation
     export AbstractEquationODE, AbstractEquationPODE,
            AbstractEquationDAE, AbstractEquationPDAE,
@@ -23,9 +25,10 @@ module GeometricEquations
     export hassolution, hasvectorfield, hassecondary,
            hasinvariants, hasparameters, hasperiodicity
            
-
-    include("types.jl")
+    
     include("utils.jl")
+
+    include("equation.jl")
 
     include("ode.jl")
     include("hode.jl")

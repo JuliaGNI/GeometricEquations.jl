@@ -158,9 +158,9 @@ hasperiodicity(::HODEperType{<:AbstractArray}) = true
 
 Base.axes(equ::HODE) = axes(equ.q₀[begin])
 Base.ndims(equ::HODE) = equ.d
-nsamples(equ::HODE) = length(equ.q₀)
+GeometricBase.nsamples(equ::HODE) = length(equ.q₀)
 
-@inline periodicity(equation::HODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::HODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::HODE) = (equation.t₀, equation.q₀, equation.p₀)
 
 _get_v(equ::HODE) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, equ.parameters) : equ.v

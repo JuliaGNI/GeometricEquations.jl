@@ -272,10 +272,10 @@ hasperiodicity(::LDAEperType{<:AbstractArray}) = true
 
 @inline Base.axes(equation::LDAE) = axes(equation.q₀[begin])
 @inline Base.ndims(equation::LDAE) = equation.d
-@inline nsamples(equ::LDAE) = length(eachindex(equ.q₀))
-@inline nconstraints(equation::LDAE) = equation.m
+@inline GeometricBase.nsamples(equ::LDAE) = length(eachindex(equ.q₀))
+@inline GeometricBase.nconstraints(equation::LDAE) = equation.m
 
-@inline periodicity(equation::LDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::LDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::LDAE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀, equation.μ₀)
 
 _get_ϑ(equ::LDAE) = hasparameters(equ) ? (t,q,v,ϑ)     -> equ.ϑ(t, q, v, ϑ, equ.parameters) : equ.ϑ

@@ -162,9 +162,9 @@ hasperiodicity(::PODEperType{<:AbstractArray}) = true
 
 Base.axes(equ::PODE) = axes(equ.q₀[begin])
 Base.ndims(equ::PODE) = equ.d
-nsamples(equ::PODE) = length(equ.q₀)
+GeometricBase.nsamples(equ::PODE) = length(equ.q₀)
 
-@inline periodicity(equation::PODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::PODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::PODE) = (equation.t₀, equation.q₀, equation.p₀)
 
 _get_v(equ::PODE) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, equ.parameters) : equ.v

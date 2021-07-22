@@ -142,8 +142,8 @@ Base.similar(equ::SDE, q₀::Union{State,StateVector}, ns::Int=equ.ns; kwargs...
 
 Base.ndims(sde::SDE) = sde.d
 Base.axes(equ::SDE) = axes(equ.q₀[begin])
-nsamples(equ::SDE) = length(equ.q₀)
-periodicity(equ::SDE) = equ.periodicity
+GeometricBase.nsamples(equ::SDE) = length(equ.q₀)
+GeometricBase.periodicity(equ::SDE) = equ.periodicity
 
 initial_conditions(equ::SDE) = (equ.t₀, equ.q₀)
 

@@ -205,9 +205,9 @@ hasperiodicity(::IODEperType{<:AbstractArray}) = true
 
 @inline Base.axes(equation::IODE) = axes(equation.q₀[begin])
 @inline Base.ndims(equation::IODE) = equation.d
-@inline nsamples(equation::IODE) = length(eachindex(equation.q₀))
+@inline GeometricBase.nsamples(equation::IODE) = length(eachindex(equation.q₀))
 
-@inline periodicity(equation::IODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::IODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::IODE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀)
 
 _get_ϑ(equ::IODE) = hasparameters(equ) ? (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, equ.parameters) : equ.ϑ

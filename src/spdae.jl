@@ -171,10 +171,10 @@ hasperiodicity(::SPDAEperType{<:AbstractArray}) = true
 
 @inline Base.axes(equation::SPDAE) = axes(equation.q₀[begin])
 @inline Base.ndims(equation::SPDAE) = equation.d
-@inline nsamples(equation::SPDAE) = length(eachindex(equation.q₀))
-@inline nconstraints(equation::SPDAE) = equation.m
+@inline GeometricBase.nsamples(equation::SPDAE) = length(eachindex(equation.q₀))
+@inline GeometricBase.nconstraints(equation::SPDAE) = equation.m
 
-@inline periodicity(equation::SPDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
+@inline GeometricBase.periodicity(equation::SPDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::SPDAE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀, equation.μ₀)
 
 function get_functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NullParameters}
