@@ -1,5 +1,5 @@
 @doc raw"""
-`HODE`: Hamiltonian Ordinary Differential Equation *EXPERIMENTAL*
+`HODE`: Hamiltonian Ordinary Differential Equation
 
 Defines a Hamiltonian ordinary differential initial value problem, that is
 a canonical Hamiltonian system of equations,

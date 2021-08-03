@@ -1,7 +1,8 @@
 @doc raw"""
-`LDAE`: Variational Differential Algebraic Equation *EXPERIMENTAL*
+`LDAE`: Lagrangian Differential Algebraic Equation
 
-Defines an implicit initial value problem
+Defines a Lagrangian differential algebraic initial value problem, that is
+a special implicit initial value problem
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t) + \lambda(t), &
@@ -16,7 +17,7 @@ p(t) &= ϑ(t, q(t), v(t)) , \\
 with vector field ``f``, the momentum defined by ``p``, initial conditions ``(q_{0}, p_{0})`` and the solution
 ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
 the algebraic variables ``(v, \lambda, \mu)`` taking values in
-``\mathbb{R}^{d} \times \mathbb{R}^{d} \times \mathbb{R}^{m}``.
+``\mathbb{R}^{d} \times \mathbb{R}^{m} \times \mathbb{R}^{m}``.
 This is a special case of a differential algebraic equation with dynamical
 variables ``(q,p)`` and algebraic variables ``v``, ``\lambda`` and ``\mu``.
 

@@ -1,5 +1,5 @@
 @doc raw"""
-`LODE`: Variational Ordinary Differential Equation *EXPERIMENTAL*
+`LODE`: Lagrangian Ordinary Differential Equation
 
 Defines an implicit initial value problem
 ```math
@@ -11,8 +11,15 @@ p(t_{0}) &= p_{0} , \\
 p(t) &= ϑ(t, q(t), v(t))
 \end{aligned}
 ```
-with vector field ``f``, the momentum defined by ``p``, initial conditions ``(q_{0}, p_{0})`` and the solution
-``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
+with momentum ``p`` and force field ``f``, given by
+```math
+\begin{aligned}
+p &= \frac{\partial L}{\partial v} , &
+f &= \frac{\partial L}{\partial q} ,
+\end{aligned}
+```
+initial conditions ``(q_{0}, p_{0})`` and the solution ``(q,p)`` taking values
+in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
 This is a special case of a differential algebraic equation with dynamical
 variables ``(q,p)`` and algebraic variable ``v``.
 

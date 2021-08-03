@@ -16,7 +16,7 @@ primary constraint ``\phi(q,p)=0`` and secondary constraint ``\psi(q,p,\lambda)=
 initial conditions ``(q_{0}, p_{0})``, the dynamical variables ``(q,p)``
 taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
 the algebraic variables ``(\lambda, \gamma)`` taking values in
-``\mathbb{R}^{n} \times \mathbb{R}^{d}``.
+``\mathbb{R}^{m} \times \mathbb{R}^{m}``.
 
 ### Parameters
 

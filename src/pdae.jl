@@ -13,7 +13,7 @@ with vector fields ``v`` and ``f``, projection ``u`` and ``r``,
 algebraic constraint ``\phi=0``,
 conditions ``(q_{0}, p_{0})`` and ``\lambda_{0}``, the dynamical variables
 ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
-the algebraic variable ``\lambda`` taking values in ``\mathbb{R}^{n}``.
+the algebraic variable ``\lambda`` taking values in ``\mathbb{R}^{m}``.
 
 ### Parameters
 

@@ -10,8 +10,8 @@ Defines a differential algebraic initial value problem
 ```
 with vector field ``v``, projection ``u``, algebraic constraint ``\phi=0``,
 initial conditions ``q_{0}`` and ``\lambda_{0}``, the dynamical variable ``q``
-taking values in ``\mathbb{R}^{m}`` and the algebraic variable ``\lambda``
-taking values in ``\mathbb{R}^{n}``.
+taking values in ``\mathbb{R}^{d}`` and the algebraic variable ``\lambda``
+taking values in ``\mathbb{R}^{m}``.
 
 ### Parameters
 

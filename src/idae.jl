@@ -1,7 +1,7 @@
 @doc raw"""
 `IDAE`: Implicit Differential Algebraic Equation
 
-Defines a partitioned differential algebraic initial value problem
+Defines an implicit differential algebraic initial value problem
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t) + u(t, q(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
@@ -10,11 +10,11 @@ p(t) &= p(t, q(t), v(t)) , && \\
 0 &= \phi (t, q(t), p(t), \lambda(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
 \end{aligned}
 ```
-with vector field ``f``, the momentum defined by ``p``, projection ``u`` and ``r``,
+with force field ``f``, the momentum defined by ``p``, projection ``u`` and ``r``,
 algebraic constraint ``\phi=0``,
 conditions ``(q_{0}, p_{0})`` and ``\lambda_{0}``, the dynamical variables
 ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
-the algebraic variable ``\lambda`` taking values in ``\mathbb{R}^{n}``.
+the algebraic variable ``\lambda`` taking values in ``\mathbb{R}^{m}``.
 
 ### Parameters
 
