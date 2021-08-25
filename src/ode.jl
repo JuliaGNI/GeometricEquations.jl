@@ -120,8 +120,6 @@ end
 Base.similar(equ::ODE, q₀; kwargs...) = similar(equ, equ.t₀, q₀; kwargs...)
 Base.similar(equ::ODE, t₀::Real, q₀::State; kwargs...) = similar(equ, t₀, [q₀]; kwargs...)
 
-hashamiltonian(::ODE) = false
-
 hasinvariants(::ODEinvType{<:NullInvariants}) = false
 hasinvariants(::ODEinvType{<:NamedTuple}) = true
 
