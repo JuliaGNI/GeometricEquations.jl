@@ -1,5 +1,6 @@
 
-using GeometricEquations: function_dummy_v, promote_tspan, initial_multiplier, symplectic_matrix
+using GeometricEquations: function_dummy_v, initial_multiplier, symplectic_matrix,
+                          promote_tspan, promote_tspan_and_tstep
 using Test
 
 include("initial_conditions.jl")
@@ -19,7 +20,18 @@ include("initial_conditions.jl")
 @test promote_tspan([0,   1  ]) == (0,  1  )
 @test promote_tspan([0.0, 1.0]) == (0.0,1.0)
 
+@test_throws ErrorException promote_tspan([0.0])
 @test_throws ErrorException promote_tspan([0.0, 0.5, 1.0])
+
+
+@test promote_tspan_and_tstep((0,   1.0), 0  ) == ((0.0,1.0), 0.0)
+@test promote_tspan_and_tstep((0,   1.0), 0.0) == ((0.0,1.0), 0.0)
+@test promote_tspan_and_tstep((0.0, 1  ), 0  ) == ((0.0,1.0), 0.0)
+@test promote_tspan_and_tstep((0.0, 1  ), 0.0) == ((0.0,1.0), 0.0)
+@test promote_tspan_and_tstep((0,   1  ), 0  ) == ((0,  1  ), 0  )
+@test promote_tspan_and_tstep((0,   1  ), 0.0) == ((0.0,1.0), 0.0)
+@test promote_tspan_and_tstep((0.0, 1.0), 0  ) == ((0.0,1.0), 0.0)
+@test promote_tspan_and_tstep((0.0, 1.0), 0.0) == ((0.0,1.0), 0.0)
 
 
 zero_vec = [zeros(3) for i in 1:3]
