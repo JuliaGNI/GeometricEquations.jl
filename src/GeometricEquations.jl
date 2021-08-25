@@ -10,7 +10,7 @@ module GeometricEquations
     
     export State, StateVector
     
-    export Equation
+    export GeometricEquation
     export AbstractEquationODE, AbstractEquationPODE,
            AbstractEquationDAE, AbstractEquationPDAE,
            AbstractEquationSDE, AbstractEquationPSDE
@@ -28,7 +28,7 @@ module GeometricEquations
     
     include("utils.jl")
 
-    include("equation.jl")
+    include("geometric_equation.jl")
 
     include("ode.jl")
     include("hode.jl")
