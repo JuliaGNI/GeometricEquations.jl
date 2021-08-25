@@ -141,7 +141,7 @@ GeometricBase.nsamples(equ::ODE) = length(equ.q₀)
 _get_v(equ::ODE) = hasparameters(equ) ? (t,q,v) -> equ.v(t, q, v, equ.parameters) : equ.v
 _get_v̄(equ::ODE) = _get_v(equ)
 
-function get_functions(equ::ODE)
+function functions(equ::ODE)
     names = (:v,)
     equs  = (_get_v(equ),)
 

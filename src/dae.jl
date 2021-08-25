@@ -187,7 +187,7 @@ Base.:(==)(dae1::DAE, dae2::DAE) = (
                              && dae1.parameters  == dae2.parameters
                              && dae1.periodicity == dae2.periodicity)
 
-function Base.similar(equ::DAE, t₀::Real, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=get_λ₀(q₀, equ.μ₀); parameters=equ.parameters)
+function Base.similar(equ::DAE, t₀::Real, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
     @assert all([length(q) == equ.d for q in q₀])
     @assert all([length(λ) == equ.m for λ in λ₀])
     @assert all([length(μ) == equ.m for μ in μ₀])
@@ -195,8 +195,8 @@ function Base.similar(equ::DAE, t₀::Real, q₀::StateVector, λ₀::StateVecto
         invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
 end
 
-Base.similar(equ::DAE, q₀, λ₀=get_λ₀(q₀, equ.λ₀), μ₀=get_λ₀(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, λ₀, μ₀; kwargs...)
-Base.similar(equ::DAE, t₀::Real, q₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀), μ₀::State=get_λ₀(q₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [λ₀], [μ₀]; kwargs...)
+Base.similar(equ::DAE, q₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, λ₀, μ₀; kwargs...)
+Base.similar(equ::DAE, t₀::Real, q₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀::State=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [λ₀], [μ₀]; kwargs...)
 
 hassecondary(::DAEpsiType{<:Nothing}) = false
 hassecondary(::DAEpsiType{<:Function}) = true
@@ -225,7 +225,7 @@ _get_ϕ(equ::DAE) = hasparameters(equ) ? (t,q,ϕ)   -> equ.ϕ(t, q, ϕ, equ.para
 _get_ψ(equ::DAE) = hasparameters(equ) ? (t,q,v,ψ) -> equ.ψ(t, q, v, ϕ, equ.parameters) : equ.ψ
 _get_v̄(equ::DAE) = hasparameters(equ) ? (t,q,v)   -> equ.v̄(t, q, v, equ.parameters) : equ.v̄
 
-function get_functions(equ::DAE)
+function functions(equ::DAE)
     names = (:v,:u,:ϕ,:v̄)
     equs  = (_get_v(equ), _get_u(equ), _get_ϕ(equ), _get_v̄(equ))
 

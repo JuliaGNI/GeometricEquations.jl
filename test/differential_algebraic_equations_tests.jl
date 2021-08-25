@@ -28,11 +28,11 @@ include("initial_conditions.jl")
     @test hasparameters(dae) == false
     @test hasperiodicity(dae) == false
 
-    functions = get_functions(dae)
-    @test functions.v == dae_v == dae.v
-    @test functions.u == dae_u == dae.u
-    @test functions.ϕ == dae_ϕ == dae.ϕ
-    @test functions.v̄ == dae_v == dae.v̄
+    funcs = functions(dae)
+    @test funcs.v == dae_v == dae.v
+    @test funcs.u == dae_u == dae.u
+    @test funcs.ϕ == dae_ϕ == dae.ϕ
+    @test funcs.v̄ == dae_v == dae.v̄
 
     @test dae == similar(dae, t₀, x₀, λ₀)
     @test dae == similar(dae, x₀, λ₀)
@@ -85,13 +85,13 @@ include("initial_conditions.jl")
     @test hasparameters(dae) == true
     @test hasperiodicity(dae) == true
 
-    functions = get_functions(dae)
-    @test functions.v != dae_v == dae.v
-    @test functions.u != dae_u == dae.u
-    @test functions.ū != dae_ū == dae.ū
-    @test functions.ϕ != dae_ϕ == dae.ϕ
-    @test functions.ψ != dae_ψ == dae.ψ
-    @test functions.v̄ != dae_v == dae.v̄
+    funcs = functions(dae)
+    @test funcs.v != dae_v == dae.v
+    @test funcs.u != dae_u == dae.u
+    @test funcs.ū != dae_ū == dae.ū
+    @test funcs.ϕ != dae_ϕ == dae.ϕ
+    @test funcs.ψ != dae_ψ == dae.ψ
+    @test funcs.v̄ != dae_v == dae.v̄
 
     @test dae == similar(dae, t₀, x₀, λ₀)
     @test dae == similar(dae, x₀, λ₀)
@@ -135,14 +135,14 @@ end
     @test hasparameters(pdae) == false
     @test hasperiodicity(pdae) == false
 
-    functions = get_functions(pdae)
-    @test functions.v == pdae_v == pdae.v
-    @test functions.f == pdae_f == pdae.f
-    @test functions.u == pdae_u == pdae.u
-    @test functions.g == pdae_g == pdae.g
-    @test functions.ϕ == pdae_ϕ == pdae.ϕ
-    @test functions.v̄ == pdae_v == pdae.v̄
-    @test functions.f̄ == pdae_f == pdae.f̄
+    funcs = functions(pdae)
+    @test funcs.v == pdae_v == pdae.v
+    @test funcs.f == pdae_f == pdae.f
+    @test funcs.u == pdae_u == pdae.u
+    @test funcs.g == pdae_g == pdae.g
+    @test funcs.ϕ == pdae_ϕ == pdae.ϕ
+    @test funcs.v̄ == pdae_v == pdae.v̄
+    @test funcs.f̄ == pdae_f == pdae.f̄
     
     @test pdae == similar(pdae, t₀, q₀, p₀, λ₀)
     @test pdae == similar(pdae, t₀, q₀, p₀)
@@ -196,17 +196,17 @@ end
     @test hasparameters(pdae) == true
     @test hasperiodicity(pdae) == true
 
-    functions = get_functions(pdae)
-    @test functions.v != pdae_v == pdae.v
-    @test functions.f != pdae_f == pdae.f
-    @test functions.u != pdae_u == pdae.u
-    @test functions.g != pdae_g == pdae.g
-    @test functions.ϕ != pdae_ϕ == pdae.ϕ
-    @test functions.ū != pdae_u == pdae.ū
-    @test functions.ḡ != pdae_g == pdae.ḡ
-    @test functions.ψ != pdae_ψ == pdae.ψ
-    @test functions.v̄ != pdae_v == pdae.v̄
-    @test functions.f̄ != pdae_f == pdae.f̄
+    funcs = functions(pdae)
+    @test funcs.v != pdae_v == pdae.v
+    @test funcs.f != pdae_f == pdae.f
+    @test funcs.u != pdae_u == pdae.u
+    @test funcs.g != pdae_g == pdae.g
+    @test funcs.ϕ != pdae_ϕ == pdae.ϕ
+    @test funcs.ū != pdae_u == pdae.ū
+    @test funcs.ḡ != pdae_g == pdae.ḡ
+    @test funcs.ψ != pdae_ψ == pdae.ψ
+    @test funcs.v̄ != pdae_v == pdae.v̄
+    @test funcs.f̄ != pdae_f == pdae.f̄
     
     @test pdae == similar(pdae, t₀, q₀, p₀, λ₀)
     @test pdae == similar(pdae, t₀, q₀, p₀)
@@ -263,14 +263,14 @@ end
     @test hasparameters(idae) == false
     @test hasperiodicity(idae) == false
 
-    functions = get_functions(idae)
-    @test functions.ϑ == pdae_p == idae.ϑ
-    @test functions.f == pdae_f == idae.f
-    @test functions.u == pdae_u == idae.u
-    @test functions.g == pdae_g == idae.g
-    @test functions.ϕ == pdae_ϕ == idae.ϕ
-    @test functions.v̄ == pdae_v == idae.v̄
-    @test functions.f̄ == pdae_f == idae.f̄
+    funcs = functions(idae)
+    @test funcs.ϑ == pdae_p == idae.ϑ
+    @test funcs.f == pdae_f == idae.f
+    @test funcs.u == pdae_u == idae.u
+    @test funcs.g == pdae_g == idae.g
+    @test funcs.ϕ == pdae_ϕ == idae.ϕ
+    @test funcs.v̄ == pdae_v == idae.v̄
+    @test funcs.f̄ == pdae_f == idae.f̄
     
     @test idae == similar(idae, t₀, q₀, p₀, λ₀)
     @test idae == similar(idae, t₀, q₀, p₀)
@@ -324,17 +324,17 @@ end
     @test hasparameters(idae) == true
     @test hasperiodicity(idae) == true
 
-    functions = get_functions(idae)
-    @test functions.ϑ != pdae_p == idae.ϑ
-    @test functions.f != pdae_f == idae.f
-    @test functions.u != pdae_u == idae.u
-    @test functions.g != pdae_g == idae.g
-    @test functions.ϕ != pdae_ϕ == idae.ϕ
-    @test functions.ū != pdae_u == idae.ū
-    @test functions.ḡ != pdae_g == idae.ḡ
-    @test functions.ψ != pdae_ψ == idae.ψ
-    @test functions.v̄ != pdae_v == idae.v̄
-    @test functions.f̄ != pdae_f == idae.f̄
+    funcs = functions(idae)
+    @test funcs.ϑ != pdae_p == idae.ϑ
+    @test funcs.f != pdae_f == idae.f
+    @test funcs.u != pdae_u == idae.u
+    @test funcs.g != pdae_g == idae.g
+    @test funcs.ϕ != pdae_ϕ == idae.ϕ
+    @test funcs.ū != pdae_u == idae.ū
+    @test funcs.ḡ != pdae_g == idae.ḡ
+    @test funcs.ψ != pdae_ψ == idae.ψ
+    @test funcs.v̄ != pdae_v == idae.v̄
+    @test funcs.f̄ != pdae_f == idae.f̄
     
     @test idae == similar(idae, t₀, q₀, p₀, λ₀)
     @test idae == similar(idae, t₀, q₀, p₀)
@@ -391,15 +391,15 @@ end
     @test hasparameters(hdae) == false
     @test hasperiodicity(hdae) == false
 
-    functions = get_functions(hdae)
-    @test functions.v == pdae_v == hdae.v
-    @test functions.f == pdae_f == hdae.f
-    @test functions.u == pdae_u == hdae.u
-    @test functions.g == pdae_g == hdae.g
-    @test functions.ϕ == pdae_ϕ == hdae.ϕ
-    @test functions.v̄ == pdae_v == hdae.v̄
-    @test functions.f̄ == pdae_f == hdae.f̄
-    @test functions.h == pdae_h == hdae.hamiltonian
+    funcs = functions(hdae)
+    @test funcs.v == pdae_v == hdae.v
+    @test funcs.f == pdae_f == hdae.f
+    @test funcs.u == pdae_u == hdae.u
+    @test funcs.g == pdae_g == hdae.g
+    @test funcs.ϕ == pdae_ϕ == hdae.ϕ
+    @test funcs.v̄ == pdae_v == hdae.v̄
+    @test funcs.f̄ == pdae_f == hdae.f̄
+    @test funcs.h == pdae_h == hdae.hamiltonian
 
     @test hdae == similar(hdae, t₀, q₀, p₀, λ₀)
     @test hdae == similar(hdae, t₀, q₀, p₀)
@@ -453,18 +453,18 @@ end
     @test hasparameters(hdae) == true
     @test hasperiodicity(hdae) == true
 
-    functions = get_functions(hdae)
-    @test functions.v != pdae_v == hdae.v
-    @test functions.f != pdae_f == hdae.f
-    @test functions.u != pdae_u == hdae.u
-    @test functions.g != pdae_g == hdae.g
-    @test functions.ϕ != pdae_ϕ == hdae.ϕ
-    @test functions.ū != pdae_u == hdae.ū
-    @test functions.ḡ != pdae_g == hdae.ḡ
-    @test functions.ψ != pdae_ψ == hdae.ψ
-    @test functions.v̄ != pdae_v == hdae.v̄
-    @test functions.f̄ != pdae_f == hdae.f̄
-    @test functions.h != pdae_h == hdae.hamiltonian
+    funcs = functions(hdae)
+    @test funcs.v != pdae_v == hdae.v
+    @test funcs.f != pdae_f == hdae.f
+    @test funcs.u != pdae_u == hdae.u
+    @test funcs.g != pdae_g == hdae.g
+    @test funcs.ϕ != pdae_ϕ == hdae.ϕ
+    @test funcs.ū != pdae_u == hdae.ū
+    @test funcs.ḡ != pdae_g == hdae.ḡ
+    @test funcs.ψ != pdae_ψ == hdae.ψ
+    @test funcs.v̄ != pdae_v == hdae.v̄
+    @test funcs.f̄ != pdae_f == hdae.f̄
+    @test funcs.h != pdae_h == hdae.hamiltonian
 
     @test hdae == similar(hdae, t₀, q₀, p₀, λ₀)
     @test hdae == similar(hdae, t₀, q₀, p₀)
@@ -520,16 +520,16 @@ end
     @test hasparameters(ldae) == false
     @test hasperiodicity(ldae) == false
 
-    functions = get_functions(ldae)
-    @test functions.ϑ == iode_ϑ == ldae.ϑ
-    @test functions.f == iode_f == ldae.f
-    @test functions.u == iode_u == ldae.u
-    @test functions.g == iode_g == ldae.g
-    @test functions.ϕ == pdae_ϕ == ldae.ϕ
-    @test functions.v̄ == iode_v == ldae.v̄
-    @test functions.f̄ == iode_f == ldae.f̄
-    @test functions.ω == lode_ω == ldae.ω
-    @test functions.l == lode_l == ldae.lagrangian
+    funcs = functions(ldae)
+    @test funcs.ϑ == iode_ϑ == ldae.ϑ
+    @test funcs.f == iode_f == ldae.f
+    @test funcs.u == iode_u == ldae.u
+    @test funcs.g == iode_g == ldae.g
+    @test funcs.ϕ == pdae_ϕ == ldae.ϕ
+    @test funcs.v̄ == iode_v == ldae.v̄
+    @test funcs.f̄ == iode_f == ldae.f̄
+    @test funcs.ω == lode_ω == ldae.ω
+    @test funcs.l == lode_l == ldae.lagrangian
 
     @test ldae == similar(ldae, t₀, q₀, p₀, λ₀, λ₀)
     @test ldae == similar(ldae, t₀, q₀, p₀, λ₀)
@@ -583,16 +583,16 @@ end
     @test hasparameters(ldae) == true
     @test hasperiodicity(ldae) == true
 
-    functions = get_functions(ldae)
-    @test functions.ϑ != iode_ϑ == ldae.ϑ
-    @test functions.f != iode_f == ldae.f
-    @test functions.u != iode_u == ldae.u
-    @test functions.g != iode_g == ldae.g
-    @test functions.ϕ != pdae_ϕ == ldae.ϕ
-    @test functions.v̄ != iode_v == ldae.v̄
-    @test functions.f̄ != iode_f == ldae.f̄
-    @test functions.ω != lode_ω == ldae.ω
-    @test functions.l != lode_l == ldae.lagrangian
+    funcs = functions(ldae)
+    @test funcs.ϑ != iode_ϑ == ldae.ϑ
+    @test funcs.f != iode_f == ldae.f
+    @test funcs.u != iode_u == ldae.u
+    @test funcs.g != iode_g == ldae.g
+    @test funcs.ϕ != pdae_ϕ == ldae.ϕ
+    @test funcs.v̄ != iode_v == ldae.v̄
+    @test funcs.f̄ != iode_f == ldae.f̄
+    @test funcs.ω != lode_ω == ldae.ω
+    @test funcs.l != lode_l == ldae.lagrangian
 
     @test ldae == similar(ldae, t₀, q₀, p₀, λ₀, λ₀)
     @test ldae == similar(ldae, t₀, q₀, p₀, λ₀)
@@ -648,11 +648,11 @@ end
     @test hasparameters(spdae) == false
     @test hasperiodicity(spdae) == false
 
-    functions = get_functions(spdae)
-    @test functions.v == spdae_v == spdae.v
-    @test functions.f == spdae_f == spdae.f
-    @test functions.ϕ ==  pdae_ϕ == spdae.ϕ
-    @test functions.ψ ==  pdae_ψ == spdae.ψ
+    funcs = functions(spdae)
+    @test funcs.v == spdae_v == spdae.v
+    @test funcs.f == spdae_f == spdae.f
+    @test funcs.ϕ ==  pdae_ϕ == spdae.ϕ
+    @test funcs.ψ ==  pdae_ψ == spdae.ψ
 
     @test spdae == similar(spdae, t₀, q₀, p₀, λ₀)
     @test spdae == similar(spdae, t₀, q₀, p₀)

@@ -1,20 +1,21 @@
 
-function_v_dummy(t, q, p, v) = nothing
+function_dummy_v(t, q, v) = nothing
+function_dummy_v(t, q, p, v) = nothing
 
 
-function get_λ₀(q₀::AbstractVector{DT}, λ₀::AbstractVector{DT}) where {DT <: Number}
+function initial_multiplier(q₀::AbstractVector{DT}, λ₀::AbstractVector{DT}) where {DT <: Number}
     zero(λ₀)
 end
 
-function get_λ₀(q₀::AbstractVector{DT}, λ₀::AbstractVector{AT}) where {DT <: Number, AT <: AbstractArray{DT}}
+function initial_multiplier(q₀::AbstractVector{DT}, λ₀::AbstractVector{AT}) where {DT <: Number, AT <: AbstractArray{DT}}
     zero(λ₀[begin])
 end
 
-function get_λ₀(q₀::AbstractVector{AT}, λ₀::AbstractVector{DT}) where {DT <: Number, AT <: AbstractArray{DT}}
+function initial_multiplier(q₀::AbstractVector{AT}, λ₀::AbstractVector{DT}) where {DT <: Number, AT <: AbstractArray{DT}}
     [zero(λ₀) for i in eachindex(q₀)]
 end
 
-function get_λ₀(q₀::AbstractVector{AT}, λ₀::AbstractVector{AT}) where {DT <: Number, AT <: AbstractArray{DT}}
+function initial_multiplier(q₀::AbstractVector{AT}, λ₀::AbstractVector{AT}) where {DT <: Number, AT <: AbstractArray{DT}}
     [zero(λ₀[begin]) for i in eachindex(q₀)]
 end
 

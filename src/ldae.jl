@@ -247,7 +247,7 @@ Base.:(==)(dae1::LDAE, dae2::LDAE) = (
                              && dae1.parameters  == dae2.parameters
                              && dae1.periodicity == dae2.periodicity)
 
-function Base.similar(equ::LDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=get_λ₀(q₀, equ.μ₀); parameters=equ.parameters)
+function Base.similar(equ::LDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
     @assert all([length(q) == ndims(equ) for q in q₀])
     @assert all([length(p) == ndims(equ) for p in p₀])
     @assert all([length(λ) == ndims(equ) for λ in λ₀])
@@ -256,8 +256,8 @@ function Base.similar(equ::LDAE, t₀::Real, q₀::StateVector, p₀::StateVecto
          v̄=equ.v̄, f̄=equ.f̄, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
 end
 
-Base.similar(equ::LDAE, q₀, p₀, λ₀=get_λ₀(q₀, equ.λ₀), μ₀=get_λ₀(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-Base.similar(equ::LDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀), μ₀=get_λ₀(q₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
+Base.similar(equ::LDAE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
+Base.similar(equ::LDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
 
 hassecondary(::LDAEpsiType{<:Nothing}) = false
 hassecondary(::LDAEpsiType{<:Function}) = true
@@ -293,7 +293,7 @@ _get_f̄(equ::LDAE) = hasparameters(equ) ? (t,q,v,f)     -> equ.f̄(t, q, v, f, 
 _get_l(equ::LDAE) = hasparameters(equ) ? (t,q,v)       -> equ.lagrangian(t, q, v, equ.parameters) : equ.lagrangian
 
 
-function get_functions(equ::LDAE)
+function functions(equ::LDAE)
     names = (:ϑ, :f, :u, :g, :ϕ)
     equs  = (_get_ϑ(equ), _get_f(equ), _get_u(equ), _get_g(equ), _get_ϕ(equ))
 

@@ -197,7 +197,7 @@ Base.:(==)(dae1::HDAE, dae2::HDAE) = (
                              && dae1.parameters  == dae2.parameters
                              && dae1.periodicity == dae2.periodicity)
 
-function Base.similar(equ::HDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=get_λ₀(q₀, equ.μ₀); parameters=equ.parameters)
+function Base.similar(equ::HDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
     @assert all([length(q) == equ.d for q in q₀])
     @assert all([length(p) == equ.d for p in p₀])
     @assert all([length(λ) == equ.m for λ in λ₀])
@@ -206,8 +206,8 @@ function Base.similar(equ::HDAE, t₀::Real, q₀::StateVector, p₀::StateVecto
          v̄=equ.v̄, f̄=equ.f̄, P=equ.P, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
 end
 
-Base.similar(equ::HDAE, q₀, p₀, λ₀=get_λ₀(q₀, equ.λ₀), μ₀=get_λ₀(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-Base.similar(equ::HDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀), μ₀::State=get_λ₀(λ₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
+Base.similar(equ::HDAE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
+Base.similar(equ::HDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀::State=initial_multiplier(λ₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
 
 hashamiltonian(::HDAE) = true
 
@@ -244,7 +244,7 @@ _get_f̄(equ::HDAE)  = hasparameters(equ) ? (t,q,p,f)     -> equ.f̄(t, q, p, f,
 _get_h(equ::HDAE)  = hasparameters(equ) ? (t,q,p)       -> equ.hamiltonian(t, q, p, equ.parameters) : equ.hamiltonian
 _get_P(equ::HDAE)  = hasparameters(equ) ? (t,q,p,P)     -> equ.P(t, q, p, P, equ.parameters) : equ.P
 
-function get_functions(equ::HDAE)
+function functions(equ::HDAE)
     names = (:v, :f, :u, :g, :ϕ,)
     equs  = (_get_v(equ), _get_f(equ), 
              _get_u(equ), _get_g(equ), _get_ϕ(equ))

@@ -21,9 +21,11 @@ module GeometricEquations
 
     export nsamples, nconstraints
     export initial_conditions, periodicity
-    export get_functions, get_solutions, get_invariants
-    export hassolution, hasvectorfield, hassecondary,
-           hasinvariants, hasparameters, hasperiodicity
+    export functions, solutions, invariants, parameters
+
+    export hassolution, hasvectorfield, hasprimary, hassecondary,
+           hasinvariants, hasparameters, hasperiodicity,
+           hashamiltonian, haslagrangian
            
     
     include("utils.jl")

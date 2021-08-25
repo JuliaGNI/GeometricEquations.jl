@@ -191,8 +191,8 @@ function Base.similar(equ::IODE, t₀::Real, q₀::StateVector, p₀::StateVecto
     IODE(equ.ϑ, equ.f, equ.g, t₀, q₀, p₀, λ₀; v̄=equ.v̄, f̄=equ.f̄, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
 end
 
-Base.similar(equ::IODE, q₀, p₀, λ₀=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
-Base.similar(equ::IODE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
+Base.similar(equ::IODE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
+Base.similar(equ::IODE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
 
 hasinvariants(::IODEinvType{<:NullInvariants}) = false
 hasinvariants(::IODEinvType{<:NamedTuple}) = true
@@ -216,7 +216,7 @@ _get_g(equ::IODE) = hasparameters(equ) ? (t,q,v,g) -> equ.g(t, q, v, g, equ.para
 _get_v̄(equ::IODE) = hasparameters(equ) ? (t,q,v) -> equ.v̄(t, q, v, equ.parameters) : equ.v̄
 _get_f̄(equ::IODE) = hasparameters(equ) ? (t,q,v,f) -> equ.f̄(t, q, v, f, equ.parameters) : equ.f̄
 
-function get_functions(equ::IODE)
+function functions(equ::IODE)
     names = (:ϑ, :f, :g, :v̄, :f̄)
     equs  = (_get_ϑ(equ), _get_f(equ), _get_g(equ), _get_v̄(equ), _get_f̄(equ))
 

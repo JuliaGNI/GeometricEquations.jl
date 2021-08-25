@@ -27,7 +27,7 @@ include("initial_conditions.jl")
     @test hasparameters(ode) == false
     @test hasperiodicity(ode) == false
 
-    @test get_functions(ode) == NamedTuple{(:v,)}((ode_v,))
+    @test functions(ode) == NamedTuple{(:v,)}((ode_v,))
 
     @test ode == similar(ode, t₀, x₀)
     @test ode == similar(ode, x₀)
@@ -118,9 +118,9 @@ end
     @test hasparameters(pode) == false
     @test hasperiodicity(pode) == false
 
-    functions = get_functions(pode)
-    @test functions.v == pode_v == pode.v
-    @test functions.f == pode_f == pode.f
+    funcs = functions(pode)
+    @test funcs.v == pode_v == pode.v
+    @test funcs.f == pode_f == pode.f
 
     @test pode == similar(pode, t₀, q₀, p₀)
     @test pode == similar(pode, q₀, p₀)
@@ -179,12 +179,12 @@ end
     @test hasparameters(iode) == false
     @test hasperiodicity(iode) == false
 
-    functions = get_functions(iode)
-    @test functions.ϑ == iode_ϑ == iode.ϑ
-    @test functions.f == iode_f == iode.f
-    @test functions.g == iode_g == iode.g
-    @test functions.v̄ == iode_v == iode.v̄
-    @test functions.f̄ == iode_f == iode.f̄
+    funcs = functions(iode)
+    @test funcs.ϑ == iode_ϑ == iode.ϑ
+    @test funcs.f == iode_f == iode.f
+    @test funcs.g == iode_g == iode.g
+    @test funcs.v̄ == iode_v == iode.v̄
+    @test funcs.f̄ == iode_f == iode.f̄
 
     @test iode == similar(iode, t₀, q₀, p₀, λ₀)
     @test iode == similar(iode, t₀, q₀, p₀)
@@ -225,10 +225,10 @@ end
     @test hasparameters(hode) == false
     @test hasperiodicity(hode) == false
 
-    functions = get_functions(hode)
-    @test functions.v == pode_v == hode.v
-    @test functions.f == pode_f == hode.f
-    @test functions.h == pode_h == hode.hamiltonian
+    funcs = functions(hode)
+    @test funcs.v == pode_v == hode.v
+    @test funcs.f == pode_f == hode.f
+    @test funcs.h == pode_h == hode.hamiltonian
 
     @test hode == similar(hode, t₀, q₀, p₀)
     @test hode == similar(hode, q₀, p₀)
@@ -299,14 +299,14 @@ end
     @test hasparameters(lode) == false
     @test hasperiodicity(lode) == false
 
-    functions = get_functions(lode)
-    @test functions.ϑ == iode_ϑ == lode.ϑ
-    @test functions.f == iode_f == lode.f
-    @test functions.g == iode_g == lode.g
-    @test functions.ω == lode_ω == lode.ω
-    @test functions.v̄ == iode_v == lode.v̄
-    @test functions.f̄ == iode_f == lode.f̄
-    @test functions.l == lode_l == lode.lagrangian
+    funcs = functions(lode)
+    @test funcs.ϑ == iode_ϑ == lode.ϑ
+    @test funcs.f == iode_f == lode.f
+    @test funcs.g == iode_g == lode.g
+    @test funcs.ω == lode_ω == lode.ω
+    @test funcs.v̄ == iode_v == lode.v̄
+    @test funcs.f̄ == iode_f == lode.f̄
+    @test funcs.l == lode_l == lode.lagrangian
 
     @test lode == similar(lode, t₀, q₀, p₀, λ₀)
     @test lode == similar(lode, t₀, q₀, p₀)

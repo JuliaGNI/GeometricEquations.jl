@@ -21,7 +21,7 @@ include("initial_conditions.jl")
 
     @test ndims(sde) == 2
     @test periodicity(sde) == zero(x₀)
-    @test get_functions(sde) == NamedTuple{(:v,:B)}((sde_v_params, sde_B_params))
+    @test functions(sde) == NamedTuple{(:v,:B)}((sde_v_params, sde_B_params))
 
     @test sde == sde1
     @test sde != sde2
@@ -60,7 +60,7 @@ end
 
     @test ndims(psde) == 1
     @test periodicity(psde) == zero(q₀)
-    @test get_functions(psde) == NamedTuple{(:v,:f,:B,:G)}((psde_v,psde_f,psde_B,psde_G))
+    @test functions(psde) == NamedTuple{(:v,:f,:B,:G)}((psde_v,psde_f,psde_B,psde_G))
 
     @test psde == psde1
     @test psde != psde2
@@ -100,7 +100,7 @@ end
 
     @test ndims(spsde) == 1
     @test periodicity(spsde) == zero(q₀)
-    @test get_functions(spsde) == NamedTuple{(:v,:f1,:f2,:B,:G1,:G2)}((spsde_v,spsde_f1,spsde_f2,spsde_B,spsde_G1,spsde_G2))
+    @test functions(spsde) == NamedTuple{(:v,:f1,:f2,:B,:G1,:G2)}((spsde_v,spsde_f1,spsde_f2,spsde_B,spsde_G1,spsde_G2))
 
     @test spsde == spsde1
     @test spsde != spsde2

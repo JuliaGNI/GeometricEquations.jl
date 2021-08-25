@@ -202,8 +202,8 @@ function Base.similar(equ::LODE, t₀::Real, q₀::StateVector, p₀::StateVecto
     LODE(equ.ϑ, equ.f, equ.g, equ.lagrangian, equ.ω, t₀, q₀, p₀, λ₀; v̄=equ.v̄, f̄=equ.f̄, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
 end
 
-Base.similar(equ::LODE, q₀, p₀, λ₀=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
-Base.similar(equ::LODE, t₀::Real, q₀::State, p₀::State, λ₀::State=get_λ₀(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
+Base.similar(equ::LODE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
+Base.similar(equ::LODE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
 
 hasinvariants(::LODEinvType{<:NullInvariants}) = false
 hasinvariants(::LODEinvType{<:NamedTuple}) = true
@@ -230,7 +230,7 @@ _get_f̄(equ::LODE) = hasparameters(equ) ? (t,q,v,f) -> equ.f̄(t, q, v, f, equ.
 _get_l(equ::LODE) = hasparameters(equ) ? (t,q,v)   -> equ.lagrangian(t, q, v, equ.parameters) : equ.lagrangian
 
 
-function get_functions(equ::LODE)
+function functions(equ::LODE)
     names = (:ϑ, :f, :g, :l, :ω, :v̄, :f̄)
     equs  = (_get_ϑ(equ), _get_f(equ), _get_g(equ), _get_l(equ), _get_ω(equ), _get_v̄(equ), _get_f̄(equ))
 
