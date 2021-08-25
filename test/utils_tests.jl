@@ -1,6 +1,6 @@
 
 using GeometricEquations: function_dummy_v, initial_multiplier, symplectic_matrix,
-                          promote_tspan, promote_tspan_and_tstep
+                          promote_tspan, promote_tspan_and_tstep, parameter_types
 using Test
 
 include("initial_conditions.jl")
@@ -32,6 +32,11 @@ include("initial_conditions.jl")
 @test promote_tspan_and_tstep((0,   1  ), 0.0) == ((0.0,1.0), 0.0)
 @test promote_tspan_and_tstep((0.0, 1.0), 0  ) == ((0.0,1.0), 0.0)
 @test promote_tspan_and_tstep((0.0, 1.0), 0.0) == ((0.0,1.0), 0.0)
+
+
+params = (a = 1.0, b = 0, c = :c, d = [0,1])
+types  = (a = Float64, b = Int, c = Symbol, d = Vector{Int})
+@test parameter_types(params) == types
 
 
 zero_vec = [zeros(3) for i in 1:3]
