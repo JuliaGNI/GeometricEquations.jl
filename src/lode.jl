@@ -113,97 +113,55 @@ LODE(ϑ, f, l, ω, q₀::State, p₀::State, λ₀::StateVector=zero(q₀); kwar
 * `periodicity = nothing`
 
 """
-struct LODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-            ϑType <: Function, fType <: Function, gType <: Function,
-            ωType <: Function, v̄Type <: Function, f̄Type <: Function,
-            lagType <: Function,
+struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
+            ωType <: Callable, v̄Type <: Callable, f̄Type <: Callable,
+            lagType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalArray{arrayType}} <: AbstractEquationPODE{dType, tType}
-
-    d::Int
-    m::Int
+            perType <: OptionalPeriodicity} <: AbstractEquationPODE
 
     ϑ::ϑType
     f::fType
     g::gType
     ω::ωType
+
     v̄::v̄Type
     f̄::f̄Type
-
-    t₀::tType
-    q₀::Vector{arrayType}
-    p₀::Vector{arrayType}
-    λ₀::Vector{arrayType}
 
     lagrangian::lagType
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function LODE(ϑ, f, g, ω, v̄, f̄,
-                t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType}, λ₀::Vector{arrayType},
-                lagrangian, invariants, parameters, periodicity) where {
-                    dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}}
+    function LODE(ϑ, f, g, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+        @assert !isempty(methods(ϑ))
+        @assert !isempty(methods(f))
+        @assert !isempty(methods(g))
+        @assert !isempty(methods(ω))
+        @assert !isempty(methods(v̄))
+        @assert !isempty(methods(f̄))
+        @assert !isempty(methods(lagrangian))
 
-        d = length(q₀[begin])
-
-        @assert length(q₀) == length(p₀)
-        @assert all(length(q) == d for q in q₀)
-        @assert all(length(p) == d for p in p₀)
-        @assert all(length(λ) == d for λ in λ₀)
-
-        new{dType, tType, arrayType,
-            typeof(ϑ), typeof(f), typeof(g), typeof(ω), typeof(v̄), typeof(f̄),
+        new{typeof(ϑ), typeof(f), typeof(g), typeof(ω), typeof(v̄), typeof(f̄),
             typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                d, d, ϑ, f, g, ω, v̄, f̄, t₀, q₀, p₀, λ₀, lagrangian, invariants, parameters, periodicity)
+                ϑ, f, g, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
     end
 end
 
-_LODE(ϑ, f, g, lagrangian, ω, t₀, q₀, p₀, λ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, t₀, q₀, p₀, λ₀, lagrangian, invariants, parameters, periodicity)
+_lode_default_v̄(t,q,v,params) = nothing
 
-LODE(ϑ, f, g, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = _LODE(ϑ, f, g, l, ω, t₀, q₀, p₀, λ₀; kwargs...)
-LODE(ϑ, f, g, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = LODE(ϑ, f, g, l, ω, 0.0, q₀, p₀, λ₀; kwargs...)
-LODE(ϑ, f, g, l, ω, t₀, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...) = LODE(ϑ, f, g, l, ω, t₀, [q₀], [p₀], [λ₀]; kwargs...)
-LODE(ϑ, f, g, l, ω, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...) = LODE(ϑ, f, g, l, ω, 0.0, q₀, p₀, λ₀; kwargs...)
+LODE(ϑ, f, g, ω, l; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_lode_default_v̄, f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameters, periodicity)
 
-const LODEinvType{invT,DT,TT,AT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,parT,perT} = LODE{DT,TT,AT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const LODEparType{parT,DT,TT,AT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,perT} = LODE{DT,TT,AT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const LODEperType{perT,DT,TT,AT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT} = LODE{DT,TT,AT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
+GeometricBase.invariants(equation::LODE) = equation.invariants
+GeometricBase.parameters(equation::LODE) = equation.parameters
+GeometricBase.periodicity(equation::LODE) = equation.periodicity
 
-Base.hash(ode::LODE, h::UInt) = hash(ode.d, hash(ode.m,
-          hash(ode.ϑ, hash(ode.f, hash(ode.g,
-          hash(ode.ω, hash(ode.v̄, hash(ode.f̄,
-          hash(ode.t₀, hash(ode.q₀, hash(ode.p₀, hash(ode.λ₀,
-          hash(ode.invariants, hash(ode.parameters, hash(ode.periodicity, h)))))))))))))))
+const LODEinvType{invT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,parT,perT} = LODE{ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on invariants type parameter
+const LODEparType{parT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,perT} = LODE{ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on parameters type parameter
+const LODEperType{perT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT} = LODE{ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
 
-Base.:(==)(ode1::LODE, ode2::LODE) = (
-                                ode1.d == ode2.d
-                             && ode1.m == ode2.m
-                             && ode1.ϑ == ode2.ϑ
-                             && ode1.f == ode2.f
-                             && ode1.g == ode2.g
-                             && ode1.ω == ode2.ω
-                             && ode1.v̄ == ode2.v̄
-                             && ode1.f̄ == ode2.f̄
-                             && ode1.t₀ == ode2.t₀
-                             && ode1.q₀ == ode2.q₀
-                             && ode1.p₀ == ode2.p₀
-                             && ode1.λ₀ == ode2.λ₀
-                             && ode1.lagrangian == ode2.lagrangian
-                             && ode1.invariants  == ode2.invariants
-                             && ode1.parameters  == ode2.parameters
-                             && ode1.periodicity == ode2.periodicity)
-
-function Base.similar(equ::LODE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector; parameters=equ.parameters)
-    @assert all([length(q) == ndims(equ) for q in q₀])
-    @assert all([length(p) == ndims(equ) for p in p₀])
-    @assert all([length(λ) == ndims(equ) for λ in λ₀])
-    LODE(equ.ϑ, equ.f, equ.g, equ.lagrangian, equ.ω, t₀, q₀, p₀, λ₀; v̄=equ.v̄, f̄=equ.f̄, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-end
-
-Base.similar(equ::LODE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
-Base.similar(equ::LODE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
+hasvectorfield(::LODE) = true
+haslagrangian(::LODE) = true
 
 hasinvariants(::LODEinvType{<:NullInvariants}) = false
 hasinvariants(::LODEinvType{<:NamedTuple}) = true
@@ -211,28 +169,50 @@ hasinvariants(::LODEinvType{<:NamedTuple}) = true
 hasparameters(::LODEparType{<:NullParameters}) = false
 hasparameters(::LODEparType{<:NamedTuple}) = true
 
-hasperiodicity(::LODEperType{<:Nothing}) = false
+hasperiodicity(::LODEperType{<:NullPeriodicity}) = false
 hasperiodicity(::LODEperType{<:AbstractArray}) = true
 
-Base.axes(equ::LODE) = axes(equ.q₀[begin])
-Base.ndims(equ::LODE) = equ.d
-GeometricBase.nsamples(equ::LODE) = length(equ.q₀)
-
-@inline GeometricBase.periodicity(equation::LODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-@inline initial_conditions(equation::LODE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀)
-
-_get_ϑ(equ::LODE) = hasparameters(equ) ? (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, equ.parameters) : equ.ϑ
-_get_f(equ::LODE) = hasparameters(equ) ? (t,q,v,f) -> equ.f(t, q, v, f, equ.parameters) : equ.f
-_get_g(equ::LODE) = hasparameters(equ) ? (t,q,v,g) -> equ.g(t, q, v, g, equ.parameters) : equ.g
-_get_ω(equ::LODE) = hasparameters(equ) ? (t,q,v,ω) -> equ.ω(t, q, v, ω, equ.parameters) : equ.ω
-_get_v̄(equ::LODE) = hasparameters(equ) ? (t,q,v)   -> equ.v̄(t, q, v, equ.parameters) : equ.v̄
-_get_f̄(equ::LODE) = hasparameters(equ) ? (t,q,v,f) -> equ.f̄(t, q, v, f, equ.parameters) : equ.f̄
-_get_l(equ::LODE) = hasparameters(equ) ? (t,q,v)   -> equ.lagrangian(t, q, v, equ.parameters) : equ.lagrangian
-
-
-function functions(equ::LODE)
-    names = (:ϑ, :f, :g, :l, :ω, :v̄, :f̄)
-    equs  = (_get_ϑ(equ), _get_f(equ), _get_g(equ), _get_l(equ), _get_ω(equ), _get_v̄(equ), _get_f̄(equ))
-
-    NamedTuple{names}(equs)
+function check_initial_conditions(::LODE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    haskey(ics, :v) || haskey(ics, :p) || return false
+    haskey(ics, :λ) || return false
+    eltype(ics.q) == eltype(ics.p) == eltype(ics.λ) || return false
+    typeof(ics.q) == typeof(ics.p) == typeof(ics.λ) || return false
+    axes(ics.q) == axes(ics.p) == axes(ics.λ) || return false
+    return true
 end
+
+function check_methods(equ::LODE, tspan, ics, params)
+    applicable(equ.ϑ, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.f, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.g, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.lagrangian, tspan[begin], ics.q, zero(ics.q), params) || return false
+    return true
+end
+
+function datatype(equ::LODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
+
+function arrtype(equ::LODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    typeof(ics.q)
+end
+
+_get_ϑ(equ::LODE, params) = (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, params)
+_get_f(equ::LODE, params) = (t,q,v,f) -> equ.f(t, q, v, f, params)
+_get_g(equ::LODE, params) = (t,q,v,g) -> equ.g(t, q, v, g, params)
+_get_ω(equ::LODE, params) = (t,q,v,ω) -> equ.ω(t, q, v, ω, params)
+_get_v̄(equ::LODE, params) = (t,q,v)   -> equ.v̄(t, q, v, params)
+_get_f̄(equ::LODE, params) = (t,q,v,f) -> equ.f̄(t, q, v, f, params)
+_get_l(equ::LODE, params) = (t,q,v)   -> equ.lagrangian(t, q, v, params)
+
+_functions(equ::LODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, ω = equ.ω, v̄ = equ.v̄, f̄ = equ.f̄, l = equ.lagrangian)
+_functions(equ::LODE, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params),
+                                                     f = _get_f(equ, params),
+                                                     g = _get_g(equ, params),
+                                                     ω = _get_ω(equ, params),
+                                                     v̄ = _get_v̄(equ, params),
+                                                     f̄ = _get_f̄(equ, params),
+                                                     l = _get_l(equ, params))

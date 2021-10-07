@@ -1,133 +1,169 @@
 
+using GeometricEquations: _idae_default_v̄, _ldae_default_v̄
 
-function ode_v(t, x, ẋ)
+function ode_v(t, x, ẋ, params)
     ẋ[1] = x[2]
     ẋ[2] = 2x[1]
 end
 
 
-function v_sode_1(t, x, v)
+function sode_v1(t, x, v, params)
     v[1] = x[2]
 end
 
-function v_sode_2(t, x, v)
+function sode_v2(t, x, v, params)
     v[2] = 2x[1]
 end
 
-function q_sode_1(t, x̄, x)
+function sode_q1(t, x̄, x, params)
     x[1] = x̄[1]
     x[2] = x̄[2]
 end
 
-function q_sode_2(t, x̄, x)
+function sode_q2(t, x̄, x, params)
     x[1] = x̄[1]
     x[2] = x̄[2]
 end
 
+sode_v = (sode_v1, sode_v2)
+sode_q = (sode_q1, sode_q2)
 
-function pode_v(t, q, p, v)
+
+function pode_v(t, q, p, v, params)
     v[1] = p[1]
 end
 
-function pode_f(t, q, p, f)
+function pode_f(t, q, p, f, params)
     f[1] = 2q[1]
 end
 
-function pode_h(t, q, p)
+function pode_h(t, q, p, params)
     p[1]^2/2 + cos(q[1])
 end
 
-function iode_ϑ(t, q, v, p)
+pode_eqs = (pode_v, pode_f)
+
+
+function hode_h(t, q, p, params)
+    p[1]^2/2 + cos(q[1])
+end
+
+function hode_ω(t, q, p, ω, params)
+    ω[1,1] = sin(q[1])
+    ω[1,2] = 0
+    ω[2,1] = 0
+    ω[2,2] = p[1]
+end
+
+hode_eqs = (pode_v, pode_f, hode_ω, hode_h)
+
+
+function iode_ϑ(t, q, v, p, params)
     p[1] = v[1]
 end
 
-function iode_f(t, q, v, f)
+function iode_f(t, q, v, f, params)
     f[1] = sin(q[1])
 end
 
-function iode_u(t, q, λ, u)
+function iode_u(t, q, λ, u, params)
     u[1] = λ[1]
 end
 
-function iode_g(t, q, λ, g)
+function iode_g(t, q, λ, g, params)
     g[1] = λ[1]
 end
 
-function iode_v(t, q, p, v)
+function iode_v(t, q, p, v, params)
     v[1] = p[1]
 end
 
-function iode_h(t, q, v)
+function iode_h(t, q, v, params)
     v[1]^2/2 + cos(q[1])
 end
 
-function lode_l(t, q, v)
+iode_eqs = (iode_ϑ, iode_f, iode_g)
+
+
+function lode_l(t, q, v, params)
     v[1]^2/2 - cos(q[1])
 end
 
-function lode_ω(t, q, v, ω)
+function lode_ω(t, q, v, ω, params)
     ω[1,1] = sin(q[1])
     ω[1,2] = 0
     ω[2,1] = 0
     ω[2,2] = v[1]
 end
 
+lode_eqs = (iode_ϑ, iode_f, iode_g, lode_ω, lode_l)
 
-function dae_v(t, x, v)
+
+function dae_v(t, x, v, params)
     v[1] = x[1]
     v[2] = x[2]
 end
 
-function dae_u(t, x, λ, u)
+function dae_u(t, x, λ, u, params)
     u[1] = +λ[1]
     u[2] = -λ[1]
 end
 
-function dae_ū(t, x, λ, u)
+function dae_ū(t, x, λ, u, params)
     u[1] = +λ[1]
     u[2] = -λ[1]
 end
 
-function dae_ϕ(t, x, λ, ϕ)
+function dae_ϕ(t, x, ϕ, params)
     ϕ[1] = x[2] - x[1]
 end
 
-function dae_ψ(t, x, v, λ, ψ)
+function dae_ψ(t, x, v, ψ, params)
     ψ[1] = v[2] - v[1]
 end
 
 
-function pdae_v(t, q, p, v)
+function pdae_v(t, q, p, v, params)
     v[1] = p[1]
 end
 
-function pdae_f(t, q, p, f)
+function pdae_f(t, q, p, f, params)
     f[1] = q[1]
 end
 
-function pdae_p(t, q, v, p)
+function pdae_p(t, q, v, p, params)
     p[1] = v[1]
 end
 
-function pdae_u(t, q, p, λ, u)
+function pdae_u(t, q, p, λ, u, params)
     u[1] = λ[1]
 end
 
-function pdae_g(t, q, p, λ, g)
+function pdae_g(t, q, p, λ, g, params)
     g[1] = λ[1]
 end
 
-function pdae_ϕ(t, q, p, λ, ϕ)
+function pdae_ϕ(t, q, p, λ, ϕ, params)
     ϕ[1] = p[1] - q[1]
 end
 
-function pdae_ψ(t, q, p, λ, μ, ψ)
+function pdae_ψ(t, q, p, λ, μ, ψ, params)
     ψ[1] = μ[1] - λ[1]
 end
 
 function pdae_h(t, q, p)
     p[1]^2/2 + q[1]^2/2
 end
+
+hdae_ω = hode_ω
+
+idae_ϑ = iode_ϑ
+idae_f = iode_f
+idae_v = _idae_default_v̄
+
+ldae_l = lode_l
+ldae_ω = lode_ω
+ldae_v = _ldae_default_v̄
 
 
 function sde_v(λ, t, q, v)

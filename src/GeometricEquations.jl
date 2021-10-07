@@ -2,11 +2,15 @@ module GeometricEquations
 
     using GeometricBase
 
-    export NullInvariants, NullParameters
+    import Base: Callable
+    import GeometricBase: invariants, parameters, periodicity
+
+    export NullInvariants, NullParameters, NullPeriodicity
 
     export OptionalAbstractArray, OptionalArray,
            OptionalFunction, OptionalNamedTuple,
-           OptionalInvariants, OptionalParameters
+           OptionalInvariants, OptionalParameters,
+           OptionalPeriodicity
     
     export State, StateVector
     
@@ -15,17 +19,34 @@ module GeometricEquations
            AbstractEquationDAE, AbstractEquationPDAE,
            AbstractEquationSDE, AbstractEquationPSDE
 
+    export AbstractProblem, GeometricProblem
+
     export ODE, IODE, PODE, HODE, LODE, SODE
     export DAE, IDAE, PDAE, HDAE, LDAE, SPDAE
     export SDE, PSDE, SPSDE
 
+    export ODEProblem,  IODEProblem, PODEProblem,
+           HODEProblem, LODEProblem, SODEProblem
+    export DAEProblem,  IDAEProblem, PDAEProblem,
+           HDAEProblem, LDAEProblem, SPDAEProblem
+    export SDEProblem,  PSDEProblem, SPSDEProblem
+
+    export ODEEnsemble,  IODEEnsemble, PODEEnsemble,
+           HODEEnsemble, LODEEnsemble, SODEEnsemble
+    export DAEEnsemble,  IDAEEnsemble, PDAEEnsemble,
+           HDAEEnsemble, LDAEEnsemble, SPDAEEnsemble
+    export SDEEnsemble,  PSDEEnsemble, SPSDEEnsemble
+
     export nsamples, nconstraints
-    export initial_conditions, periodicity
-    export functions, solutions, invariants, parameters
+    export equation, functions, solutions
+    export invariants, parameters, periodicity
+    export initial_conditions
 
     export hassolution, hasvectorfield, hasprimary, hassecondary,
            hasinvariants, hasparameters, hasperiodicity,
            hashamiltonian, haslagrangian
+
+    export tspan, tstep, tbegin, tend
            
     
     include("utils.jl")
@@ -53,4 +74,6 @@ module GeometricEquations
 
     include("conversion.jl")
 
+    include("abstract_problem.jl")
+    include("geometric_problem.jl")
 end

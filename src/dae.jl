@@ -96,110 +96,57 @@ DAE(v, u, ū, ϕ, ψ, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwar
 ```
 
 """
-struct DAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-           vType <: Function,
-           uType <: Function, ūType <: OptionalFunction,
-           ϕType <: Function, ψType <: OptionalFunction,
-           v̄Type <: Function,
+struct DAE{vType <: Callable,
+           uType <: Callable, ϕType <: Callable,
+           ūType <: OptionalCallable, ψType <: OptionalCallable,
+           v̄Type <: Callable,
            invType <: OptionalInvariants,
            parType <: OptionalParameters,
-           perType <: OptionalArray{arrayType}} <: AbstractEquationDAE{dType, tType}
-
-    d::Int
-    m::Int
+           perType <: OptionalPeriodicity} <: AbstractEquationDAE
 
     v::vType
     u::uType
-    ū::ūType
     ϕ::ϕType
+    ū::ūType
     ψ::ψType
     v̄::v̄Type
 
-    t₀::tType
-    q₀::Vector{arrayType}
-    λ₀::Vector{arrayType}
-    μ₀::Vector{arrayType}
-    
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function DAE(v::vType, u::uType, ū::ūType, ϕ::ϕType, ψ::ψType, v̄::v̄Type,
-                 t₀::tType, q₀::Vector{arrayType}, λ₀::Vector{arrayType}, μ₀::Vector{arrayType},
-                 invariants, parameters, periodicity) where {
-                dType <: Number, tType <: Number, arrayType <: AbstractArray{dType},
-                vType <: Function,
-                uType <: Function, ūType <: OptionalFunction,
-                ϕType <: Function, ψType <: OptionalFunction,
-                v̄Type <: Function}
+    function DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+        @assert !isempty(methods(v))
+        @assert !isempty(methods(u))
+        @assert !isempty(methods(ϕ))
+        @assert !isempty(methods(ū)) || ū === nothing
+        @assert !isempty(methods(ψ)) || ψ === nothing
+        @assert !isempty(methods(v̄))
 
-        d = length(q₀[begin])
-        m = length(λ₀[begin])
-
-        @assert all(length(q) == d for q in q₀)
-        @assert all(length(λ) == m for λ in λ₀)
-        @assert all(length(μ) == m for μ in μ₀)
-
-        @assert all([ndims(q) == ndims(λ) == ndims(μ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)])
-
-        new{dType, tType, arrayType, vType, uType, ūType, ϕType, ψType, v̄Type,
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(d, m, v, u, ū, ϕ, ψ, v̄, t₀, q₀, λ₀, μ₀, invariants, parameters, periodicity)
+        new{typeof(v), typeof(u), typeof(ϕ), typeof(ū), typeof(ψ), typeof(v̄),
+            typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
     end
 end
 
-_DAE(v, u, ū, ϕ, ψ, t₀, q₀, λ₀, μ₀; v̄=v, invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = DAE(v, u, ū, ϕ, ψ, v̄, t₀, q₀, λ₀, μ₀, invariants, parameters, periodicity)
 
-DAE(v, u, ϕ, t₀, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _DAE(v, u, nothing, ϕ, nothing, t₀, q₀, λ₀, μ₀; kwargs...)
-DAE(v, u, ϕ, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = DAE(v, u, ϕ, 0.0, q₀, λ₀, μ₀; kwargs...)
-DAE(v, u, ϕ, t₀, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = DAE(v, u, ϕ, t₀, [q₀], [λ₀], [μ₀]; kwargs...)
-DAE(v, u, ϕ, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = DAE(v, u, ϕ, 0.0, q₀, λ₀, μ₀; kwargs...)
 
-DAE(v, u, ū, ϕ, ψ, t₀, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _DAE(v, u, ū, ϕ, ψ, t₀, q₀, λ₀, μ₀; kwargs...)
-DAE(v, u, ū, ϕ, ψ, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = DAE(v, u, ū, ϕ, ψ, 0.0, q₀, λ₀, μ₀; kwargs...)
-DAE(v, u, ū, ϕ, ψ, t₀, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = DAE(v, u, ū, ϕ, ψ, t₀, [q₀], [λ₀], [μ₀]; kwargs...)
-DAE(v, u, ū, ϕ, ψ, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = DAE(v, u, ū, ϕ, ψ, 0.0, q₀, λ₀, μ₀; kwargs...)
+DAE(v, u, ϕ, ū, ψ; v̄=v, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+DAE(v, u, ϕ; kwargs...) = DAE(v, u, ϕ, nothing, nothing; kwargs...)
 
-const DAEpsiType{psiT,DT,TT,AT,VT,UT,ŪT,ΦT,V̄T,invT,parT,perT} = DAE{DT,TT,AT,VT,UT,ŪT,ΦT,psiT,V̄T,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-const DAEinvType{invT,DT,TT,AT,VT,UT,ŪT,ΦT,psiT,V̄T,parT,perT} = DAE{DT,TT,AT,VT,UT,ŪT,ΦT,psiT,V̄T,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const DAEparType{parT,DT,TT,AT,VT,UT,ŪT,ΦT,psiT,V̄T,invT,perT} = DAE{DT,TT,AT,VT,UT,ŪT,ΦT,psiT,V̄T,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const DAEperType{perT,DT,TT,AT,VT,UT,ŪT,ΦT,psiT,V̄T,invT,parT} = DAE{DT,TT,AT,VT,UT,ŪT,ΦT,psiT,V̄T,invT,parT,perT} # type alias for dispatch on periodicity type parameter
+GeometricBase.invariants(equation::DAE) = equation.invariants
+GeometricBase.parameters(equation::DAE) = equation.parameters
+GeometricBase.periodicity(equation::DAE) = equation.periodicity
 
-Base.hash(dae::DAE, h::UInt) = hash(dae.d, hash(dae.m, 
-        hash(dae.v, hash(dae.u, hash(dae.ū,
-        hash(dae.ϕ, hash(dae.ψ, hash(dae.v̄,
-        hash(dae.t₀, hash(dae.q₀, hash(dae.λ₀, hash(dae.μ₀,
-        hash(dae.invariants, hash(dae.parameters, hash(dae.periodicity, h)))))))))))))))
+const DAEsecType{ΨT,VT,UT,ΦT,ŪT,V̄T,invT,parT,perT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
+const DAEinvType{invT,VT,UT,ΦT,ŪT,ΨT,V̄T,parT,perT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on invariants type parameter
+const DAEparType{parT,VT,UT,ΦT,ŪT,ΨT,V̄T,invT,perT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on parameters type parameter
+const DAEperType{perT,VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on periodicity type parameter
 
-Base.:(==)(dae1::DAE, dae2::DAE) = (
-                                dae1.d == dae2.d
-                             && dae1.m == dae2.m
-                             && dae1.v == dae2.v
-                             && dae1.u == dae2.u
-                             && dae1.ū == dae2.ū
-                             && dae1.ϕ == dae2.ϕ
-                             && dae1.ψ == dae2.ψ
-                             && dae1.v̄ == dae2.v̄
-                             && dae1.t₀ == dae2.t₀
-                             && dae1.q₀ == dae2.q₀
-                             && dae1.λ₀ == dae2.λ₀
-                             && dae1.μ₀ == dae2.μ₀
-                             && dae1.invariants  == dae2.invariants
-                             && dae1.parameters  == dae2.parameters
-                             && dae1.periodicity == dae2.periodicity)
+hasvectorfield(::DAE) = true
 
-function Base.similar(equ::DAE, t₀::Real, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
-    @assert all([length(q) == equ.d for q in q₀])
-    @assert all([length(λ) == equ.m for λ in λ₀])
-    @assert all([length(μ) == equ.m for μ in μ₀])
-    _DAE(equ.v, equ.u, equ.ū, equ.ϕ, equ.ψ, t₀, q₀, λ₀, μ₀; v̄=equ.v̄,
-        invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-end
-
-Base.similar(equ::DAE, q₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, λ₀, μ₀; kwargs...)
-Base.similar(equ::DAE, t₀::Real, q₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀::State=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [λ₀], [μ₀]; kwargs...)
-
-hassecondary(::DAEpsiType{<:Nothing}) = false
-hassecondary(::DAEpsiType{<:Function}) = true
+hassecondary(::DAEsecType{<:Nothing}) = false
+hassecondary(::DAEsecType{<:Callable}) = true
 
 hasinvariants(::DAEinvType{<:NullInvariants}) = false
 hasinvariants(::DAEinvType{<:NamedTuple}) = true
@@ -207,32 +154,46 @@ hasinvariants(::DAEinvType{<:NamedTuple}) = true
 hasparameters(::DAEparType{<:NullParameters}) = false
 hasparameters(::DAEparType{<:NamedTuple}) = true
 
-hasperiodicity(::DAEperType{<:Nothing}) = false
+hasperiodicity(::DAEperType{<:NullPeriodicity}) = false
 hasperiodicity(::DAEperType{<:AbstractArray}) = true
 
-@inline Base.axes(equation::DAE) = axes(equation.q₀[begin])
-@inline Base.ndims(equation::DAE) = equation.d
-@inline GeometricBase.nsamples(equation::DAE) = length(eachindex(equation.q₀))
-@inline GeometricBase.nconstraints(equation::DAE) = equation.m
-
-@inline GeometricBase.periodicity(equation::DAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-@inline initial_conditions(equation::DAE) = (equation.t₀, equation.q₀, equation.λ₀, equation.μ₀)
-
-_get_v(equ::DAE) = hasparameters(equ) ? (t,q,v)   -> equ.v(t, q, v, equ.parameters) : equ.v
-_get_u(equ::DAE) = hasparameters(equ) ? (t,q,λ,u) -> equ.u(t, q, λ, u, equ.parameters) : equ.u
-_get_ū(equ::DAE) = hasparameters(equ) ? (t,q,λ,u) -> equ.ū(t, q, λ, u, equ.parameters) : equ.ū
-_get_ϕ(equ::DAE) = hasparameters(equ) ? (t,q,ϕ)   -> equ.ϕ(t, q, ϕ, equ.parameters) : equ.ϕ
-_get_ψ(equ::DAE) = hasparameters(equ) ? (t,q,v,ψ) -> equ.ψ(t, q, v, ϕ, equ.parameters) : equ.ψ
-_get_v̄(equ::DAE) = hasparameters(equ) ? (t,q,v)   -> equ.v̄(t, q, v, equ.parameters) : equ.v̄
-
-function functions(equ::DAE)
-    names = (:v,:u,:ϕ,:v̄)
-    equs  = (_get_v(equ), _get_u(equ), _get_ϕ(equ), _get_v̄(equ))
-
+function check_initial_conditions(equ::DAE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    haskey(ics, :λ) || return false
     if hassecondary(equ)
-        names = (names..., :ū, :ψ)
-        equs  = (equs..., _get_ū(equ), _get_ψ(equ))
+        haskey(ics, :μ) || return false
+        eltype(ics.λ) == eltype(ics.μ) || return false
+        typeof(ics.λ) == typeof(ics.μ) || return false
+        axes(ics.λ) == axes(ics.μ) || return false
     end
-
-    NamedTuple{names}(equs)
+    return true
 end
+
+function check_methods(equ::DAE, tspan, ics::NamedTuple, params)
+    applicable(equ.v, tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.u, tspan[begin], ics.q, ics.λ, zero(ics.q), params) || return false
+    applicable(equ.ϕ, tspan[begin], ics.q, zero(ics.λ), params) || return false
+    return true
+end
+
+function datatype(equ::DAE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
+
+function arrtype(equ::DAE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return typeof(ics.q)
+end
+
+_get_v(equ::DAE, params) = (t,q,v)   -> equ.v(t, q, v, params)
+_get_u(equ::DAE, params) = (t,q,λ,u) -> equ.u(t, q, λ, u, params)
+_get_ϕ(equ::DAE, params) = (t,q,ϕ)   -> equ.ϕ(t, q, ϕ, params)
+_get_ū(equ::DAE, params) = (t,q,λ,u) -> equ.ū(t, q, λ, u, params)
+_get_ψ(equ::DAE, params) = (t,q,v,ψ) -> equ.ψ(t, q, v, ϕ, params)
+_get_v̄(equ::DAE, params) = (t,q,v)   -> equ.v̄(t, q, v, params)
+
+_functions(equ::DAEsecType{<:Nothing}) = (v = equ.v, u = equ.u, ϕ = equ.ϕ, v̄ = equ.v̄)
+_functions(equ::DAEsecType{<:Callable}) = (v = equ.v, u = equ.u, ϕ = equ.ϕ, ū = equ.ū, ψ = equ.ψ, v̄ = equ.v̄)
+_functions(equ::DAEsecType{<:Nothing}, params::OptionalParameters) = (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params))
+_functions(equ::DAEsecType{<:Callable}, params::OptionalParameters) = (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params))

@@ -65,86 +65,40 @@ HODE(v, f, h, q₀::State, p₀::State; kwargs...)
 * `periodicity = nothing`
 
 """
-struct HODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-            vType <: Function, fType <: Function, 
-            PType <: Function,
-            hamType <: Function,
+struct HODE{vType <: Callable, fType <: Callable, 
+            poiType <: Callable,
+            hamType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalArray{arrayType}} <: AbstractEquationPODE{dType, tType}
-
-    d::Int
+            perType <: OptionalPeriodicity} <: AbstractEquationPODE
 
     v::vType
     f::fType
-    P::PType
 
-    t₀::tType
-    q₀::Vector{arrayType}
-    p₀::Vector{arrayType}
-
+    poisson::poiType
     hamiltonian::hamType
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function HODE(v, f, poisson, 
-                  t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType},
-                  hamiltonian, invariants, parameters, periodicity) where {
-                        dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}}
-
-        d = length(q₀[begin])
-
-        @assert length(q₀) == length(p₀)
-        @assert all(length(q) == d for q in q₀)
-        @assert all(length(p) == d for p in p₀)
-
-        new{dType, tType, arrayType, typeof(v), typeof(f), typeof(poisson),
-            typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                d, v, f, poisson, t₀, q₀, p₀,
-                hamiltonian, invariants, parameters, periodicity)
+    function HODE(v, f, poisson, hamiltonian, invariants, parameters, periodicity)
+        new{typeof(v), typeof(f), typeof(poisson), typeof(hamiltonian),
+            typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f, poisson, hamiltonian, invariants, parameters, periodicity)
     end
 end
 
-_HODE(v, f, hamiltonian, t₀, q₀, p₀; poisson=symplectic_matrix, invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = HODE(v, f, poisson, t₀, q₀, p₀, hamiltonian, invariants, parameters, periodicity)
+HODE(v, f, poisson, hamiltonian; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HODE(v, f, poisson, hamiltonian, invariants, parameters, periodicity)
 
-HODE(v, f, h, t₀, q₀::StateVector, p₀::StateVector; kwargs...) = _HODE(v, f, h, t₀, q₀, p₀; kwargs...)
-HODE(v, f, h, q₀::StateVector, p₀::StateVector; kwargs...) = HODE(v, f, h, 0.0, q₀, p₀; kwargs...)
-HODE(v, f, h, t₀, q₀::State, p₀::State; kwargs...) = HODE(v, f, h, t₀, [q₀], [p₀]; kwargs...)
-HODE(v, f, h, q₀::State, p₀::State; kwargs...) = HODE(v, f, h, 0.0, q₀, p₀; kwargs...)
+GeometricBase.invariants(equation::HODE) = equation.invariants
+GeometricBase.parameters(equation::HODE) = equation.parameters
+GeometricBase.periodicity(equation::HODE) = equation.periodicity
 
-const HODEinvType{invT,DT,TT,AT,VT,FT,PT,hamT,parT,perT} = HODE{DT,TT,AT,VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const HODEparType{parT,DT,TT,AT,VT,FT,PT,hamT,invT,perT} = HODE{DT,TT,AT,VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const HODEperType{perT,DT,TT,AT,VT,FT,PT,hamT,invT,parT} = HODE{DT,TT,AT,VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
+const HODEinvType{invT,VT,FT,PT,hamT,parT,perT} = HODE{VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on invariants type parameter
+const HODEparType{parT,VT,FT,PT,hamT,invT,perT} = HODE{VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on parameters type parameter
+const HODEperType{perT,VT,FT,PT,hamT,invT,parT} = HODE{VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
 
-Base.hash(ode::HODE, h::UInt) = hash(ode.d,
-                        hash(ode.v, hash(ode.f, hash(ode.P,
-                        hash(ode.t₀, hash(ode.q₀, hash(ode.p₀,
-                        hash(ode.hamiltonian, hash(ode.invariants, hash(ode.parameters, hash(ode.periodicity, h)))))))))))
-
-Base.:(==)(ode1::HODE, ode2::HODE) = (
-                                ode1.d == ode2.d
-                             && ode1.v == ode2.v
-                             && ode1.f == ode2.f
-                             && ode1.P == ode2.P
-                             && ode1.t₀ == ode2.t₀
-                             && ode1.q₀ == ode2.q₀
-                             && ode1.p₀ == ode2.p₀
-                             && ode1.hamiltonian == ode2.hamiltonian
-                             && ode1.invariants  == ode2.invariants
-                             && ode1.parameters  == ode2.parameters
-                             && ode1.periodicity == ode2.periodicity)
-
-function Base.similar(equ::HODE, t₀::Real, q₀::StateVector, p₀::StateVector;
-                      parameters=equ.parameters)
-    @assert all([length(q) == ndims(equ) for q in q₀])
-    @assert all([length(p) == ndims(equ) for p in p₀])
-    _HODE(equ.v, equ.f, equ.hamiltonian, t₀, q₀, p₀; poisson=equ.P, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-end
-
-Base.similar(equ::HODE, q₀, p₀; kwargs...) = similar(equ, equ.t₀, q₀, p₀; kwargs...)
-Base.similar(equ::HODE, t₀::Real, q₀::State, p₀::State; kwargs...) = similar(equ, t₀, [q₀], [p₀]; kwargs...)
-
+hasvectorfield(::HODE) = true
 hashamiltonian(::HODE) = true
 
 hasinvariants(::HODEinvType{<:NullInvariants}) = false
@@ -153,24 +107,41 @@ hasinvariants(::HODEinvType{<:NamedTuple}) = true
 hasparameters(::HODEparType{<:NullParameters}) = false
 hasparameters(::HODEparType{<:NamedTuple}) = true
 
-hasperiodicity(::HODEperType{<:Nothing}) = false
+hasperiodicity(::HODEperType{<:NullPeriodicity}) = false
 hasperiodicity(::HODEperType{<:AbstractArray}) = true
 
-Base.axes(equ::HODE) = axes(equ.q₀[begin])
-Base.ndims(equ::HODE) = equ.d
-GeometricBase.nsamples(equ::HODE) = length(equ.q₀)
-
-@inline GeometricBase.periodicity(equation::HODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-@inline initial_conditions(equation::HODE) = (equation.t₀, equation.q₀, equation.p₀)
-
-_get_v(equ::HODE) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, equ.parameters) : equ.v
-_get_f(equ::HODE) = hasparameters(equ) ? (t,q,p,f) -> equ.f(t, q, p, f, equ.parameters) : equ.f
-_get_h(equ::HODE) = hasparameters(equ) ? (t,q,p)   -> equ.hamiltonian(t, q, p, equ.parameters) : equ.hamiltonian
-_get_v̄(equ::HODE) = _get_v(equ)
-_get_f̄(equ::HODE) = _get_f(equ)
-
-function functions(equ::HODE)
-    names = (:v,:f,:h)
-    equs  = (_get_v(equ), _get_f(equ), _get_h(equ))
-    NamedTuple{names}(equs)
+function check_initial_conditions(::HODE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    haskey(ics, :p) || return false
+    eltype(ics.q) == eltype(ics.p) || return false
+    typeof(ics.q) == typeof(ics.p) || return false
+    axes(ics.q) == axes(ics.p) || return false
+    return true
 end
+
+function check_methods(equ::HODE, tspan, ics, params)
+    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
+    applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
+    applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
+    return true
+end
+
+function datatype(equ::HODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
+
+function arrtype(equ::HODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    typeof(ics.q)
+end
+
+_get_v(equ::HODE, params) = (t,q,p,v) -> equ.v(t, q, p, v, params)
+_get_f(equ::HODE, params) = (t,q,p,f) -> equ.f(t, q, p, f, params)
+_get_v̄(equ::HODE, params) = _get_v(equ, params)
+_get_f̄(equ::HODE, params) = _get_f(equ, params)
+_get_h(equ::HODE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
+_get_poisson(equ::HODE, params) = (t,q,p,ω) -> equ.poisson(t, q, p, ω, params)
+
+_functions(equ::HODE) = (v = equ.v, f = equ.f, poisson = equ.poisson, h = equ.hamiltonian)
+_functions(equ::HODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))

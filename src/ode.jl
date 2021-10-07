@@ -10,9 +10,6 @@ with vector field ``v``, initial condition ``q_{0}`` and the solution
 
 ### Parameters
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
 * `vType <: Function`: type of `v`
 * `invType <: OptionalNamedTuple`: invariants type
 * `parType <: OptionalNamedTuple`: parameters type
@@ -20,105 +17,62 @@ with vector field ``v``, initial condition ``q_{0}`` and the solution
 
 ### Fields
 
-* `d`: dimension of dynamical variable ``q`` and the vector field ``v``
 * `v`: function computing the vector field
-* `t₀`: initial time
-* `q₀`: initial condition
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 The function `v` providing the vector field must have the interface
 ```julia
-    function v(t, q, v)
+    function v(t, q, v, params)
         v[1] = ...
         v[2] = ...
         ...
     end
 ```
-where `t` is the current time, `q` is the current solution vector, and
-`v` is the vector which holds the result of evaluating the vector field ``v``
-on `t` and `q`.
+where `t` is the current time, `q` is the current solution vector, `v` is the
+vector which holds the result of evaluating the vector field ``v`` on `t` and
+`q`, and params are additional parameters.
 
 ### Constructors
 
 ```julia
-ODE(v, t₀, q₀, invariants, parameters, periodicity)
-
-ODE(v, t₀, q₀::StateVector; kwargs...)
-ODE(v, q₀::StateVector; kwargs...)
-ODE(v, t₀, q₀::State; kwargs...)
-ODE(v, q₀::State; kwargs...)
+ODE(v, invariants, parameters, periodicity)
+ODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 ```
 
-### Keyword arguments:
-
-* `invariants = nothing`
-* `parameters = nothing`
-* `periodicity = nothing`
-
 """
-struct ODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}, vType <: Function,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalArray{arrayType}} <: AbstractEquationODE{dType, tType}
-
-    d::Int
+struct ODE{vType <: Callable,
+           invType <: OptionalInvariants,
+           parType <: OptionalParameters,
+           perType <: OptionalPeriodicity} <: AbstractEquationODE
 
     v::vType
-
-    t₀::tType
-    q₀::Vector{arrayType}
 
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function ODE(v, t₀::tType, q₀::Vector{arrayType},
-                 invariants, parameters, periodicity) where {
-                        dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}}
+    function ODE(v, invariants, parameters, periodicity)
+        @assert !isempty(methods(v))
+        # @assert hasmethod(v, (Real, AbstractArray, AbstractArray, OptionalParameters))
 
-        d = length(q₀[begin])
-
-        @assert all(length(q) == d for q in q₀)
-
-        new{dType, tType, arrayType, typeof(v),
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                d, v, t₀, q₀, invariants, parameters, periodicity)
+        new{typeof(v), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, invariants, parameters, periodicity)
     end
 end
 
-_ODE(v, t₀, q₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = ODE(v, t₀, q₀, invariants, parameters, periodicity)
+ODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = ODE(v, invariants, parameters, periodicity)
 
-ODE(v, t₀, q₀::StateVector; kwargs...) = _ODE(v, t₀, q₀; kwargs...)
-ODE(v, q₀::StateVector; kwargs...) = ODE(v, 0.0, q₀; kwargs...)
-ODE(v, t₀, q₀::State; kwargs...) = ODE(v, t₀, [q₀]; kwargs...)
-ODE(v, q₀::State; kwargs...) = ODE(v, 0.0, q₀; kwargs...)
+GeometricBase.invariants(equation::ODE) = equation.invariants
+GeometricBase.parameters(equation::ODE) = equation.parameters
+GeometricBase.periodicity(equation::ODE) = equation.periodicity
 
-const ODEinvType{invT,DT,TT,AT,VT,parT,perT} = ODE{DT,TT,AT,VT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const ODEparType{parT,DT,TT,AT,VT,invT,perT} = ODE{DT,TT,AT,VT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const ODEperType{perT,DT,TT,AT,VT,invT,parT} = ODE{DT,TT,AT,VT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
+const ODEinvType{invT,parT,perT,VT} = ODE{VT,invT,parT,perT} # type alias for dispatch on invariants type parameter
+const ODEparType{parT,invT,perT,VT} = ODE{VT,invT,parT,perT} # type alias for dispatch on parameters type parameter
+const ODEperType{perT,invT,parT,VT} = ODE{VT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
 
-
-Base.hash(ode::ODE, h::UInt) = hash(ode.d, hash(ode.v, hash(ode.t₀, hash(ode.q₀, 
-                        hash(ode.invariants, hash(ode.parameters, hash(ode.periodicity, h)))))))
-
-Base.:(==)(ode1::ODE, ode2::ODE) = (
-                                ode1.d == ode2.d
-                             && ode1.v == ode2.v
-                             && ode1.t₀ == ode2.t₀
-                             && ode1.q₀ == ode2.q₀
-                             && ode1.invariants  == ode2.invariants
-                             && ode1.parameters  == ode2.parameters
-                             && ode1.periodicity == ode2.periodicity)
-
-function Base.similar(equ::ODE, t₀::Real, q₀::StateVector; parameters=equ.parameters)
-    @assert all([length(q) == ndims(equ) for q in q₀])
-    ODE(equ.v, t₀, q₀; invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-end
-
-Base.similar(equ::ODE, q₀; kwargs...) = similar(equ, equ.t₀, q₀; kwargs...)
-Base.similar(equ::ODE, t₀::Real, q₀::State; kwargs...) = similar(equ, t₀, [q₀]; kwargs...)
+hasvectorfield(::ODE) = true
 
 hasinvariants(::ODEinvType{<:NullInvariants}) = false
 hasinvariants(::ODEinvType{<:NamedTuple}) = true
@@ -126,22 +80,31 @@ hasinvariants(::ODEinvType{<:NamedTuple}) = true
 hasparameters(::ODEparType{<:NullParameters}) = false
 hasparameters(::ODEparType{<:NamedTuple}) = true
 
-hasperiodicity(::ODEperType{<:Nothing}) = false
+hasperiodicity(::ODEperType{<:NullPeriodicity}) = false
 hasperiodicity(::ODEperType{<:AbstractArray}) = true
 
-Base.axes(equ::ODE) = axes(equ.q₀[begin])
-Base.ndims(equ::ODE) = equ.d
-GeometricBase.nsamples(equ::ODE) = length(equ.q₀)
-
-@inline GeometricBase.periodicity(equation::ODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-@inline initial_conditions(equation::ODE) = (equation.t₀, equation.q₀)
-
-_get_v(equ::ODE) = hasparameters(equ) ? (t,q,v) -> equ.v(t, q, v, equ.parameters) : equ.v
-_get_v̄(equ::ODE) = _get_v(equ)
-
-function functions(equ::ODE)
-    names = (:v,)
-    equs  = (_get_v(equ),)
-
-    NamedTuple{names}(equs)
+function check_initial_conditions(::ODE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    return true
 end
+
+function check_methods(equ::ODE, tspan, ics, params)
+    applicable(equ.v, tspan[begin], ics.q, zero(ics.q), params) || return false
+    return true
+end
+
+function datatype(equ::ODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
+
+function arrtype(equ::ODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    typeof(ics.q)
+end
+
+_get_v(equ::ODE, params) = (t,q,v) -> equ.v(t, q, v, params)
+_get_v̄(equ::ODE, params) = _get_v(equ, params)
+
+_functions(equ::ODE) = (v = equ.v,)
+_functions(equ::ODE, params::OptionalParameters) = (v = _get_v(equ, params),)

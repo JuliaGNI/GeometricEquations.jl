@@ -19,9 +19,8 @@ function promote_tspan_and_tstep((t1,t2)::Tuple, Δt::Number)
 end
 
 
-function parameter_types(params::NamedTuple)
-    NamedTuple{keys(params)}(typeof.(values(params)))
-end
+parameter_types(params::NullParameters) = params
+parameter_types(params::NamedTuple) = NamedTuple{keys(params)}(typeof.(values(params)))
 
 
 function initial_multiplier(q₀::AbstractVector{DT}, λ₀::AbstractVector{DT}) where {DT <: Number}

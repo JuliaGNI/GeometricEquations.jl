@@ -1,5 +1,5 @@
 @doc raw"""
-`HDAE`: Hamiltonian Differential Algebraic Equation *EXPERIMENTAL*
+`HDAE`: Hamiltonian Differential Algebraic Equation
 
 Defines a Hamiltonian differential algebraic initial value problem, that is
 a canonical Hamiltonian system of equations subject to Dirac constraints,
@@ -81,19 +81,15 @@ HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, q₀::State, p₀::State, λ₀::State; kw
 ```
 
 """
-struct HDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-            vType <: Function, fType <: Function,
-            uType <: Function, gType <: Function, ϕType <: Function,
-            ūType <: OptionalFunction, ḡType <: OptionalFunction, ψType <: OptionalFunction,
-            v̄Type <: Function, f̄Type <: Function,
-            PType <: Function,
-            hamType <: Function,
+struct HDAE{vType <: Callable, fType <: Callable,
+            uType <: Callable, gType <: Callable, ϕType <: Callable,
+            ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+            v̄Type <: Callable, f̄Type <: Callable,
+            poiType <: Callable,
+            hamType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalArray{arrayType}} <: AbstractEquationPDAE{dType, tType}
-
-    d::Int
-    m::Int
+            perType <: OptionalPeriodicity} <: AbstractEquationPDAE
 
     v::vType
     f::fType
@@ -105,114 +101,53 @@ struct HDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     ψ::ψType
     v̄::v̄Type
     f̄::f̄Type
-    P::PType
 
-    t₀::tType
-    q₀::Vector{arrayType}
-    p₀::Vector{arrayType}
-    λ₀::Vector{arrayType}
-    μ₀::Vector{arrayType}
-
+    poisson::poiType
     hamiltonian::hamType
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, P,
-                  t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType}, λ₀::Vector{arrayType}, μ₀::Vector{arrayType},
-                  hamiltonian, invariants, parameters, periodicity) where {
-                        dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}}
+    function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameters, periodicity)
+        @assert !isempty(methods(v))
+        @assert !isempty(methods(f))
+        @assert !isempty(methods(u))
+        @assert !isempty(methods(g))
+        @assert !isempty(methods(ϕ))
+        @assert !isempty(methods(ū)) || ū === nothing
+        @assert !isempty(methods(ḡ)) || ḡ === nothing
+        @assert !isempty(methods(ψ)) || ψ === nothing
+        @assert !isempty(methods(v̄))
+        @assert !isempty(methods(f̄))
+        @assert !isempty(methods(poisson))
+        @assert !isempty(methods(hamiltonian))
 
-        d = length(q₀[begin])
-        m = length(λ₀[begin])
-
-        @assert 2d ≥ m
-
-        @assert length(q₀) == length(p₀) == length(λ₀)
-
-        @assert all(length(q) == d for q in q₀)
-        @assert all(length(p) == d for p in p₀)
-        @assert all(length(λ) == m for λ in λ₀)
-        @assert all(length(μ) == m for μ in μ₀)
-
-        @assert all([ndims(q) == ndims(p) == ndims(λ) == ndims(μ) for (q,p,λ,μ) in zip(q₀,p₀,λ₀,μ₀)])
-
-        new{dType, tType, arrayType,
-            typeof(v), typeof(f),
+        new{typeof(v), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
             typeof(ū), typeof(ḡ), typeof(ψ),
-            typeof(v̄), typeof(f̄), typeof(P),
-            typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                d, m, v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, P, t₀, q₀, p₀, λ₀, μ₀,
-                hamiltonian, invariants, parameters, periodicity)
+            typeof(v̄), typeof(f̄),
+            typeof(poisson), typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameters, periodicity)
     end
 end
 
-_HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, t₀, q₀, p₀, λ₀, μ₀; v̄=v, f̄=f, P=symplectic_matrix, invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, P, t₀, q₀, p₀, λ₀, μ₀, hamiltonian, invariants, parameters, periodicity)
+HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameters, periodicity)
+HDAE(v, f, u, g, ϕ, poisson, hamiltonian; kwargs...) = HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, poisson, hamiltonian; kwargs...)
 
-HDAE(v, f, u, g, ϕ, h, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, h, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-HDAE(v, f, u, g, ϕ, h, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = HDAE(v, f, u, g, ϕ, h, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-HDAE(v, f, u, g, ϕ, h, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = HDAE(v, f, u, g, ϕ, h, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-HDAE(v, f, u, g, ϕ, h, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = HDAE(v, f, u, g, ϕ, h, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
+GeometricBase.invariants(equation::HDAE) = equation.invariants
+GeometricBase.parameters(equation::HDAE) = equation.parameters
+GeometricBase.periodicity(equation::HDAE) = equation.periodicity
 
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
+const HDAEsecType{psiT,VT,FT,UT,GT,ΦT,ŪT,ḠT,V̄T,F̄T,poiT,hamT,invT,parT,perT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
+const HDAEinvType{invT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,parT,perT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on invariants type parameter
+const HDAEparType{parT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,perT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on parameters type parameter
+const HDAEperType{perT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
 
-const HDAEpsiType{psiT,DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,V̄T,F̄T,PT,hamT,invT,parT,perT} = HDAE{DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,PT,hamT,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-const HDAEinvType{invT,DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,PT,hamT,parT,perT} = HDAE{DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,PT,hamT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const HDAEparType{parT,DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,PT,hamT,invT,perT} = HDAE{DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,PT,hamT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const HDAEperType{perT,DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,PT,hamT,invT,parT} = HDAE{DT,TT,AT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,PT,hamT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
-Base.hash(dae::HDAE, h::UInt) = hash(dae.d, hash(dae.m,
-                        hash(dae.v, hash(dae.f,
-                        hash(dae.u, hash(dae.g, hash(dae.ϕ,
-                        hash(dae.ū, hash(dae.ḡ, hash(dae.ψ,
-                        hash(dae.v̄, hash(dae.f̄, hash(dae.P,
-                        hash(dae.t₀, hash(dae.q₀, hash(dae.p₀, hash(dae.λ₀, hash(dae.μ₀,
-                        hash(dae.hamiltonian, hash(dae.invariants, hash(dae.parameters, hash(dae.periodicity, h))))))))))))))))))))))
-
-Base.:(==)(dae1::HDAE, dae2::HDAE) = (
-                                dae1.d == dae2.d
-                             && dae1.m == dae2.m
-                             && dae1.v == dae2.v
-                             && dae1.f == dae2.f
-                             && dae1.u == dae2.u
-                             && dae1.g == dae2.g
-                             && dae1.ϕ == dae2.ϕ
-                             && dae1.ū == dae2.ū
-                             && dae1.ḡ == dae2.ḡ
-                             && dae1.ψ == dae2.ψ
-                             && dae1.v̄ == dae2.v̄
-                             && dae1.f̄ == dae2.f̄
-                             && dae1.P == dae2.P
-                             && dae1.t₀ == dae2.t₀
-                             && dae1.q₀ == dae2.q₀
-                             && dae1.p₀ == dae2.p₀
-                             && dae1.λ₀ == dae2.λ₀
-                             && dae1.μ₀ == dae2.μ₀
-                             && dae1.hamiltonian == dae2.hamiltonian
-                             && dae1.invariants  == dae2.invariants
-                             && dae1.parameters  == dae2.parameters
-                             && dae1.periodicity == dae2.periodicity)
-
-function Base.similar(equ::HDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
-    @assert all([length(q) == equ.d for q in q₀])
-    @assert all([length(p) == equ.d for p in p₀])
-    @assert all([length(λ) == equ.m for λ in λ₀])
-    @assert all([length(μ) == equ.m for μ in μ₀])
-    _HDAE(equ.v, equ.f, equ.u, equ.g, equ.ϕ, equ.ū, equ.ḡ, equ.ψ, equ.hamiltonian, t₀, q₀, p₀, λ₀, μ₀;
-         v̄=equ.v̄, f̄=equ.f̄, P=equ.P, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-end
-
-Base.similar(equ::HDAE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-Base.similar(equ::HDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀::State=initial_multiplier(λ₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-
+hasvectorfield(::HDAE) = true
 hashamiltonian(::HDAE) = true
 
-hassecondary(::HDAEpsiType{<:Nothing}) = false
-hassecondary(::HDAEpsiType{<:Function}) = true
+hassecondary(::HDAEsecType{<:Nothing}) = false
+hassecondary(::HDAEsecType{<:Callable}) = true
 
 hasinvariants(::HDAEinvType{<:NullInvariants}) = false
 hasinvariants(::HDAEinvType{<:NamedTuple}) = true
@@ -220,42 +155,54 @@ hasinvariants(::HDAEinvType{<:NamedTuple}) = true
 hasparameters(::HDAEparType{<:NullParameters}) = false
 hasparameters(::HDAEparType{<:NamedTuple}) = true
 
-hasperiodicity(::HDAEperType{<:Nothing}) = false
+hasperiodicity(::HDAEperType{<:NullPeriodicity}) = false
 hasperiodicity(::HDAEperType{<:AbstractArray}) = true
 
-@inline Base.axes(equation::HDAE) = axes(equation.q₀[begin])
-@inline Base.ndims(equation::HDAE) = equation.d
-@inline GeometricBase.nsamples(equation::HDAE) = length(eachindex(equation.q₀))
-@inline GeometricBase.nconstraints(equation::HDAE) = equation.m
-
-@inline GeometricBase.periodicity(equation::HDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-@inline initial_conditions(equation::HDAE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀, equation.μ₀)
-
-_get_v(equ::HDAE)  = hasparameters(equ) ? (t,q,p,v)     -> equ.v(t, q, p, v, equ.parameters) : equ.v
-_get_f(equ::HDAE)  = hasparameters(equ) ? (t,q,p,f)     -> equ.f(t, q, p, f, equ.parameters) : equ.f
-_get_u(equ::HDAE)  = hasparameters(equ) ? (t,q,p,λ,u)   -> equ.u(t, q, p, λ, u, equ.parameters) : equ.u
-_get_g(equ::HDAE)  = hasparameters(equ) ? (t,q,p,λ,g)   -> equ.g(t, q, p, λ, g, equ.parameters) : equ.g
-_get_ϕ(equ::HDAE)  = hasparameters(equ) ? (t,q,p,ϕ)     -> equ.ϕ(t, q, p, ϕ, equ.parameters) : equ.ϕ
-_get_ū(equ::HDAE)  = hasparameters(equ) ? (t,q,p,λ,ū)   -> equ.ū(t, q, p, λ, ū, equ.parameters) : equ.ū
-_get_ḡ(equ::HDAE)  = hasparameters(equ) ? (t,q,p,λ,ḡ)   -> equ.ḡ(t, q, p, λ, ḡ, equ.parameters) : equ.ḡ
-_get_ψ(equ::HDAE)  = hasparameters(equ) ? (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, equ.parameters) : equ.ψ
-_get_v̄(equ::HDAE)  = hasparameters(equ) ? (t,q,p,v)     -> equ.v̄(t, q, p, v, equ.parameters) : equ.v̄
-_get_f̄(equ::HDAE)  = hasparameters(equ) ? (t,q,p,f)     -> equ.f̄(t, q, p, f, equ.parameters) : equ.f̄
-_get_h(equ::HDAE)  = hasparameters(equ) ? (t,q,p)       -> equ.hamiltonian(t, q, p, equ.parameters) : equ.hamiltonian
-_get_P(equ::HDAE)  = hasparameters(equ) ? (t,q,p,P)     -> equ.P(t, q, p, P, equ.parameters) : equ.P
-
-function functions(equ::HDAE)
-    names = (:v, :f, :u, :g, :ϕ,)
-    equs  = (_get_v(equ), _get_f(equ), 
-             _get_u(equ), _get_g(equ), _get_ϕ(equ))
-
+function check_initial_conditions(equ::HDAE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    haskey(ics, :p) || return false
+    haskey(ics, :λ) || return false
     if hassecondary(equ)
-        names = (names..., :ū, :ḡ, :ψ)
-        equs  = (equs..., _get_ū(equ), _get_ḡ(equ), _get_ψ(equ))
+        haskey(ics, :μ) || return false
+        eltype(ics.λ) == eltype(ics.μ) || return false
+        typeof(ics.λ) == typeof(ics.μ) || return false
+        axes(ics.λ) == axes(ics.μ) || return false
     end
-
-    names = (names..., :h, :v̄, :f̄)
-    equs  = (equs..., _get_h(equ), _get_v̄(equ), _get_f̄(equ))
-
-    NamedTuple{names}(equs)
+    return true
 end
+
+function check_methods(equ::HDAE, tspan, ics::NamedTuple, params)
+    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
+    applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
+    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, ics.λ, zero(ics.λ), params) || return false
+    # TODO add missing methods
+    return true
+end
+
+function datatype(equ::HDAE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
+
+function arrtype(equ::HDAE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return typeof(ics.q)
+end
+
+_get_v(equ::HDAE, params) = (t,q,p,v)     -> equ.v(t, q, p, v, params)
+_get_f(equ::HDAE, params) = (t,q,p,f)     -> equ.f(t, q, p, f, params)
+_get_u(equ::HDAE, params) = (t,q,p,λ,u)   -> equ.u(t, q, p, λ, u, params)
+_get_g(equ::HDAE, params) = (t,q,p,λ,g)   -> equ.g(t, q, p, λ, g, params)
+_get_ϕ(equ::HDAE, params) = (t,q,p,ϕ)     -> equ.ϕ(t, q, p, ϕ, params)
+_get_ū(equ::HDAE, params) = (t,q,p,λ,u)   -> equ.ū(t, q, p, λ, u, params)
+_get_ḡ(equ::HDAE, params) = (t,q,p,λ,g)   -> equ.ḡ(t, q, p, λ, g, params)
+_get_ψ(equ::HDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
+_get_v̄(equ::HDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
+_get_f̄(equ::HDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
+_get_h(equ::HDAE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
+_get_poisson(equ::HDAE, params) = (t,q,p,ω) -> equ.poisson(t, q, p, ω, params)
+
+_functions(equ::HDAEsecType{<:Nothing}) = (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
+_functions(equ::HDAEsecType{<:Callable}) = (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
+_functions(equ::HDAEsecType{<:Nothing}, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
+_functions(equ::HDAEsecType{<:Callable}, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))

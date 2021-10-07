@@ -106,15 +106,11 @@ IODE(ϑ, f, q₀::State, p₀::State, λ₀::StateVector=zero(q₀); kwargs...)
 * `periodicity = nothing`
 
 """
-struct IODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-            ϑType <: Function, fType <: Function, gType <: Function,
-            v̄Type <: Function, f̄Type <: Function,
+struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
+            v̄Type <: Callable, f̄Type <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalArray{arrayType}} <: AbstractEquationPODE{dType, tType}
-
-    d::Int
-    m::Int
+            perType <: OptionalPeriodicity} <: AbstractEquationPODE
 
     ϑ::ϑType
     f::fType
@@ -122,77 +118,30 @@ struct IODE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     v̄::v̄Type
     f̄::f̄Type
 
-    t₀::tType
-    q₀::Vector{arrayType}
-    p₀::Vector{arrayType}
-    λ₀::Vector{arrayType}
-
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function IODE(ϑ, f, g, v̄, f̄,
-                t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType}, λ₀::Vector{arrayType},
-                invariants, parameters, periodicity) where {
-                    dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}}
-
-        d = length(q₀[begin])
-        m = length(λ₀[begin])
-
-        @assert length(q₀) == length(p₀)
-        @assert all(length(q) == d for q in q₀)
-        @assert all(length(p) == d for p in p₀)
-        @assert all(length(λ) == m for λ in λ₀)
-
-        new{dType, tType, arrayType,
-            typeof(ϑ), typeof(f), typeof(g), typeof(v̄), typeof(f̄),
+    function IODE(ϑ, f, g, v̄, f̄, invariants, parameters, periodicity)
+        new{typeof(ϑ), typeof(f), typeof(g), typeof(v̄), typeof(f̄),
             typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                d, d, ϑ, f, g, v̄, f̄, t₀, q₀, p₀, λ₀, invariants, parameters, periodicity)
+                ϑ, f, g, v̄, f̄, invariants, parameters, periodicity)
     end
 end
 
-_IODE(ϑ, f, g, t₀, q₀, p₀, λ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = IODE(ϑ, f, g, v̄, f̄, t₀, q₀, p₀, λ₀, invariants, parameters, periodicity)
+_iode_default_v̄(t,q,v,params) = nothing
 
-IODE(ϑ, f, g, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = _IODE(ϑ, f, g, t₀, q₀, p₀, λ₀; kwargs...)
-IODE(ϑ, f, g, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...) = IODE(ϑ, f, g, 0.0, q₀, p₀, λ₀; kwargs...)
-IODE(ϑ, f, g, t₀, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...) = IODE(ϑ, f, g, t₀, [q₀], [p₀], [λ₀]; kwargs...)
-IODE(ϑ, f, g, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...) = IODE(ϑ, f, g, 0.0, q₀, p₀, λ₀; kwargs...)
+IODE(ϑ, f, g; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_iode_default_v̄, f̄=f) = IODE(ϑ, f, g, v̄, f̄, invariants, parameters, periodicity)
 
-const IODEinvType{invT,DT,TT,AT,ΘT,FT,GT,ŪT,ḠT,parT,perT} = IODE{DT,TT,AT,ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const IODEparType{parT,DT,TT,AT,ΘT,FT,GT,ŪT,ḠT,invT,perT} = IODE{DT,TT,AT,ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const IODEperType{perT,DT,TT,AT,ΘT,FT,GT,ŪT,ḠT,invT,parT} = IODE{DT,TT,AT,ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
+GeometricBase.invariants(equation::IODE) = equation.invariants
+GeometricBase.parameters(equation::IODE) = equation.parameters
+GeometricBase.periodicity(equation::IODE) = equation.periodicity
 
-Base.hash(ode::IODE, h::UInt) = hash(ode.d, hash(ode.m,
-          hash(ode.ϑ, hash(ode.f, hash(ode.g,
-          hash(ode.v̄, hash(ode.f̄,
-          hash(ode.t₀, hash(ode.q₀, hash(ode.p₀, hash(ode.λ₀,
-          hash(ode.invariants, hash(ode.parameters, hash(ode.periodicity, h))))))))))))))
+const IODEinvType{invT,ΘT,FT,GT,ŪT,ḠT,parT,perT} = IODE{ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on invariants type parameter
+const IODEparType{parT,ΘT,FT,GT,ŪT,ḠT,invT,perT} = IODE{ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on parameters type parameter
+const IODEperType{perT,ΘT,FT,GT,ŪT,ḠT,invT,parT} = IODE{ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
 
-Base.:(==)(ode1::IODE, ode2::IODE) = (
-                                ode1.d == ode2.d
-                             && ode1.m == ode2.m
-                             && ode1.ϑ == ode2.ϑ
-                             && ode1.f == ode2.f
-                             && ode1.g == ode2.g
-                             && ode1.v̄ == ode2.v̄
-                             && ode1.f̄ == ode2.f̄
-                             && ode1.t₀ == ode2.t₀
-                             && ode1.q₀ == ode2.q₀
-                             && ode1.p₀ == ode2.p₀
-                             && ode1.λ₀ == ode2.λ₀
-                             && ode1.invariants  == ode2.invariants
-                             && ode1.parameters  == ode2.parameters
-                             && ode1.periodicity == ode2.periodicity)
-
-function Base.similar(equ::IODE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector; parameters=equ.parameters)
-    @assert all([length(q) == ndims(equ) for q in q₀])
-    @assert all([length(p) == ndims(equ) for p in p₀])
-    @assert all([length(λ) == equ.m for λ in λ₀])
-    IODE(equ.ϑ, equ.f, equ.g, t₀, q₀, p₀, λ₀; v̄=equ.v̄, f̄=equ.f̄, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-end
-
-Base.similar(equ::IODE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀; kwargs...)
-Base.similar(equ::IODE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀]; kwargs...)
+hasvectorfield(::IODE) = true
 
 hasinvariants(::IODEinvType{<:NullInvariants}) = false
 hasinvariants(::IODEinvType{<:NamedTuple}) = true
@@ -200,25 +149,45 @@ hasinvariants(::IODEinvType{<:NamedTuple}) = true
 hasparameters(::IODEparType{<:NullParameters}) = false
 hasparameters(::IODEparType{<:NamedTuple}) = true
 
-hasperiodicity(::IODEperType{<:Nothing}) = false
+hasperiodicity(::IODEperType{<:NullPeriodicity}) = false
 hasperiodicity(::IODEperType{<:AbstractArray}) = true
 
-@inline Base.axes(equation::IODE) = axes(equation.q₀[begin])
-@inline Base.ndims(equation::IODE) = equation.d
-@inline GeometricBase.nsamples(equation::IODE) = length(eachindex(equation.q₀))
-
-@inline GeometricBase.periodicity(equation::IODE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-@inline initial_conditions(equation::IODE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀)
-
-_get_ϑ(equ::IODE) = hasparameters(equ) ? (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, equ.parameters) : equ.ϑ
-_get_f(equ::IODE) = hasparameters(equ) ? (t,q,v,f) -> equ.f(t, q, v, f, equ.parameters) : equ.f
-_get_g(equ::IODE) = hasparameters(equ) ? (t,q,v,g) -> equ.g(t, q, v, g, equ.parameters) : equ.g
-_get_v̄(equ::IODE) = hasparameters(equ) ? (t,q,v) -> equ.v̄(t, q, v, equ.parameters) : equ.v̄
-_get_f̄(equ::IODE) = hasparameters(equ) ? (t,q,v,f) -> equ.f̄(t, q, v, f, equ.parameters) : equ.f̄
-
-function functions(equ::IODE)
-    names = (:ϑ, :f, :g, :v̄, :f̄)
-    equs  = (_get_ϑ(equ), _get_f(equ), _get_g(equ), _get_v̄(equ), _get_f̄(equ))
-
-    NamedTuple{names}(equs)
+function check_initial_conditions(::IODE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    haskey(ics, :p) || return false
+    haskey(ics, :λ) || return false
+    eltype(ics.q) == eltype(ics.p) == eltype(ics.λ) || return false
+    typeof(ics.q) == typeof(ics.p) == typeof(ics.λ) || return false
+    axes(ics.q) == axes(ics.p) == axes(ics.λ) || return false
+    return true
 end
+
+function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
+    applicable(equ.ϑ, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.f, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.g, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    return true
+end
+
+function datatype(equ::IODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
+
+function arrtype(equ::IODE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    typeof(ics.q)
+end
+
+_get_ϑ(equ::IODE, params) = (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, params)
+_get_f(equ::IODE, params) = (t,q,v,f) -> equ.f(t, q, v, f, params)
+_get_g(equ::IODE, params) = (t,q,v,g) -> equ.g(t, q, v, g, params)
+_get_v̄(equ::IODE, params) = (t,q,v) -> equ.v̄(t, q, v, params)
+_get_f̄(equ::IODE, params) = (t,q,v,f) -> equ.f̄(t, q, v, f, params)
+
+_functions(equ::IODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, v̄ = equ.v̄, f̄ = equ.f̄)
+_functions(equ::IODE, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params),
+                                                     f = _get_f(equ, params),
+                                                     g = _get_g(equ, params),
+                                                     v̄ = _get_v̄(equ, params),
+                                                     f̄ = _get_f̄(equ, params))

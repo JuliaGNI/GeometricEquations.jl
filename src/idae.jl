@@ -5,12 +5,12 @@ Defines an implicit differential algebraic initial value problem
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t) + u(t, q(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), v(t)) + r(t, q(t), p(t), \lambda(t)) , & p(t_{0}) &= p_{0} , \\
+\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), p(t), \lambda(t)) , & p(t_{0}) &= p_{0} , \\
 p(t) &= p(t, q(t), v(t)) , && \\
-0 &= \phi (t, q(t), p(t), \lambda(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
+0 &= \phi (t, q(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
 \end{aligned}
 ```
-with force field ``f``, the momentum defined by ``p``, projection ``u`` and ``r``,
+with force field ``f``, the momentum defined by ``p``, projection ``g`` and ``r``,
 algebraic constraint ``\phi=0``,
 conditions ``(q_{0}, p_{0})`` and ``\lambda_{0}``, the dynamical variables
 ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
@@ -84,17 +84,14 @@ IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, q₀::State, p₀::State, λ₀::State, μ�
 
 
 """
-struct IDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-            ϑType <: Function, fType <: Function,
-            uType <: Function, gType <: Function, ϕType <: Function,
-            ūType <: OptionalFunction, ḡType <: OptionalFunction, ψType <: OptionalFunction,
-            v̄Type <: Function, f̄Type <: Function,
+struct IDAE{ϑType <: Callable, fType <: Callable,
+            uType <: Callable, gType <: Callable, ϕType <: Callable,
+            ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+            v̄Type <: Callable, f̄Type <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalArray{arrayType}} <: AbstractEquationPDAE{dType, tType}
+            perType <: OptionalPeriodicity} <: AbstractEquationPDAE
 
-    d::Int
-    m::Int
     ϑ::ϑType
     f::fType
     u::uType
@@ -105,103 +102,50 @@ struct IDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     ψ::ψType
     v̄::v̄Type
     f̄::f̄Type
-    t₀::tType
-    q₀::Vector{arrayType}
-    p₀::Vector{arrayType}
-    λ₀::Vector{arrayType}
-    μ₀::Vector{arrayType}
+
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function IDAE(ϑ::ϑType, f::fType, u::uType, g::gType, ϕ::ϕType, ū::ūType, ḡ::ḡType, ψ::ψType, v̄::v̄Type, f̄::f̄Type,
-                  t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType}, λ₀::Vector{arrayType}, μ₀::Vector{arrayType},
-                  invariants, parameters, periodicity) where {
-                        dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-                        ϑType <: Function, fType <: Function,
-                        uType <: Function, gType <: Function, ϕType <: Function,
-                        ūType <: OptionalFunction, ḡType <: OptionalFunction, ψType <: OptionalFunction,
-                        v̄Type <: Function, f̄Type <: Function}
+    function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+        @assert !isempty(methods(ϑ))
+        @assert !isempty(methods(f))
+        @assert !isempty(methods(u))
+        @assert !isempty(methods(g))
+        @assert !isempty(methods(ϕ))
+        @assert !isempty(methods(ū)) || ū === nothing
+        @assert !isempty(methods(ḡ)) || ḡ === nothing
+        @assert !isempty(methods(ψ)) || ψ === nothing
+        @assert !isempty(methods(v̄))
+        @assert !isempty(methods(f̄))
 
-        d = length(q₀[begin])
-        m = length(λ₀[begin])
-
-        @assert 2d ≥ m
-
-        @assert length(q₀) == length(p₀) == length(λ₀) == length(μ₀)
-
-        @assert all(length(q) == d for q in q₀)
-        @assert all(length(p) == d for p in p₀)
-        @assert all(length(λ) == m for λ in λ₀)
-        @assert all(length(μ) == m for μ in μ₀)
-
-        @assert all([ndims(q) == ndims(p) == ndims(λ) == ndims(μ) for (q,p,λ,μ) in zip(q₀,p₀,λ₀,μ₀)])
-
-        new{dType, tType, arrayType, ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, v̄Type, f̄Type,
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(d, m, ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
+        new{typeof(ϑ), typeof(f),
+            typeof(u), typeof(g), typeof(ϕ),
+            typeof(ū), typeof(ḡ), typeof(ψ),
+            typeof(v̄), typeof(f̄),
+            typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
     end
 end
 
-_IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing, v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
+_idae_default_v̄(t,q,v,params) = nothing
 
-IDAE(ϑ, f, u, g, ϕ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-IDAE(ϑ, f, u, g, ϕ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = IDAE(ϑ, f, u, g, ϕ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-IDAE(ϑ, f, u, g, ϕ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = IDAE(ϑ, f, u, g, ϕ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-IDAE(ϑ, f, u, g, ϕ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = IDAE(ϑ, f, u, g, ϕ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄=_idae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+IDAE(ϑ, f, u, g, ϕ; kwargs...) = IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
+GeometricBase.invariants(equation::IDAE) = equation.invariants
+GeometricBase.parameters(equation::IDAE) = equation.parameters
+GeometricBase.periodicity(equation::IDAE) = equation.periodicity
 
-const IDAEpsiType{psiT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,V̄T,F̄T,invT,parT,perT} = IDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-const IDAEinvType{invT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,parT,perT} = IDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const IDAEparType{parT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,perT} = IDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const IDAEperType{perT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT} = IDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on periodicity type parameter
+const IDAEsecType{psiT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,V̄T,F̄T,invT,parT,perT} = IDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
+const IDAEinvType{invT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,parT,perT} = IDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on invariants type parameter
+const IDAEparType{parT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,perT} = IDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on parameters type parameter
+const IDAEperType{perT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT} = IDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on periodicity type parameter
 
-Base.hash(dae::IDAE, h::UInt) = hash(dae.d, hash(dae.m,
-        hash(dae.ϑ, hash(dae.f, 
-        hash(dae.u, hash(dae.g, hash(dae.ϕ, 
-        hash(dae.ū, hash(dae.ḡ, hash(dae.ψ,
-        hash(dae.v̄, hash(dae.f̄,
-        hash(dae.t₀, hash(dae.q₀, hash(dae.p₀, hash(dae.λ₀, hash(dae.μ₀,
-        hash(dae.invariants, hash(dae.parameters, hash(dae.periodicity, h))))))))))))))))))))
+hasvectorfield(::IDAE) = true
 
-Base.:(==)(dae1::IDAE, dae2::IDAE) = (
-                                dae1.d == dae2.d
-                             && dae1.m == dae2.m
-                             && dae1.ϑ == dae2.ϑ
-                             && dae1.f == dae2.f
-                             && dae1.u == dae2.u
-                             && dae1.g == dae2.g
-                             && dae1.ϕ == dae2.ϕ
-                             && dae1.ū == dae2.ū
-                             && dae1.ḡ == dae2.ḡ
-                             && dae1.ψ == dae2.ψ
-                             && dae1.v̄ == dae2.v̄
-                             && dae1.f̄ == dae2.f̄
-                             && dae1.t₀ == dae2.t₀
-                             && dae1.q₀ == dae2.q₀
-                             && dae1.p₀ == dae2.p₀
-                             && dae1.λ₀ == dae2.λ₀
-                             && dae1.μ₀ == dae2.μ₀
-                             && dae1.invariants  == dae2.invariants
-                             && dae1.parameters  == dae2.parameters
-                             && dae1.periodicity == dae2.periodicity)
-
-function Base.similar(equ::IDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
-    @assert all([length(q) == ndims(equ) for q in q₀])
-    @assert all([length(p) == ndims(equ) for p in p₀])
-    @assert all([length(λ) == equ.m for λ in λ₀])
-    _IDAE(equ.ϑ, equ.f, equ.u, equ.g, equ.ϕ, equ.ū, equ.ḡ, equ.ψ, t₀, q₀, p₀, λ₀, μ₀; v̄=equ.v̄, f̄=equ.f̄,
-         invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-end
-
-Base.similar(equ::IDAE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-Base.similar(equ::IDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-
-hassecondary(::IDAEpsiType{<:Nothing}) = false
-hassecondary(::IDAEpsiType{<:Function}) = true
+hassecondary(::IDAEsecType{<:Nothing}) = false
+hassecondary(::IDAEsecType{<:Callable}) = true
 
 hasinvariants(::IDAEinvType{<:NullInvariants}) = false
 hasinvariants(::IDAEinvType{<:NamedTuple}) = true
@@ -209,40 +153,52 @@ hasinvariants(::IDAEinvType{<:NamedTuple}) = true
 hasparameters(::IDAEparType{<:NullParameters}) = false
 hasparameters(::IDAEparType{<:NamedTuple}) = true
 
-hasperiodicity(::IDAEperType{<:Nothing}) = false
+hasperiodicity(::IDAEperType{<:NullPeriodicity}) = false
 hasperiodicity(::IDAEperType{<:AbstractArray}) = true
 
-@inline Base.axes(equation::IDAE) = axes(equation.q₀[begin])
-@inline Base.ndims(equation::IDAE) = equation.d
-@inline GeometricBase.nsamples(equation::IDAE) = length(eachindex(equation.q₀))
-@inline GeometricBase.nconstraints(equation::IDAE) = equation.m
-
-@inline GeometricBase.periodicity(equation::IDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-@inline initial_conditions(equation::IDAE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀, equation.μ₀)
-
-_get_ϑ(equ::IDAE) = hasparameters(equ) ? (t,q,v,ϑ)     -> equ.ϑ(t, q, v, ϑ, equ.parameters) : equ.ϑ
-_get_f(equ::IDAE) = hasparameters(equ) ? (t,q,v,f)     -> equ.f(t, q, v, f, equ.parameters) : equ.f
-_get_u(equ::IDAE) = hasparameters(equ) ? (t,q,p,λ,g)   -> equ.u(t, q, p, λ, g, equ.parameters) : equ.u
-_get_g(equ::IDAE) = hasparameters(equ) ? (t,q,p,λ,g)   -> equ.g(t, q, p, λ, g, equ.parameters) : equ.g
-_get_ϕ(equ::IDAE) = hasparameters(equ) ? (t,q,p,ϕ)     -> equ.ϕ(t, q, p, ϕ, equ.parameters) : equ.ϕ
-_get_ū(equ::IDAE) = hasparameters(equ) ? (t,q,p,μ,g)   -> equ.ū(t, q, p, μ, g, equ.parameters) : equ.ū
-_get_ḡ(equ::IDAE) = hasparameters(equ) ? (t,q,p,μ,g)   -> equ.ḡ(t, q, p, μ, g, equ.parameters) : equ.ḡ
-_get_ψ(equ::IDAE) = hasparameters(equ) ? (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, equ.parameters) : equ.ψ
-_get_v̄(equ::IDAE) = hasparameters(equ) ? (t,q,v)       -> equ.v̄(t, q, v, equ.parameters) : equ.v̄
-_get_f̄(equ::IDAE) = hasparameters(equ) ? (t,q,v,f)     -> equ.f̄(t, q, v, f, equ.parameters) : equ.f̄
-_get_h(equ::IDAE) = hasparameters(equ) ? (t,q)         -> equ.h(t, q, equ.parameters) : equ.h
-
-function functions(equ::IDAE)
-    names = (:ϑ,:f,:u,:g,:ϕ)
-    equs  = (_get_ϑ(equ), _get_f(equ), _get_u(equ), _get_g(equ), _get_ϕ(equ))
-
+function check_initial_conditions(equ::IDAE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    haskey(ics, :p) || return false
+    haskey(ics, :λ) || return false
     if hassecondary(equ)
-        names = (names..., :ū, :ḡ, :ψ)
-        equs  = (equs..., _get_ū(equ), _get_ḡ(equ), _get_ψ(equ))
+        haskey(ics, :μ) || return false
+        eltype(ics.λ) == eltype(ics.μ) || return false
+        typeof(ics.λ) == typeof(ics.μ) || return false
+        axes(ics.λ) == axes(ics.μ) || return false
     end
-
-    names = (names..., :v̄, :f̄)
-    equs  = (equs..., _get_v̄(equ), _get_f̄(equ))
-
-    NamedTuple{names}(equs)
+    return true
 end
+
+function check_methods(equ::IDAE, tspan, ics::NamedTuple, params)
+    applicable(equ.ϑ, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.f, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, ics.λ, zero(ics.λ), params) || return false
+    # TODO add missing methods
+    return true
+end
+
+function datatype(equ::IDAE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
+
+function arrtype(equ::IDAE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return typeof(ics.q)
+end
+
+_get_ϑ(equ::IDAE, params) = (t,q,v,ϑ)     -> equ.ϑ(t, q, v, ϑ, params)
+_get_f(equ::IDAE, params) = (t,q,v,f)     -> equ.f(t, q, v, f, params)
+_get_u(equ::IDAE, params) = (t,q,p,λ,u)   -> equ.u(t, q, p, λ, u, params)
+_get_g(equ::IDAE, params) = (t,q,p,λ,g)   -> equ.g(t, q, p, λ, g, params)
+_get_ϕ(equ::IDAE, params) = (t,q,p,ϕ)     -> equ.ϕ(t, q, p, ϕ, params)
+_get_ū(equ::IDAE, params) = (t,q,p,λ,u)   -> equ.ū(t, q, p, λ, u, params)
+_get_ḡ(equ::IDAE, params) = (t,q,p,λ,g)   -> equ.ḡ(t, q, p, λ, g, params)
+_get_ψ(equ::IDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
+_get_v̄(equ::IDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
+_get_f̄(equ::IDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
+
+_functions(equ::IDAEsecType{<:Nothing}) = (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄)
+_functions(equ::IDAEsecType{<:Callable}) = (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄)
+_functions(equ::IDAEsecType{<:Nothing}, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+_functions(equ::IDAEsecType{<:Callable}, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
