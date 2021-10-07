@@ -69,12 +69,12 @@ GeometricBase.nsamples(::GeometricProblem) = 1
 
 initial_conditions(prob::GeometricProblem) = (tbegin(prob), prob.ics...)
 
-function Base.similar(prob::GeometricProblem, tspan, tstep=tstep(tstep), ics=initial_conditions(prob), parameters=parameters(prob))
-    GeometricProblem(prob::GeometricProblem, tspan, tstep, ics, parameters)
+function Base.similar(prob::GeometricProblem, tspan, tstep=tstep(prob), ics=prob.ics, parameters=parameters(prob))
+    GeometricProblem(equation(prob), tspan, tstep, ics, parameters)
 end
 
-function Base.similar(prob::GeometricProblem; tspan=tspan(prob), tstep=tstep(tstep), ics=initial_conditions(prob), parameters=parameters(prob))
-    similar(equation(prob), tspan, tstep, ics, parameters)
+function Base.similar(prob::GeometricProblem; tspan=tspan(prob), tstep=tstep(prob), ics=prob.ics, parameters=parameters(prob))
+    similar(prob, tspan, tstep, ics, parameters)
 end
 
 

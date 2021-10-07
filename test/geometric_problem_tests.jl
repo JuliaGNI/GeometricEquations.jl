@@ -45,8 +45,15 @@ include("initial_conditions.jl")
     @test prob == prob3
     @test prob == prob4
 
-    # @test ode == similar(ode, t₀, x₀)
-    # @test ode == similar(ode, x₀)
+    @test prob == similar(prob)
+    @test prob == similar(prob, (t₀,t₁))
+    @test prob == similar(prob, (t₀,t₁), Δt)
+    @test prob == similar(prob, (t₀,t₁), Δt, ics)
+    @test prob == similar(prob, (t₀,t₁), Δt, ics, NullParameters())
+    @test prob == similar(prob; tspan=(t₀,t₁))
+    @test prob == similar(prob; tstep=Δt)
+    @test prob == similar(prob; ics=ics)
+    @test prob == similar(prob; parameters=NullParameters())
 
 end
 
