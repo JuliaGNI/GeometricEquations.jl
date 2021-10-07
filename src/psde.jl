@@ -79,7 +79,7 @@ PSDE(m, ns, v, f, B, G, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f,
 struct PSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
             vType <: Function, fType <: Function,
             BType <: Function, GType <: Function,
-            pType <: OptionalParameters} <: AbstractEquationPSDE{dType, tType}
+            pType <: OptionalParameters} <: AbstractEquationPSDE
 
     d::Int
     m::Int

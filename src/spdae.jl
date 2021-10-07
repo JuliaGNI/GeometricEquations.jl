@@ -68,7 +68,7 @@ struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
              vType <: Tuple, fType <: Tuple, ϕType <: Function, ψType <: OptionalFunction,
              invType <: OptionalInvariants,
              parType <: OptionalParameters,
-             perType <: OptionalArray{arrayType}} <: AbstractEquationPDAE{dType, tType}
+             perType <: OptionalPeriodicity} <: AbstractEquationPDAE
 
     d::Int
     m::Int
@@ -95,7 +95,7 @@ struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
                         vType <: Tuple, fType <: Tuple, ϕType <: Function, ψType <: Function,
                         invType <: OptionalInvariants,
                         parType <: OptionalParameters,
-                        perType <: OptionalArray{arrayType}}
+                        perType <: OptionalPeriodicity}
 
         d = length(q₀[begin])
         m = length(λ₀[begin])
@@ -116,7 +116,7 @@ struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
     end
 end
 
-_SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=nothing) = SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
+_SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
 
 SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
 SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
