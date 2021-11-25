@@ -68,7 +68,7 @@ struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
              vType <: Tuple, fType <: Tuple, ϕType <: Function, ψType <: OptionalFunction,
              invType <: OptionalInvariants,
              parType <: OptionalParameters,
-             perType <: OptionalPeriodicity} <: AbstractEquationPDAE
+             perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
 
     d::Int
     m::Int
@@ -123,10 +123,6 @@ SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ
 SPDAE(v, f, ϕ, ψ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
 SPDAE(v, f, ϕ, ψ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
 
-const SPDAEinvType{invT,DT,TT,AT,VT,FT,ΦT,ΨT,parT,perT} = SPDAE{DT,TT,AT,VT,FT,ΦT,ΨT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const SPDAEparType{parT,DT,TT,AT,VT,FT,ΦT,ΨT,invT,perT} = SPDAE{DT,TT,AT,VT,FT,ΦT,ΨT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const SPDAEperType{perT,DT,TT,AT,VT,FT,ΦT,ΨT,invT,parT} = SPDAE{DT,TT,AT,VT,FT,ΦT,ΨT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 Base.hash(dae::SPDAE, h::UInt) = hash(dae.d, hash(dae.m,
                     hash(dae.v, hash(dae.f, hash(dae.ϕ, hash(dae.ψ,
                     hash(dae.t₀, hash(dae.q₀, hash(dae.p₀, 
@@ -159,15 +155,6 @@ end
 
 Base.similar(equ::SPDAE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
 Base.similar(equ::SPDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀::State=initial_multiplier(λ₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-
-hasinvariants(::SPDAEinvType{<:NullInvariants}) = false
-hasinvariants(::SPDAEinvType{<:NamedTuple}) = true
-
-hasparameters(::SPDAEparType{<:NullParameters}) = false
-hasparameters(::SPDAEparType{<:NamedTuple}) = true
-
-hasperiodicity(::SPDAEperType{<:Nothing}) = false
-hasperiodicity(::SPDAEperType{<:AbstractArray}) = true
 
 @inline Base.axes(equation::SPDAE) = axes(equation.q₀[begin])
 @inline Base.ndims(equation::SPDAE) = equation.d

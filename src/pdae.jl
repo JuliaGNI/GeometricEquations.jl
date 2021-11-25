@@ -80,7 +80,7 @@ struct PDAE{vType <: Callable, fType <: Callable,
             v̄Type <: Callable, f̄Type <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPDAE
+            perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
 
     v::vType
     f::fType
@@ -125,24 +125,7 @@ GeometricBase.invariants(equation::PDAE) = equation.invariants
 GeometricBase.parameters(equation::PDAE) = equation.parameters
 GeometricBase.periodicity(equation::PDAE) = equation.periodicity
 
-const PDAEsecType{psiT,VT,FT,UT,GT,ΦT,ŪT,ḠT,V̄T,F̄T,invT,parT,perT} = PDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-const PDAEinvType{invT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,parT,perT} = PDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const PDAEparType{parT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,perT} = PDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const PDAEperType{perT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT} = PDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::PDAE) = true
-
-hassecondary(::PDAEsecType{<:Nothing}) = false
-hassecondary(::PDAEsecType{<:Callable}) = true
-
-hasinvariants(::PDAEinvType{<:NullInvariants}) = false
-hasinvariants(::PDAEinvType{<:NamedTuple}) = true
-
-hasparameters(::PDAEparType{<:NullParameters}) = false
-hasparameters(::PDAEparType{<:NamedTuple}) = true
-
-hasperiodicity(::PDAEperType{<:NullPeriodicity}) = false
-hasperiodicity(::PDAEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(equ::PDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
@@ -186,7 +169,18 @@ _get_ψ(equ::PDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
 _get_v̄(equ::PDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
 _get_f̄(equ::PDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
 
-_functions(equ::PDAEsecType{<:Nothing}) = (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄)
-_functions(equ::PDAEsecType{<:Callable}) = (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄)
-_functions(equ::PDAEsecType{<:Nothing}, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
-_functions(equ::PDAEsecType{<:Callable}, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+function _functions(equ::PDAE)
+    if hassecondary(equ)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄)
+    else
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄)
+    end
+end
+
+function _functions(equ::PDAE, params::OptionalParameters)
+    if hassecondary(equ)
+        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+    else
+        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+    end
+end

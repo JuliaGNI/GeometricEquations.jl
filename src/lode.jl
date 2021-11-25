@@ -118,7 +118,7 @@ struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
             lagType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPODE
+            perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType,parType,perType}
 
     ϑ::ϑType
     f::fType
@@ -156,21 +156,8 @@ GeometricBase.invariants(equation::LODE) = equation.invariants
 GeometricBase.parameters(equation::LODE) = equation.parameters
 GeometricBase.periodicity(equation::LODE) = equation.periodicity
 
-const LODEinvType{invT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,parT,perT} = LODE{ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const LODEparType{parT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,perT} = LODE{ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const LODEperType{perT,ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT} = LODE{ΘT,FT,GT,ΩT,ŪT,ḠT,lagT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::LODE) = true
 haslagrangian(::LODE) = true
-
-hasinvariants(::LODEinvType{<:NullInvariants}) = false
-hasinvariants(::LODEinvType{<:NamedTuple}) = true
-
-hasparameters(::LODEparType{<:NullParameters}) = false
-hasparameters(::LODEparType{<:NamedTuple}) = true
-
-hasperiodicity(::LODEperType{<:NullPeriodicity}) = false
-hasperiodicity(::LODEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(::LODE, ics::NamedTuple)
     haskey(ics, :q) || return false

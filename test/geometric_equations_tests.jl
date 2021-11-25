@@ -13,7 +13,7 @@ using Test
 @test AbstractEquationPSDE <: GeometricEquation
 
 
-struct TestEquation <: GeometricEquation end
+struct TestEquation <: GeometricEquation{Nothing,Nothing,Nothing} end
 
 testeq = TestEquation()
 

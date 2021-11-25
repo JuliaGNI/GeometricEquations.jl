@@ -110,7 +110,7 @@ struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
             v̄Type <: Callable, f̄Type <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPODE
+            perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType,parType,perType}
 
     ϑ::ϑType
     f::fType
@@ -137,20 +137,7 @@ GeometricBase.invariants(equation::IODE) = equation.invariants
 GeometricBase.parameters(equation::IODE) = equation.parameters
 GeometricBase.periodicity(equation::IODE) = equation.periodicity
 
-const IODEinvType{invT,ΘT,FT,GT,ŪT,ḠT,parT,perT} = IODE{ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const IODEparType{parT,ΘT,FT,GT,ŪT,ḠT,invT,perT} = IODE{ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const IODEperType{perT,ΘT,FT,GT,ŪT,ḠT,invT,parT} = IODE{ΘT,FT,GT,ŪT,ḠT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::IODE) = true
-
-hasinvariants(::IODEinvType{<:NullInvariants}) = false
-hasinvariants(::IODEinvType{<:NamedTuple}) = true
-
-hasparameters(::IODEparType{<:NullParameters}) = false
-hasparameters(::IODEparType{<:NamedTuple}) = true
-
-hasperiodicity(::IODEperType{<:NullPeriodicity}) = false
-hasperiodicity(::IODEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(::IODE, ics::NamedTuple)
     haskey(ics, :q) || return false

@@ -45,7 +45,7 @@ ODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=Nul
 struct ODE{vType <: Callable,
            invType <: OptionalInvariants,
            parType <: OptionalParameters,
-           perType <: OptionalPeriodicity} <: AbstractEquationODE
+           perType <: OptionalPeriodicity} <: AbstractEquationODE{invType,parType,perType}
 
     v::vType
 
@@ -68,20 +68,7 @@ GeometricBase.invariants(equation::ODE) = equation.invariants
 GeometricBase.parameters(equation::ODE) = equation.parameters
 GeometricBase.periodicity(equation::ODE) = equation.periodicity
 
-const ODEinvType{invT,parT,perT,VT} = ODE{VT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const ODEparType{parT,invT,perT,VT} = ODE{VT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const ODEperType{perT,invT,parT,VT} = ODE{VT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::ODE) = true
-
-hasinvariants(::ODEinvType{<:NullInvariants}) = false
-hasinvariants(::ODEinvType{<:NamedTuple}) = true
-
-hasparameters(::ODEparType{<:NullParameters}) = false
-hasparameters(::ODEparType{<:NamedTuple}) = true
-
-hasperiodicity(::ODEperType{<:NullPeriodicity}) = false
-hasperiodicity(::ODEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(::ODE, ics::NamedTuple)
     haskey(ics, :q) || return false

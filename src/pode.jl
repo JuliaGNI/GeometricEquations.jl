@@ -61,7 +61,7 @@ PODE(v, f; invariants=NullInvariants(), parameters=NullParameters(), periodicity
 struct PODE{vType <: Callable, fType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPODE
+            perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType,parType,perType}
 
     v::vType
     f::fType
@@ -82,20 +82,7 @@ GeometricBase.invariants(equation::PODE) = equation.invariants
 GeometricBase.parameters(equation::PODE) = equation.parameters
 GeometricBase.periodicity(equation::PODE) = equation.periodicity
 
-const PODEinvType{invT,parT,perT,VT,FT} = PODE{VT,FT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const PODEparType{parT,invT,perT,VT,FT} = PODE{VT,FT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const PODEperType{perT,invT,parT,VT,FT} = PODE{VT,FT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::PODE) = true
-
-hasinvariants(::PODEinvType{<:NullInvariants}) = false
-hasinvariants(::PODEinvType{<:NamedTuple}) = true
-
-hasparameters(::PODEparType{<:NullParameters}) = false
-hasparameters(::PODEparType{<:NamedTuple}) = true
-
-hasperiodicity(::PODEperType{<:NullPeriodicity}) = false
-hasperiodicity(::PODEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(::PODE, ics::NamedTuple)
     haskey(ics, :q) || return false

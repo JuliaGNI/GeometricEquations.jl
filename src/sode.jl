@@ -62,7 +62,7 @@ SODE(v, q; invariants=NullInvariants(), parameters=NullParameters(), periodicity
 struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing},
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationODE
+            perType <: OptionalPeriodicity} <: AbstractEquationODE{invType,parType,perType}
 
     v::vType
     q::qType
@@ -84,10 +84,6 @@ GeometricBase.invariants(equation::SODE) = equation.invariants
 GeometricBase.parameters(equation::SODE) = equation.parameters
 GeometricBase.periodicity(equation::SODE) = equation.periodicity
 
-const SODEinvType{invT,parT,perT,VT,QT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const SODEparType{parT,invT,perT,VT,QT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const SODEperType{perT,invT,parT,VT,QT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 const SODEQT{QT,VT,invT,parT,perT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on solution type parameter
 const SODEVT{VT,QT,invT,parT,perT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on vector field type parameter
 
@@ -102,15 +98,6 @@ hasvectorfield(::SODEVT{<:Tuple}) = true # && all(typeof(V) <: Function for V in
 
 hasvectorfield(::SODEVT{<:Nothing}, i) = false
 hasvectorfield(equ::SODEVT{<:Tuple}, i) = i ≤ length(equ.v)# && typeof(equ.v[i]) <: Function
-
-hasinvariants(::SODEinvType{<:NullInvariants}) = false
-hasinvariants(::SODEinvType{<:NamedTuple}) = true
-
-hasparameters(::SODEparType{<:NullParameters}) = false
-hasparameters(::SODEparType{<:NamedTuple}) = true
-
-hasperiodicity(::SODEperType{<:NullPeriodicity}) = false
-hasperiodicity(::SODEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(::SODE, ics::NamedTuple)
     haskey(ics, :q) || return false
