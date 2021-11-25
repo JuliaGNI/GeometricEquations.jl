@@ -7,4 +7,4 @@ using SafeTestsets
 @safetestset "Differential Algebraic Equations                                                " begin include("differential_algebraic_equations_tests.jl") end
 @safetestset "Stochastic Differential Equations                                               " begin include("stochastic_differential_equations_tests.jl") end
 @safetestset "Abstract Problem                                                                " begin include("geometric_problem_tests.jl") end
-@safetestset "Geometric Problems                                                              " begin include("geometric_problem_tests.jl") end
+@safetestset "Geometric Problem                                                               " begin include("geometric_problem_tests.jl") end
