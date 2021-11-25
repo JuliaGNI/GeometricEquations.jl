@@ -77,7 +77,7 @@ SDE(m, ns, v, B, q₀::State; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...
 """
 struct SDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
            vType <: Function, BType <: Function,
-           pType <: OptionalParameters} <: AbstractEquationSDE
+           pType <: OptionalParameters} <: AbstractEquationSDE{Nothing,Nothing,Nothing}
 
     d::Int
     m::Int

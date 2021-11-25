@@ -138,7 +138,7 @@ struct LDAE{ϑType <: Callable, fType <: Callable,
             lagType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPDAE
+            perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
 
     ϑ::ϑType
     f::fType
@@ -190,25 +190,8 @@ GeometricBase.invariants(equation::LDAE) = equation.invariants
 GeometricBase.parameters(equation::LDAE) = equation.parameters
 GeometricBase.periodicity(equation::LDAE) = equation.periodicity
 
-const LDAEsecType{psiT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} = LDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-const LDAEinvType{invT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,parT,perT} = LDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const LDAEparType{parT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,perT} = LDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const LDAEperType{perT,ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT} = LDAE{ΘT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::LDAE) = true
 haslagrangian(::LDAE) = true
-
-hassecondary(::LDAEsecType{<:Nothing}) = false
-hassecondary(::LDAEsecType{<:Callable}) = true
-
-hasinvariants(::LDAEinvType{<:NullInvariants}) = false
-hasinvariants(::LDAEinvType{<:NamedTuple}) = true
-
-hasparameters(::LDAEparType{<:NullParameters}) = false
-hasparameters(::LDAEparType{<:NamedTuple}) = true
-
-hasperiodicity(::LDAEperType{<:NullPeriodicity}) = false
-hasperiodicity(::LDAEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(equ::LDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
@@ -254,12 +237,21 @@ _get_f̄(equ::LDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
 _get_ω(equ::LDAE, params) = (t,q,v,ω)     -> equ.ω(t, q, v, ω, params)
 _get_l(equ::LDAE, params) = (t,q,v)       -> equ.lagrangian(t, q, v, params)
 
-_functions(equ::LDAEsecType{<:Nothing}) = (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, ω = equ.ω, l = equ.lagrangian)
-_functions(equ::LDAEsecType{<:Callable}) = (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, ω = equ.ω, l = equ.lagrangian)
-_functions(equ::LDAEsecType{<:Nothing}, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), ω = _get_ω(equ, params), l = _get_l(equ, params))
-_functions(equ::LDAEsecType{<:Callable}, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), ω = _get_ω(equ, params), l = _get_l(equ, params))
+function _functions(equ::LDAE)
+    if hassecondary(equ)
+        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, ω = equ.ω, l = equ.lagrangian)
+    else
+        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, ω = equ.ω, l = equ.lagrangian)
+    end
+end
 
-
+function _functions(equ::LDAE, params::OptionalParameters)
+    if hassecondary(equ)
+        (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), ω = _get_ω(equ, params), l = _get_l(equ, params))
+    else
+        (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), ω = _get_ω(equ, params), l = _get_l(equ, params))
+    end
+end
 
 
 

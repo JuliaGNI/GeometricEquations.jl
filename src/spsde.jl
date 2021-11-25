@@ -84,7 +84,7 @@ SPSDE(m, ns, v, f1, f2, B, G1, G2, q₀::State, p₀::State; kwargs...) = SPSDE(
 struct SPSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
              vType <: Function, f1Type <: Function, f2Type <: Function,
              BType <: Function, G1Type <: Function, G2Type <: Function,
-             pType <: OptionalParameters} <: AbstractEquationPSDE
+             pType <: OptionalParameters} <: AbstractEquationPSDE{Nothing,Nothing,Nothing}
     d::Int
     m::Int
     ns::Int

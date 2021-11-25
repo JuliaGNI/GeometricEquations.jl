@@ -102,7 +102,7 @@ struct DAE{vType <: Callable,
            v̄Type <: Callable,
            invType <: OptionalInvariants,
            parType <: OptionalParameters,
-           perType <: OptionalPeriodicity} <: AbstractEquationDAE
+           perType <: OptionalPeriodicity} <: AbstractEquationDAE{invType,parType,perType,ψType}
 
     v::vType
     u::uType
@@ -138,24 +138,7 @@ GeometricBase.invariants(equation::DAE) = equation.invariants
 GeometricBase.parameters(equation::DAE) = equation.parameters
 GeometricBase.periodicity(equation::DAE) = equation.periodicity
 
-const DAEsecType{ΨT,VT,UT,ΦT,ŪT,V̄T,invT,parT,perT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-const DAEinvType{invT,VT,UT,ΦT,ŪT,ΨT,V̄T,parT,perT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const DAEparType{parT,VT,UT,ΦT,ŪT,ΨT,V̄T,invT,perT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const DAEperType{perT,VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT} = DAE{VT,UT,ΦT,ŪT,ΨT,V̄T,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::DAE) = true
-
-hassecondary(::DAEsecType{<:Nothing}) = false
-hassecondary(::DAEsecType{<:Callable}) = true
-
-hasinvariants(::DAEinvType{<:NullInvariants}) = false
-hasinvariants(::DAEinvType{<:NamedTuple}) = true
-
-hasparameters(::DAEparType{<:NullParameters}) = false
-hasparameters(::DAEparType{<:NamedTuple}) = true
-
-hasperiodicity(::DAEperType{<:NullPeriodicity}) = false
-hasperiodicity(::DAEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(equ::DAE, ics::NamedTuple)
     haskey(ics, :q) || return false
@@ -193,7 +176,18 @@ _get_ū(equ::DAE, params) = (t,q,λ,u) -> equ.ū(t, q, λ, u, params)
 _get_ψ(equ::DAE, params) = (t,q,v,ψ) -> equ.ψ(t, q, v, ϕ, params)
 _get_v̄(equ::DAE, params) = (t,q,v)   -> equ.v̄(t, q, v, params)
 
-_functions(equ::DAEsecType{<:Nothing}) = (v = equ.v, u = equ.u, ϕ = equ.ϕ, v̄ = equ.v̄)
-_functions(equ::DAEsecType{<:Callable}) = (v = equ.v, u = equ.u, ϕ = equ.ϕ, ū = equ.ū, ψ = equ.ψ, v̄ = equ.v̄)
-_functions(equ::DAEsecType{<:Nothing}, params::OptionalParameters) = (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params))
-_functions(equ::DAEsecType{<:Callable}, params::OptionalParameters) = (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params))
+function _functions(equ::DAE)
+    if hassecondary(equ)
+        (v = equ.v, u = equ.u, ϕ = equ.ϕ, ū = equ.ū, ψ = equ.ψ, v̄ = equ.v̄)
+    else
+        (v = equ.v, u = equ.u, ϕ = equ.ϕ, v̄ = equ.v̄)
+    end
+end
+
+function _functions(equ::DAE, params::OptionalParameters)
+    if hassecondary(equ)
+        (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params))
+    else
+        (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params))
+    end
+end

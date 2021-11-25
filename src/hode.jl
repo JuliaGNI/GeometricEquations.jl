@@ -67,7 +67,7 @@ struct HODE{vType <: Callable, fType <: Callable,
             hamType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPODE
+            perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType,parType,perType}
 
     v::vType
     f::fType
@@ -91,21 +91,8 @@ GeometricBase.invariants(equation::HODE) = equation.invariants
 GeometricBase.parameters(equation::HODE) = equation.parameters
 GeometricBase.periodicity(equation::HODE) = equation.periodicity
 
-const HODEinvType{invT,VT,FT,PT,hamT,parT,perT} = HODE{VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const HODEparType{parT,VT,FT,PT,hamT,invT,perT} = HODE{VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const HODEperType{perT,VT,FT,PT,hamT,invT,parT} = HODE{VT,FT,PT,hamT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::HODE) = true
 hashamiltonian(::HODE) = true
-
-hasinvariants(::HODEinvType{<:NullInvariants}) = false
-hasinvariants(::HODEinvType{<:NamedTuple}) = true
-
-hasparameters(::HODEparType{<:NullParameters}) = false
-hasparameters(::HODEparType{<:NamedTuple}) = true
-
-hasperiodicity(::HODEperType{<:NullPeriodicity}) = false
-hasperiodicity(::HODEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(::HODE, ics::NamedTuple)
     haskey(ics, :q) || return false

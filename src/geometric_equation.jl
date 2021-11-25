@@ -1,13 +1,37 @@
 
-abstract type GeometricEquation end
+abstract type GeometricEquation{invType,parType,perType} end
 
-abstract type AbstractEquationODE  <: GeometricEquation end
-abstract type AbstractEquationDAE  <: GeometricEquation end
-abstract type AbstractEquationSDE  <: GeometricEquation end
-abstract type AbstractEquationPODE <: GeometricEquation end
-abstract type AbstractEquationPDAE <: GeometricEquation end
-abstract type AbstractEquationPSDE <: GeometricEquation end
+abstract type DifferentialEquation{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
+abstract type DifferentialAlgebraicEquation{invType,parType,perType,secType} <: GeometricEquation{invType,parType,perType} end
+abstract type StochasticDifferentialEquation{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
 
+abstract type AbstractEquationODE{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
+abstract type AbstractEquationDAE{invType,parType,perType,secType} <: DifferentialAlgebraicEquation{invType,parType,perType,secType} end
+abstract type AbstractEquationSDE{invType,parType,perType} <: StochasticDifferentialEquation{invType,parType,perType} end
+abstract type AbstractEquationPODE{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
+abstract type AbstractEquationPDAE{invType,parType,perType,secType} <: DifferentialAlgebraicEquation{invType,parType,perType,secType} end
+abstract type AbstractEquationPSDE{invType,parType,perType} <: StochasticDifferentialEquation{invType,parType,perType} end
+
+const GEinvType{invType,parType,perType} = GeometricEquation{invType,parType,perType} # type alias for dispatch on invariants type parameter
+const GEparType{parType,invType,perType} = GeometricEquation{invType,parType,perType} # type alias for dispatch on parameters type parameter
+const GEperType{perType,invType,parType} = GeometricEquation{invType,parType,perType} # type alias for dispatch on periodicity type parameter
+
+hasinvariants(::GEinvType{<:NullInvariants}) = false
+hasinvariants(::GEinvType{<:Nothing}) = false
+hasinvariants(::GEinvType{<:NamedTuple}) = true
+
+hasparameters(::GEparType{<:NullParameters}) = false
+hasparameters(::GEparType{<:Nothing}) = false
+hasparameters(::GEparType{<:NamedTuple}) = true
+
+hasperiodicity(::GEperType{<:NullPeriodicity}) = false
+hasperiodicity(::GEperType{<:Nothing}) = false
+hasperiodicity(::GEperType{<:AbstractArray}) = true
+
+const DAEsecType{secType,invType,parType,perType} = DifferentialAlgebraicEquation{invType,parType,perType,secType} # type alias for dispatch on secondary constraint type parameter
+
+hassecondary(::DAEsecType{<:Nothing}) = false
+hassecondary(::DAEsecType{<:Callable}) = true
 
 _functions(equ::GeometricEquation) = error("_functions(::GeometricEquation) not implemented for ", typeof(equ), ".")
 _solutions(equ::GeometricEquation) = error("_solutions(::GeometricEquation) not implemented for ", typeof(equ), ".")

@@ -89,7 +89,7 @@ struct HDAE{vType <: Callable, fType <: Callable,
             hamType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPDAE
+            perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
 
     v::vType
     f::fType
@@ -138,25 +138,8 @@ GeometricBase.invariants(equation::HDAE) = equation.invariants
 GeometricBase.parameters(equation::HDAE) = equation.parameters
 GeometricBase.periodicity(equation::HDAE) = equation.periodicity
 
-const HDAEsecType{psiT,VT,FT,UT,GT,ΦT,ŪT,ḠT,V̄T,F̄T,poiT,hamT,invT,parT,perT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-const HDAEinvType{invT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,parT,perT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-const HDAEparType{parT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,perT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-const HDAEperType{perT,VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT} = HDAE{VT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,V̄T,F̄T,poiT,hamT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
 hasvectorfield(::HDAE) = true
 hashamiltonian(::HDAE) = true
-
-hassecondary(::HDAEsecType{<:Nothing}) = false
-hassecondary(::HDAEsecType{<:Callable}) = true
-
-hasinvariants(::HDAEinvType{<:NullInvariants}) = false
-hasinvariants(::HDAEinvType{<:NamedTuple}) = true
-
-hasparameters(::HDAEparType{<:NullParameters}) = false
-hasparameters(::HDAEparType{<:NamedTuple}) = true
-
-hasperiodicity(::HDAEperType{<:NullPeriodicity}) = false
-hasperiodicity(::HDAEperType{<:AbstractArray}) = true
 
 function check_initial_conditions(equ::HDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
@@ -202,7 +185,18 @@ _get_f̄(equ::HDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
 _get_h(equ::HDAE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
 _get_poisson(equ::HDAE, params) = (t,q,p,ω) -> equ.poisson(t, q, p, ω, params)
 
-_functions(equ::HDAEsecType{<:Nothing}) = (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
-_functions(equ::HDAEsecType{<:Callable}) = (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
-_functions(equ::HDAEsecType{<:Nothing}, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
-_functions(equ::HDAEsecType{<:Callable}, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
+function _functions(equ::HDAE)
+    if hassecondary(equ)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
+    else
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
+    end
+end
+
+function _functions(equ::HDAE, params::OptionalParameters)
+    if hassecondary(equ)
+        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
+    else
+        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
+    end
+end
