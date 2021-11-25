@@ -37,10 +37,7 @@ taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
 * `d`: dimension of dynamical variables ``q`` and ``p`` as well as the vector fields ``v`` and ``f``
 * `v`: function computing the vector field ``v``
 * `f`: function computing the vector field ``f``
-* `P`: function computing the Poisson matrix ``P``
-* `t₀`: initial time
-* `q₀`: initial condition for dynamical variable ``q``
-* `p₀`: initial condition for dynamical variable ``p``
+* `poisson`: function computing the Poisson matrix ``P``
 * `hamiltonian`: function computing the Hamiltonian ``H``
 * `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
 * `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`

@@ -1,24 +1,35 @@
 @doc raw"""
-
+GeometricProblem: stores a GeometricEquation togehter with initial conditions, parameters, time span and time step size.
 
 ### Parameters
 
+* `ST <: GeometricEquation`: super type, used for dispatch
 * `DT <: Number`: data type
 * `TT <: Real`: time step type
 * `AT <: AbstractArray{DT}`: array type
-* `parType <: OptionalNamedTuple`: parameters type
+* `equType <: GeometricEquation`: equation type
+* `icsType <: paramsType`: initial conditions type
+* `parType <: OptionalParameters`: parameters type
 
 ### Fields
 
 * `equation`: reference to the parent equation object
 * `tspan`: time span for problem `(t₀,t₁)`
 * `tstep`: time step to be used in simulation
-* `ics`: initial condition (NamedTuple containing the field `q`)
+* `ics`: `NamedTuple` containing the initial conditions
 * `parameters`: either a `NamedTuple` containing the equation's parameters or `NullParameters`
 
+### Subtypes
+
+The `GeometricProblem` type has various subtypes for the different equations types, that are defined e.g. via
+```
+const ODEProblem = GeometricProblem{ODE}
+```
+and provide convenience constructors to construct and equation and the corresponding problem in one step.
+
 """
-struct GeometricProblem{superType <: GeometricEquation, dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}, 
-                 equType <: GeometricEquation, icsType <: NamedTuple, paramsType <: OptionalParameters} <: AbstractProblem{dType, tType, arrayType}
+struct GeometricProblem{superType<:GeometricEquation,dType<:Number,tType<:Real,arrayType<:AbstractArray{dType},
+    equType<:GeometricEquation,icsType<:NamedTuple,paramsType<:OptionalParameters} <: AbstractProblem{dType,tType,arrayType}
     equation::equType
     tspan::Tuple{tType,tType}
     tstep::tType
@@ -37,11 +48,11 @@ struct GeometricProblem{superType <: GeometricEquation, dType <: Number, tType <
         dType = datatype(equ, ics)
         arrayType = arrtype(equ, ics)
 
-        new{superType, dType, tType, arrayType, typeof(equ), typeof(ics), typeof(parameters)}(equ, _tspan, _tstep, ics, parameters)
+        new{superType,dType,tType,arrayType,typeof(equ),typeof(ics),typeof(parameters)}(equ, _tspan, _tstep, ics, parameters)
     end
 end
 
-GeometricProblem(equ, tspan, tstep, ics; parameters=NullParameters()) = GeometricProblem(equ, tspan, tstep, ics, parameters)
+GeometricProblem(equ, tspan, tstep, ics; parameters = NullParameters()) = GeometricProblem(equ, tspan, tstep, ics, parameters)
 GeometricProblem(equ, tspan, tstep, ics, ::Nothing) = GeometricProblem(equ, tspan, tstep, ics, NullParameters())
 
 # Base.hash(prob::GeometricProblem, h::UInt) = hash(hash(prob.equation,
@@ -69,11 +80,11 @@ GeometricBase.nsamples(::GeometricProblem) = 1
 
 initial_conditions(prob::GeometricProblem) = (tbegin(prob), prob.ics...)
 
-function Base.similar(prob::GeometricProblem, tspan, tstep=tstep(prob), ics=prob.ics, parameters=parameters(prob))
+function Base.similar(prob::GeometricProblem, tspan, tstep = tstep(prob), ics = prob.ics, parameters = parameters(prob))
     GeometricProblem(equation(prob), tspan, tstep, ics, parameters)
 end
 
-function Base.similar(prob::GeometricProblem; tspan=tspan(prob), tstep=tstep(prob), ics=prob.ics, parameters=parameters(prob))
+function Base.similar(prob::GeometricProblem; tspan = tspan(prob), tstep = tstep(prob), ics = prob.ics, parameters = parameters(prob))
     similar(prob, tspan, tstep, ics, parameters)
 end
 
@@ -90,14 +101,21 @@ with vector field ``v`` and initial condition ``q_{0}``.
 ### Constructors
 
 ```julia
-ODE(v, tspan, tstep, ics::NamedTuple, [parameters=NullParameters()]; invariants=NullInvariants(), periodicity=NullPeriodicity())
-ODE(v, tspan, tstep, q₀::State, [parameters=NullParameters()]; invariants=NullInvariants(), periodicity=NullPeriodicity())
+ODE(v, tspan, tstep, ics::NamedTuple; kwargs...)
+ODE(v, tspan, tstep, q₀::State; kwargs...)
 ```
+where `ics` is a `NamedTuple` with entry `q`.
+
+### Keyword arguments:
+
+* `invariants = NullInvariants()`
+* `parameters = NullParameters()`
+* `periodicity = NullPeriodicity()`
 
 """
 const ODEProblem = GeometricProblem{ODE}
 
-function ODEProblem(v, tspan, tstep, ics::NamedTuple; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function ODEProblem(v, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = ODE(v, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -126,14 +144,21 @@ with vector fields ``v`` and ``f`` and initial conditions ``(q_{0}, p_{0})``.
 ### Constructors
 
 ```julia
-PODE(v, f, tspan, tstep, ics, [parameters=NullParameters()]; invariants=NullInvariants(), periodicity=NullPeriodicity())
-PODE(v, f, tspan, tstep, q₀, p₀, [parameters=NullParameters()]; invariants=NullInvariants(), periodicity=NullPeriodicity())
+PODE(v, f, tspan, tstep, ics; kwargs...)
+PODE(v, f, tspan, tstep, q₀::State, p₀::State; kwargs...)
 ```
+where `ics` is a `NamedTuple` with entries `q` and `p`.
+
+### Keyword arguments:
+
+* `invariants = NullInvariants()`
+* `parameters = NullParameters()`
+* `periodicity = NullPeriodicity()`
 
 """
 const PODEProblem = GeometricProblem{PODE}
 
-function PODEProblem(v, f, tspan, tstep, ics::NamedTuple; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function PODEProblem(v, f, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -145,7 +170,7 @@ end
 
 
 @doc raw"""
-`HODE`: Hamiltonian Ordinary Differential Equation
+`HODEProblem`: Hamiltonian Ordinary Differential Equation Problem
 
 Defines a Hamiltonian ordinary differential initial value problem, that is
 a canonical Hamiltonian system of equations,
@@ -164,10 +189,25 @@ f &= - \frac{\partial H}{\partial q} ,
 ```
 initial conditions ``(q_{0}, p_{0})`` and the dynamical variables ``(q,p)``
 taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
-"""
-const HODEProblem  = GeometricProblem{HODE}
 
-function HODEProblem(v, f, poisson, hamiltonian, tspan, tstep, ics::NamedTuple; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+### Constructors
+
+```julia
+HODEProblem(v, f, poisson, hamiltonian, tspan, tstep, ics; kwargs...)
+HODEProblem(v, f, poisson, hamiltonian, tspan, tstep, q₀::State, p₀::State; kwargs...)
+```
+where `ics` is a `NamedTuple` with entries `q` and `p`.
+
+### Keyword arguments:
+
+* `invariants = NullInvariants()`
+* `parameters = NullParameters()`
+* `periodicity = NullPeriodicity()`
+
+"""
+const HODEProblem = GeometricProblem{HODE}
+
+function HODEProblem(v, f, poisson, hamiltonian, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = HODE(v, f, poisson, hamiltonian, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -198,12 +238,12 @@ variables ``(q,p)`` and algebraic variable ``v``
 """
 const IODEProblem = GeometricProblem{IODE}
 
-function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_iode_default_v̄, f̄=f)
+function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity(), v̄ = _iode_default_v̄, f̄ = f)
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function IODEProblem(ϑ, f, g, tspan, tstep, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...)
+function IODEProblem(ϑ, f, g, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
 end
@@ -233,14 +273,14 @@ and initial conditions ``(q_{0}, p_{0})``.
 This is a special case of a differential algebraic equation with dynamical
 variables ``(q,p)`` and algebraic variable ``v``.
 """
-const LODEProblem  = GeometricProblem{LODE}
+const LODEProblem = GeometricProblem{LODE}
 
-function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics::NamedTuple; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_lode_default_v̄, f̄=f)
+function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity(), v̄ = _lode_default_v̄, f̄ = f)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...)
+function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
 end
@@ -310,9 +350,9 @@ SODE(v, q₀::State; kwargs...)
 ```
 
 """
-const SODEProblem  = GeometricProblem{SODE}
+const SODEProblem = GeometricProblem{SODE}
 
-function SODEProblem(v::Tuple, q::Union{Tuple,Nothing}, tspan, tstep, ics::NamedTuple; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function SODEProblem(v::Tuple, q::Union{Tuple,Nothing}, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -345,14 +385,14 @@ Defines a differential algebraic initial value problem
 with vector field ``v``, projection ``u``, algebraic constraint ``\phi=0``,
 and initial conditions ``q_{0}`` and ``\lambda_{0}``.
 """
-const DAEProblem   = GeometricProblem{DAE}
+const DAEProblem = GeometricProblem{DAE}
 
-function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; v̄=v, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; v̄ = v, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
     ics = (q = q₀, λ = λ₀, μ = μ₀)
     DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics; kwargs...)
 end
@@ -382,14 +422,14 @@ with vector fields ``v`` and ``f``, projection ``u`` and ``g``,
 algebraic constraint ``\phi=0``, and initial conditions
 ``(q_{0}, p_{0})`` and ``\lambda_{0}``.
 """
-const PDAEProblem  = GeometricProblem{PDAE}
+const PDAEProblem = GeometricProblem{PDAE}
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = v, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
 end
@@ -421,14 +461,14 @@ with vector fields ``v``, ``u``, ``\bar{u}`` and ``f``, ``g``, ``\bar{g}``,
 primary constraint ``\phi(q,p)=0`` and secondary constraint ``\psi(q,p,\lambda)=0``,
 and initial conditions ``(q_{0}, p_{0})``.
 """
-const HDAEProblem  = GeometricProblem{HDAE}
+const HDAEProblem = GeometricProblem{HDAE}
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, ics::NamedTuple; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, ics::NamedTuple; v̄ = v, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, ics; kwargs...)
 end
@@ -460,14 +500,14 @@ with force field ``f``, the momentum defined by ``p``, projection ``u`` and ``g`
 algebraic constraint ``\phi=0``, and initial conditions
 ``(q_{0}, p_{0})`` and ``\lambda_{0}``.
 """
-const IDAEProblem  = GeometricProblem{IDAE}
+const IDAEProblem = GeometricProblem{IDAE}
 
-function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄=_idae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
 end
@@ -499,18 +539,18 @@ p(t) &= ϑ(t, q(t), v(t)) , \\
 \end{aligned}
 ```
 with vector field ``f``, the momentum defined by ``p``, and initial conditions
-``(q_{0}, p_{0})``.
+``(q_{0}, p_{0}, \lambda_{0})``.
 This is a special case of a differential algebraic equation with dynamical
 variables ``(q,p)`` and algebraic variables ``v``, ``\lambda`` and ``\mu``.
 """
-const LDAEProblem  = GeometricProblem{LDAE}
+const LDAEProblem = GeometricProblem{LDAE}
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::NamedTuple; v̄=_ldae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::NamedTuple; v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics; kwargs...)
 end
@@ -525,10 +565,25 @@ function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, q₀::State,
 end
 
 
+"""
 
+"""
 const SPDAEProblem = GeometricProblem{SPDAE}
 
 
-const SDEProblem   = GeometricProblem{SDE}
-const PSDEProblem  = GeometricProblem{PSDE}
+"""
+
+"""
+const SDEProblem = GeometricProblem{SDE}
+
+
+"""
+
+"""
+const PSDEProblem = GeometricProblem{PSDE}
+
+
+"""
+
+"""
 const SPSDEProblem = GeometricProblem{SPSDE}
