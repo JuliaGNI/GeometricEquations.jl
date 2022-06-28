@@ -78,6 +78,9 @@ tstep(prob::GeometricProblem) = prob.tstep
 GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
 GeometricBase.nsamples(::GeometricProblem) = 1
 
+functions(prob::GeometricProblem) = functions(equation(prob), parameters(prob))
+solutions(prob::GeometricProblem) = solutions(equation(prob), parameters(prob))
+
 initial_conditions(prob::GeometricProblem) = (tbegin(prob), prob.ics...)
 
 function Base.similar(prob::GeometricProblem, tspan, tstep = tstep(prob), ics = prob.ics, parameters = parameters(prob))
