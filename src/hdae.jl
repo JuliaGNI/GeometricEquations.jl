@@ -157,7 +157,7 @@ end
 function check_methods(equ::HDAE, tspan, ics::NamedTuple, params)
     applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
     applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
-    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, ics.λ, zero(ics.λ), params) || return false
+    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, zero(ics.λ), params) || return false
     # TODO add missing methods
     return true
 end

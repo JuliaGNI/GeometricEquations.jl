@@ -143,7 +143,7 @@ function pdae_g(t, q, p, λ, g, params)
     g[1] = λ[1]
 end
 
-function pdae_ϕ(t, q, p, λ, ϕ, params)
+function pdae_ϕ(t, q, p, ϕ, params)
     ϕ[1] = p[1] - q[1]
 end
 

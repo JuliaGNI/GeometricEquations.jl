@@ -209,7 +209,7 @@ end
 function check_methods(equ::LDAE, tspan, ics::NamedTuple, params)
     applicable(equ.ϑ, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
     applicable(equ.f, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
-    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, ics.λ, zero(ics.λ), params) || return false
+    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, zero(ics.λ), params) || return false
     # TODO add missing methods
     return true
 end
