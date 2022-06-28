@@ -7,8 +7,8 @@ version = "0.3.0"
 GeometricBase = "9a0b12b7-583b-4f04-aa1f-d8551b6addc9"
 
 [compat]
-GeometricBase = "^0.2.4"
-julia = "1"
+GeometricBase = "0.3"
+julia = "1.6"
 
 [extras]
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
