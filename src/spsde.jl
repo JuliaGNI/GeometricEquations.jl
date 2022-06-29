@@ -178,6 +178,7 @@ _get_f2(equ::SPSDE) = hasparameters(equ) ? (t,q,p,f) -> equ.f2(t, q, p, f, equ.p
 _get_B( equ::SPSDE) = hasparameters(equ) ? (t,q,p,B) -> equ.B( t, q, p, B, equ.parameters) : equ.B
 _get_G1(equ::SPSDE) = hasparameters(equ) ? (t,q,p,G) -> equ.G1(t, q, p, G, equ.parameters) : equ.G1
 _get_G2(equ::SPSDE) = hasparameters(equ) ? (t,q,p,G) -> equ.G2(t, q, p, G, equ.parameters) : equ.G2
+_get_invariant(::SPSDE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
 
 function functions(equ::SPSDE)

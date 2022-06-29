@@ -168,6 +168,7 @@ _get_ḡ(equ::PDAE, params) = (t,q,p,λ,g)   -> equ.ḡ(t, q, p, λ, g, params)
 _get_ψ(equ::PDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
 _get_v̄(equ::PDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
 _get_f̄(equ::PDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
+_get_invariant(::PDAE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
 function _functions(equ::PDAE)
     if hassecondary(equ)

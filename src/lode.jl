@@ -194,6 +194,7 @@ _get_ω(equ::LODE, params) = (t,q,v,ω) -> equ.ω(t, q, v, ω, params)
 _get_v̄(equ::LODE, params) = (t,q,v)   -> equ.v̄(t, q, v, params)
 _get_f̄(equ::LODE, params) = (t,q,v,f) -> equ.f̄(t, q, v, f, params)
 _get_l(equ::LODE, params) = (t,q,v)   -> equ.lagrangian(t, q, v, params)
+_get_invariant(::ODE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 
 _functions(equ::LODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, ω = equ.ω, v̄ = equ.v̄, f̄ = equ.f̄, l = equ.lagrangian)
 _functions(equ::LODE, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params),

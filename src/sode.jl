@@ -130,6 +130,7 @@ end
 
 _get_v(equ::SODE, params) = ((t,q,v) -> V(t, q, v, params) for V in equ.v)
 _get_q(equ::SODE, params) = ((t,q̄,q,h) -> Q(t, q̄, q, h, params) for Q in equ.q)
+_get_invariant(::SODE, inv, params) = (t,q) -> inv(t, q, params)
 
 _functions(equ::SODE) = (v = equ.v,)
 _solutions(equ::SODE) = (q = equ.q,)

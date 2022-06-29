@@ -172,6 +172,7 @@ _get_f(equ::PSDE) = hasparameters(equ) ? (t,q,p,f) -> equ.f(t, q, p, f, equ.para
 _get_B(equ::PSDE) = hasparameters(equ) ? (t,q,p,B) -> equ.B(t, q, p, B, equ.parameters) : equ.B
 _get_G(equ::PSDE) = hasparameters(equ) ? (t,q,p,G) -> equ.G(t, q, p, G, equ.parameters) : equ.G
 # _get_h(equ::PSDE) = hasparameters(equ) ? (t,q,p) -> equ.h(t, q, p, equ.parameters) : equ.h
+_get_invariant(::PSDE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
 
 function functions(equ::PSDE)

@@ -35,8 +35,11 @@ hassecondary(::DAEsecType{<:Callable}) = true
 
 _functions(equ::GeometricEquation) = error("_functions(::GeometricEquation) not implemented for ", typeof(equ), ".")
 _solutions(equ::GeometricEquation) = error("_solutions(::GeometricEquation) not implemented for ", typeof(equ), ".")
+_invariants(equ::GeometricEquation) = error("_invariants(::GeometricEquation) not implemented for ", typeof(equ), ".")
+
 _functions(equ::GeometricEquation, ::OptionalParameters) = error("_functions(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 _solutions(equ::GeometricEquation, ::OptionalParameters) = error("_solutions(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
+_invariants(equ::GeometricEquation, ::OptionalParameters) = error("_invariants(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 
 function GeometricBase.functions(equ::GeometricEquation)
     if hasvectorfield(equ)
@@ -72,9 +75,17 @@ function GeometricBase.solutions(equ::GeometricEquation, params::OptionalParamet
     end
 end
 
-GeometricBase.invariants(equ::GeometricEquation) = error("invariants(::GeometricEquation) not implemented for ", typeof(equ), ".")
-GeometricBase.parameters(equ::GeometricEquation) = error("parameters(::GeometricEquation) not implemented for ", typeof(equ), ".")
-GeometricBase.periodicity(equ::GeometricEquation) = error("periodicity(::GeometricEquation) not implemented for ", typeof(equ), ".")
+function GeometricBase.invariants(equ::GeometricEquation, params::OptionalParameters)
+    @assert check_parameters(equ, params)
+    if hasinvariants(equ)
+        return NamedTuple{keys(invariants(equ))}( (_get_invariant(equ, inv, params) for inv in invariants(equ)) )
+    else
+        return NamedTuple()
+    end
+end
+
+GeometricBase.parameters(equ::GeometricEquation, args...) = error("parameters(::GeometricEquation) not implemented for ", typeof(equ), ".")
+GeometricBase.periodicity(equ::GeometricEquation, args...) = error("periodicity(::GeometricEquation) not implemented for ", typeof(equ), ".")
 
 hassolution(::GeometricEquation) = false
 hasvectorfield(::GeometricEquation) = false

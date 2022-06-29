@@ -171,6 +171,7 @@ _get_f(equ::IODE, params) = (t,q,v,f) -> equ.f(t, q, v, f, params)
 _get_g(equ::IODE, params) = (t,q,v,g) -> equ.g(t, q, v, g, params)
 _get_v̄(equ::IODE, params) = (t,q,v) -> equ.v̄(t, q, v, params)
 _get_f̄(equ::IODE, params) = (t,q,v,f) -> equ.f̄(t, q, v, f, params)
+_get_invariant(::IODE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 
 _functions(equ::IODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, v̄ = equ.v̄, f̄ = equ.f̄)
 _functions(equ::IODE, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params),

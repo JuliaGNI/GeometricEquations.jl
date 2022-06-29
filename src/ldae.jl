@@ -236,6 +236,7 @@ _get_v̄(equ::LDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
 _get_f̄(equ::LDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
 _get_ω(equ::LDAE, params) = (t,q,v,ω)     -> equ.ω(t, q, v, ω, params)
 _get_l(equ::LDAE, params) = (t,q,v)       -> equ.lagrangian(t, q, v, params)
+_get_invariant(::LDAE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 
 function _functions(equ::LDAE)
     if hassecondary(equ)

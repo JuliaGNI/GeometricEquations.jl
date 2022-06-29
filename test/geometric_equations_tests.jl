@@ -2,7 +2,7 @@
 using GeometricEquations
 using GeometricEquations: arrtype, datatype
 using GeometricEquations: check_initial_conditions, check_parameters
-using GeometricEquations: _functions, _solutions
+using GeometricEquations: _functions, _solutions, _invariants
 using Test
 
 @test AbstractEquationODE  <: GeometricEquation
@@ -25,11 +25,12 @@ testeq = TestEquation()
 
 @test_throws ErrorException _functions(testeq)
 @test_throws ErrorException _solutions(testeq)
+@test_throws ErrorException _invariants(testeq)
 
 @test_throws ErrorException _functions(testeq, NullParameters())
 @test_throws ErrorException _solutions(testeq, NullParameters())
+@test_throws ErrorException _invariants(testeq, NullParameters())
 
-@test_throws ErrorException invariants(testeq)
 @test_throws ErrorException parameters(testeq)
 @test_throws ErrorException periodicity(testeq)
 

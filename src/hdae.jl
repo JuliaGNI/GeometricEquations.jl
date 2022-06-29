@@ -184,6 +184,7 @@ _get_v̄(equ::HDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
 _get_f̄(equ::HDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
 _get_h(equ::HDAE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
 _get_poisson(equ::HDAE, params) = (t,q,p,ω) -> equ.poisson(t, q, p, ω, params)
+_get_invariant(::HDAE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
 function _functions(equ::HDAE)
     if hassecondary(equ)

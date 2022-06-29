@@ -156,6 +156,7 @@ hasparameters(::SDEPT{<:NamedTuple}) = true
 _get_v(equ::SDE) = hasparameters(equ) ? (t,q,v) -> equ.v(t, q, v, equ.parameters) : equ.v
 _get_B(equ::SDE) = hasparameters(equ) ? (t,q,B,col=0) -> equ.B(t, q, B, equ.parameters, col) : equ.B
 # _get_h(equ::SDE) = hasparameters(equ) ? (t,q) -> equ.h(t, q, equ.parameters) : equ.h
+_get_invariant(::SDE, inv, params) = (t,q) -> inv(t, q, params)
 
 function functions(equ::SDE)
     names = (:v,:B)

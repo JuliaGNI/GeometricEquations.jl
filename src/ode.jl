@@ -92,6 +92,7 @@ end
 
 _get_v(equ::ODE, params) = (t,q,v) -> equ.v(t, q, v, params)
 _get_v̄(equ::ODE, params) = _get_v(equ, params)
+_get_invariant(::ODE, inv, params) = (t,q) -> inv(t, q, params)
 
 _functions(equ::ODE) = (v = equ.v,)
 _functions(equ::ODE, params::OptionalParameters) = (v = _get_v(equ, params),)

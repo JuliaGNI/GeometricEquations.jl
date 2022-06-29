@@ -180,6 +180,7 @@ _get_ḡ(equ::IDAE, params) = (t,q,p,λ,g)   -> equ.ḡ(t, q, p, λ, g, params)
 _get_ψ(equ::IDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
 _get_v̄(equ::IDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
 _get_f̄(equ::IDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
+_get_invariant(::IDAE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 
 function _functions(equ::IDAE)
     if hassecondary(equ)

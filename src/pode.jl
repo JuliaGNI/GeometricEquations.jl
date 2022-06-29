@@ -113,6 +113,7 @@ _get_v(equ::PODE, params) = (t,q,p,v) -> equ.v(t, q, p, v, params)
 _get_f(equ::PODE, params) = (t,q,p,f) -> equ.f(t, q, p, f, params)
 _get_v̄(equ::PODE, params) = _get_v(equ, params)
 _get_f̄(equ::PODE, params) = _get_f(equ, params)
+_get_invariant(::PODE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
 _functions(equ::PODE) = (v = equ.v, f = equ.f)
 _functions(equ::PODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params))
