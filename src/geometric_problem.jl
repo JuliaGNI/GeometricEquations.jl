@@ -80,6 +80,7 @@ tend(prob::GeometricProblem) = prob.tspan[end]
 GeometricBase.timestep(prob::GeometricProblem) = tspan(prob)
 GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
 GeometricBase.nsamples(::GeometricProblem) = 1
+GeometricBase.ntime(prob::GeometricProblem) = div(tend(prob) - tbegin(prob), tstep(prob), RoundUp)
 
 GeometricBase.functions(prob::GeometricProblem) = functions(equation(prob), parameters(prob))
 GeometricBase.solutions(prob::GeometricProblem) = solutions(equation(prob), parameters(prob))
