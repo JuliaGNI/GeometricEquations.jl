@@ -32,8 +32,7 @@ include("initial_conditions.jl")
     @test equation(prob) == ode
     @test nsamples(prob) == 1
 
-    @test functions(prob) == functions(ode)
-    @test functions(prob) == NamedTuple{(:v,)}((ode_v,))
+    @test functions(prob) == functions(ode, parameters(prob))
 
     prob1 = GeometricProblem(ode, (t₀,t₁), Δt, ics)
     prob2 = GeometricProblem(ode, (t₀,t₁), Δt, ics; parameters=NullParameters())
