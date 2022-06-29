@@ -74,7 +74,10 @@ equtype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = ST
 GeometricBase.equation(prob::GeometricProblem) = prob.equation
 tspan(prob::GeometricProblem) = prob.tspan
 tstep(prob::GeometricProblem) = prob.tstep
+tbegin(prob::GeometricProblem) = prob.tspan[begin]
+tend(prob::GeometricProblem) = prob.tspan[end]
 
+GeometricBase.timestep(prob::GeometricProblem) = tspan(prob)
 GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
 GeometricBase.nsamples(::GeometricProblem) = 1
 

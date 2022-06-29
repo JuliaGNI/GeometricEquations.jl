@@ -3,7 +3,7 @@ module GeometricEquations
     using GeometricBase
 
     import Base: Callable
-    import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity
+    import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity, timestep
 
     export NullInvariants, NullParameters, NullPeriodicity
 
