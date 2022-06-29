@@ -41,7 +41,7 @@ module GeometricEquations
     export SDEEnsemble,  PSDEEnsemble, SPSDEEnsemble
 
     export nsamples, nconstraints
-    export equation, functions, solutions
+    export equation, equations, functions, solutions
     export invariants, parameters, periodicity
     export initial_conditions
 
@@ -50,6 +50,8 @@ module GeometricEquations
            hashamiltonian, haslagrangian
 
     export tspan, tstep, tbegin, tend
+
+    export datatype, timetype, arrtype, equtype
            
     
     include("utils.jl")
