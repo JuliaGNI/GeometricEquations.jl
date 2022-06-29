@@ -600,5 +600,7 @@ const SPSDEProblem = GeometricProblem{SPSDE}
 
 const AbstractProblemODE = Union{ODEProblem,SODEProblem}
 const AbstractProblemDAE = Union{DAEProblem}
+const AbstractProblemSDE = Union{SDEProblem}
 const AbstractProblemPODE = Union{PODEProblem,HODEProblem,IODEProblem,LODEProblem}
 const AbstractProblemPDAE = Union{PDAEProblem,HDAEProblem,IDAEProblem,LDAEProblem}
+const AbstractProblemPSDE = Union{PSDEProblem,SPSDEProblem}

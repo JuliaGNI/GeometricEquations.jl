@@ -22,7 +22,8 @@ module GeometricEquations
     export AbstractProblem, GeometricProblem
 
     export AbstractProblemODE, AbstractProblemPODE,
-           AbstractProblemDAE, AbstractProblemPDAE
+           AbstractProblemDAE, AbstractProblemPDAE,
+           AbstractProblemSDE, AbstractProblemPSDE
 
     export ODE, IODE, PODE, HODE, LODE, SODE
     export DAE, IDAE, PDAE, HDAE, LDAE, SPDAE
