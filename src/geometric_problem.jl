@@ -77,7 +77,7 @@ tstep(prob::GeometricProblem) = prob.tstep
 tbegin(prob::GeometricProblem) = prob.tspan[begin]
 tend(prob::GeometricProblem) = prob.tspan[end]
 
-GeometricBase.timestep(prob::GeometricProblem) = tspan(prob)
+GeometricBase.timestep(prob::GeometricProblem) = tstep(prob)
 GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
 GeometricBase.nsamples(::GeometricProblem) = 1
 GeometricBase.ntime(prob::GeometricProblem) = div(tend(prob) - tbegin(prob), tstep(prob), RoundUp)
