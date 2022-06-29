@@ -75,8 +75,9 @@ module GeometricEquations
     include("psde.jl")
     include("spsde.jl")
 
-    include("conversion.jl")
-
     include("abstract_problem.jl")
     include("geometric_problem.jl")
+
+    include("conversion.jl")
+    
 end

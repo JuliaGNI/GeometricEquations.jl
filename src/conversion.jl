@@ -17,75 +17,59 @@ end
 end
 
 
-convert_periodicity(::Union{Type{ODE}, Type{SODE}}, equ::Union{PODE, HODE}) = vcat(periodicity(equ), zero(periodicity(equ)))
+extend_periodicity(equ::AbstractEquationPODE) = periodicity(equ) == NullPeriodicity() ? periodicity(equ) : vcat(periodicity(equ), zero(periodicity(equ)))
+
+convert_periodicity(::Union{Type{ODE}, Type{SODE}}, equ::Union{PODE, HODE}) = extend_periodicity(equ)
+convert_periodicity(::Union{Type{ODE}, Type{SODE}}, prob::Union{PODEProblem, HODEProblem}) = extend_periodicity(equation(prob))
 
 
-function Base.convert(::Type{ODE}, equ::Union{PODE{DT,TT,AT}, HODE{DT,TT,AT}}) where {DT, TT, AT <: AbstractVector}
+function Base.convert(::Type{ODEProblem}, prob::Union{PODEProblem{DT,TT,AT}, HODEProblem{DT,TT,AT}}) where {DT, TT, AT <: AbstractVector}
     # concatenate initial conditions
-    x₀ = [vcat(x...) for x in zip(equ.q₀, equ.p₀)]
+    x₀ = vcat(prob.ics.q, prob.ics.p)
 
     # extend periodicity
-    ode_periodicity = convert_periodicity(ODE, equ)
+    ode_periodicity = convert_periodicity(ODE, prob)
 
-    if hasparameters(equ)
-        v = (t, x, ẋ, params) -> begin
-            @_create_pode_argument_views
-            equ.v(t, q, p, q̇, params)
-            equ.f(t, q, p, ṗ, params)
-        end
-    else
-        v = (t, x, ẋ) -> begin
-            @_create_pode_argument_views
-            equ.v(t, q, p, q̇)
-            equ.f(t, q, p, ṗ)
-        end
+    v = (t, x, ẋ, params) -> begin
+        @_create_pode_argument_views
+        equation(prob).v(t, q, p, q̇, params)
+        equation(prob).f(t, q, p, ṗ, params)
     end
 
-    ODE(v, equ.t₀, x₀; parameters=equ.parameters, periodicity=ode_periodicity)
+    ODEProblem(v, prob.tspan, prob.tstep, x₀; parameters=prob.parameters, periodicity=ode_periodicity)
     # TODO: Convert invariants and pass to ODE
     # TODO: For HODE append (h=equ.h,) to invariants
 end
 
-function Base.convert(::Type{SODE}, equ::Union{PODE{DT,TT,AT}, HODE{DT,TT,AT}}) where {DT, TT, AT <: AbstractVector}
+function Base.convert(::Type{SODEProblem}, prob::Union{PODEProblem{DT,TT,AT}, HODEProblem{DT,TT,AT}}) where {DT, TT, AT <: AbstractVector}
     # concatenate initial conditions
-    x₀ = [vcat(x...) for x in zip(equ.q₀, equ.p₀)]
+    x₀ = vcat(prob.ics.q, prob.ics.p)
 
     # extend periodicity
-    ode_periodicity = convert_periodicity(SODE, equ)
+    ode_periodicity = convert_periodicity(SODE, prob)
 
-    if hasparameters(equ)
-        v₁ = (t, x, ẋ, params) -> begin
-            @_create_pode_argument_views
-            equ.v(t, q, p, q̇, params)
-        end
-        v₂ = (t, x, ẋ, params) -> begin
-            @_create_pode_argument_views
-            equ.f(t, q, p, ṗ, params)
-        end
-    else
-        v₁ = (t, x, ẋ) -> begin
-            @_create_pode_argument_views
-            equ.v(t, q, p, q̇)
-        end
-        v₂ = (t, x, ẋ) -> begin
-            @_create_pode_argument_views
-            equ.f(t, q, p, ṗ)
-        end
+    v₁ = (t, x, ẋ, params) -> begin
+        @_create_pode_argument_views
+        equation(prob).v(t, q, p, q̇, params)
+    end
+    v₂ = (t, x, ẋ, params) -> begin
+        @_create_pode_argument_views
+        equation(prob).f(t, q, p, ṗ, params)
     end
 
-    SODE((v₁, v₂), equ.t₀, x₀; parameters=equ.parameters, periodicity=ode_periodicity)
+    SODEProblem((v₁, v₂), prob.tspan, prob.tstep, x₀; parameters=parameters(prob), periodicity=periodicity(prob))
     # TODO: Convert invariants and pass to SODE
 end
 
-function Base.convert(::Type{PODE}, equ::HODE)
-    PODE(equ.v, equ.f, equ.t₀, equ.q₀, equ.p₀;
-         invariants=equ.invariants, parameters=equ.parameters, periodicity=equ.periodicity)
+function Base.convert(::Type{PODEProblem}, prob::HODEProblem)
+    PODEProblem(equation(prob).v, equation(prob).f, prob.tspan, prob.tstep, prob.ics.q, prob.ics.p;
+                invariants=invariants(equation(prob)), parameters=parameters(prob), periodicity=periodicity(prob))
     # TODO: Append (h=equ.h,) to invariants
 end
 
-function Base.convert(::Type{IODE}, equ::LODE)
-    IODE(equ.ϑ, equ.f, equ.g, equ.t₀, equ.q₀, equ.p₀, equ.λ₀;
-         v̄=equ.v̄, f̄=equ.f̄, invariants=equ.invariants, parameters=equ.parameters, periodicity=equ.periodicity)
+function Base.convert(::Type{IODEProblem}, prob::LODEProblem)
+    IODEProblem(equation(prob).ϑ, equation(prob).f, equation(prob).g, prob.tspan, prob.tspep, prob.ics.q, prob.ics.p, prob.ics.λ;
+                v̄=equation(prob).v̄, f̄=equation(prob).f̄, invariants=invariants(equation(prob)), parameters=parameters(prob), periodicity=periodicity(prob))
 end
 
 
