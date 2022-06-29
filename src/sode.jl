@@ -112,7 +112,7 @@ function check_methods(equ::SODE, tspan, ics, params)
     end
     if hassolution(equ)
         for q in equ.q
-            applicable(q, tspan[begin], ics.q, zero(ics.q), params) || return false
+            applicable(q, tspan[begin], ics.q, zero(ics.q), tspan[end], params) || return false
         end
     end
     return true

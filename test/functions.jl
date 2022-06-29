@@ -15,12 +15,12 @@ function sode_v2(t, x, v, params)
     v[2] = 2x[1]
 end
 
-function sode_q1(t, x̄, x, params)
+function sode_q1(t, x̄, x, h, params)
     x[1] = x̄[1]
     x[2] = x̄[2]
 end
 
-function sode_q2(t, x̄, x, params)
+function sode_q2(t, x̄, x, h, params)
     x[1] = x̄[1]
     x[2] = x̄[2]
 end
