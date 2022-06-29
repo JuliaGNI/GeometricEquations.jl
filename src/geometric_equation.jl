@@ -38,7 +38,7 @@ _solutions(equ::GeometricEquation) = error("_solutions(::GeometricEquation) not 
 _functions(equ::GeometricEquation, ::OptionalParameters) = error("_functions(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 _solutions(equ::GeometricEquation, ::OptionalParameters) = error("_solutions(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 
-function functions(equ::GeometricEquation)
+function GeometricBase.functions(equ::GeometricEquation)
     if hasvectorfield(equ)
         return _functions(equ)
     else
@@ -46,7 +46,7 @@ function functions(equ::GeometricEquation)
     end
 end
 
-function functions(equ::GeometricEquation, params::OptionalParameters)
+function GeometricBase.functions(equ::GeometricEquation, params::OptionalParameters)
     @assert check_parameters(equ, params)
     if hasvectorfield(equ)
         return _functions(equ, params)
@@ -55,7 +55,7 @@ function functions(equ::GeometricEquation, params::OptionalParameters)
     end
 end
 
-function solutions(equ::GeometricEquation)
+function GeometricBase.solutions(equ::GeometricEquation)
     if hassolution(equ)
         return _solutions(equ)
     else
@@ -63,7 +63,7 @@ function solutions(equ::GeometricEquation)
     end
 end
 
-function solutions(equ::GeometricEquation, params::OptionalParameters)
+function GeometricBase.solutions(equ::GeometricEquation, params::OptionalParameters)
     @assert check_parameters(equ, params)
     if hassolution(equ)
         return _solutions(equ, params)

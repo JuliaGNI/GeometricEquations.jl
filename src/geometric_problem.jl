@@ -71,15 +71,16 @@ timetype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = TT
 arrtype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = AT
 equtype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = ST
 
-equation(prob::GeometricProblem) = prob.equation
+GeometricBase.equation(prob::GeometricProblem) = prob.equation
 tspan(prob::GeometricProblem) = prob.tspan
 tstep(prob::GeometricProblem) = prob.tstep
 
 GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
 GeometricBase.nsamples(::GeometricProblem) = 1
 
-functions(prob::GeometricProblem) = functions(equation(prob), parameters(prob))
-solutions(prob::GeometricProblem) = solutions(equation(prob), parameters(prob))
+GeometricBase.functions(prob::GeometricProblem) = functions(equation(prob), parameters(prob))
+GeometricBase.solutions(prob::GeometricProblem) = solutions(equation(prob), parameters(prob))
+GeometricBase.invariants(prob::GeometricProblem) = invariants(equation(prob), parameters(prob))
 
 initial_conditions(prob::GeometricProblem) = (tbegin(prob), prob.ics...)
 
