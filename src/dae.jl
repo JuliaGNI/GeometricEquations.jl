@@ -175,6 +175,7 @@ _get_ϕ(equ::DAE, params) = (t,q,ϕ)   -> equ.ϕ(t, q, ϕ, params)
 _get_ū(equ::DAE, params) = (t,q,λ,u) -> equ.ū(t, q, λ, u, params)
 _get_ψ(equ::DAE, params) = (t,q,v,ψ) -> equ.ψ(t, q, v, ϕ, params)
 _get_v̄(equ::DAE, params) = (t,q,v)   -> equ.v̄(t, q, v, params)
+_get_invariant(::DAE, inv, params) = (t,q) -> inv(t, q, params)
 
 function _functions(equ::DAE)
     if hassecondary(equ)
