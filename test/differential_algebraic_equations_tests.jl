@@ -301,9 +301,9 @@ end
 
 @testset "$(rpad("Hamiltonian Differential Algebraic Equations (HDAE)",80))" begin
 
-    hdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_v, pdae_f, hdae_ω, pdae_h)
-    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, hdae_ω, pdae_h)
-    hdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, hdae_ω, pdae_h)
+    hdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_v, pdae_f, pdae_h)
+    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_h)
+    hdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_h)
 
     hdae = HDAE(hdae_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
 
@@ -323,7 +323,6 @@ end
     @test funcs.v̄ == pdae_v == hdae.v̄
     @test funcs.f̄ == pdae_f == hdae.f̄
     @test funcs.h == pdae_h == hdae.hamiltonian
-    @test funcs.poisson == hdae_ω == hdae.poisson
 
     for eqs in (hdae_eqs1, hdae_eqs2)
         hdae1 = HDAE(eqs...)
@@ -343,8 +342,8 @@ end
     end
 
 
-    hdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, pdae_v, pdae_f, hdae_ω, pdae_h)
-    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, hdae_ω, pdae_h)
+    hdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, pdae_v, pdae_f, pdae_h)
+    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, pdae_h)
     hdae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=π*ones(1))
 
     hdae = HDAE(hdae_eqs..., hdae_args.invariants, parameter_types(hdae_args.parameters), hdae_args.periodicity)
@@ -368,7 +367,6 @@ end
     @test funcs.v̄ == pdae_v == hdae.v̄
     @test funcs.f̄ == pdae_f == hdae.f̄
     @test funcs.h == pdae_h == hdae.hamiltonian
-    @test funcs.poisson == hdae_ω == hdae.poisson
 
     funcs = functions(hdae, hdae_args.parameters)
     @test funcs.v != pdae_v
@@ -382,7 +380,6 @@ end
     @test funcs.v̄ != pdae_v
     @test funcs.f̄ != pdae_f
     @test funcs.h != pdae_h
-    @test funcs.poisson != hdae_ω
 
     hdae1 = HDAE(hdae_eqs1...; v̄=pdae_v, f̄=pdae_f, invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
     hdae2 = HDAE(hdae_eqs1...; invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)

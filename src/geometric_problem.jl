@@ -211,14 +211,14 @@ where `ics` is a `NamedTuple` with entries `q` and `p`.
 """
 const HODEProblem = GeometricProblem{HODE}
 
-function HODEProblem(v, f, poisson, hamiltonian, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
-    equ = HODE(v, f, poisson, hamiltonian, invariants, parameter_types(parameters), periodicity)
+function HODEProblem(v, f, hamiltonian, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function HODEProblem(v, f, poisson, hamiltonian, tspan, tstep, q₀::State, p₀::State; kwargs...)
+function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::State, p₀::State; kwargs...)
     ics = (q = q₀, p = p₀)
-    HODEProblem(v, f, poisson, hamiltonian, tspan, tstep, ics; kwargs...)
+    HODEProblem(v, f, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
 
@@ -467,23 +467,23 @@ and initial conditions ``(q_{0}, p_{0})``.
 """
 const HDAEProblem = GeometricProblem{HDAE}
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, ics::NamedTuple; v̄ = v, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
-    equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameter_types(parameters), periodicity)
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics::NamedTuple; v̄ = v, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
-    HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian, tspan, tstep, ics; kwargs...)
+    HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, poisson, hamiltonian, tspan, tstep, ics::NamedTuple; kwargs...)
-    HDAEProblem(v, f, u, g, ϕ, nothing, nothing, nothing, poisson, hamiltonian, tspan, tstep, ics; kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics::NamedTuple; kwargs...)
+    HDAEProblem(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, poisson, hamiltonian, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
-    HDAEProblem(v, f, u, g, ϕ, poisson, hamiltonian, tspan, tstep, ics; kwargs...)
+    HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
 

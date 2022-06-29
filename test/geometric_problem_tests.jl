@@ -319,7 +319,7 @@ end
 
 @testset "$(rpad("HDAE Problem",80))" begin
 
-    eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, hdae_ω, pdae_h)
+    eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_h)
     ics  = (q=q₀, p=p₀, λ=λ₀)
     hdae = HDAE(eqs...)
     prob = GeometricProblem(hdae, (t₀,t₁), Δt, ics)
@@ -347,7 +347,7 @@ end
     # @test nconstraints(dae) == 1
 
 
-    eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, hdae_ω, pdae_h)
+    eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, pdae_h)
     ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     hdae = HDAE(eqs...)
     prob = GeometricProblem(hdae, (t₀,t₁), Δt, ics)

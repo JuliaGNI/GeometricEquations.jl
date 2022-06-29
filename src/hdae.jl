@@ -85,7 +85,6 @@ struct HDAE{vType <: Callable, fType <: Callable,
             uType <: Callable, gType <: Callable, ϕType <: Callable,
             ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
             v̄Type <: Callable, f̄Type <: Callable,
-            poiType <: Callable,
             hamType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
@@ -102,13 +101,12 @@ struct HDAE{vType <: Callable, fType <: Callable,
     v̄::v̄Type
     f̄::f̄Type
 
-    poisson::poiType
     hamiltonian::hamType
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameters, periodicity)
+    function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
         @assert !isempty(methods(v))
         @assert !isempty(methods(f))
         @assert !isempty(methods(u))
@@ -119,20 +117,19 @@ struct HDAE{vType <: Callable, fType <: Callable,
         @assert !isempty(methods(ψ)) || ψ === nothing
         @assert !isempty(methods(v̄))
         @assert !isempty(methods(f̄))
-        @assert !isempty(methods(poisson))
         @assert !isempty(methods(hamiltonian))
 
         new{typeof(v), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
-            typeof(poisson), typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameters, periodicity)
+            typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
     end
 end
 
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, poisson, hamiltonian; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, poisson, hamiltonian, invariants, parameters, periodicity)
-HDAE(v, f, u, g, ϕ, poisson, hamiltonian; kwargs...) = HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, poisson, hamiltonian; kwargs...)
+HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+HDAE(v, f, u, g, ϕ, hamiltonian; kwargs...) = HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian; kwargs...)
 
 GeometricBase.invariants(equation::HDAE) = equation.invariants
 GeometricBase.parameters(equation::HDAE) = equation.parameters
@@ -183,21 +180,20 @@ _get_ψ(equ::HDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
 _get_v̄(equ::HDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
 _get_f̄(equ::HDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
 _get_h(equ::HDAE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
-_get_poisson(equ::HDAE, params) = (t,q,p,ω) -> equ.poisson(t, q, p, ω, params)
 _get_invariant(::HDAE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
 function _functions(equ::HDAE)
     if hassecondary(equ)
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, h = equ.hamiltonian)
     else
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, poisson = equ.poisson, h = equ.hamiltonian)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, h = equ.hamiltonian)
     end
 end
 
 function _functions(equ::HDAE, params::OptionalParameters)
     if hassecondary(equ)
-        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
+        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), h = _get_h(equ, params))
     else
-        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
+        (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), h = _get_h(equ, params))
     end
 end

@@ -63,7 +63,6 @@ HODE(v, f, h, q₀::State, p₀::State; kwargs...)
 
 """
 struct HODE{vType <: Callable, fType <: Callable, 
-            poiType <: Callable,
             hamType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
@@ -72,20 +71,19 @@ struct HODE{vType <: Callable, fType <: Callable,
     v::vType
     f::fType
 
-    poisson::poiType
     hamiltonian::hamType
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function HODE(v, f, poisson, hamiltonian, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f), typeof(poisson), typeof(hamiltonian),
+    function HODE(v, f, hamiltonian, invariants, parameters, periodicity)
+        new{typeof(v), typeof(f), typeof(hamiltonian),
             typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, poisson, hamiltonian, invariants, parameters, periodicity)
+                v, f, hamiltonian, invariants, parameters, periodicity)
     end
 end
 
-HODE(v, f, poisson, hamiltonian; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HODE(v, f, poisson, hamiltonian, invariants, parameters, periodicity)
+HODE(v, f, hamiltonian; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HODE(v, f, hamiltonian, invariants, parameters, periodicity)
 
 GeometricBase.invariants(equation::HODE) = equation.invariants
 GeometricBase.parameters(equation::HODE) = equation.parameters
@@ -125,8 +123,7 @@ _get_f(equ::HODE, params) = (t,q,p,f) -> equ.f(t, q, p, f, params)
 _get_v̄(equ::HODE, params) = _get_v(equ, params)
 _get_f̄(equ::HODE, params) = _get_f(equ, params)
 _get_h(equ::HODE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
-_get_poisson(equ::HODE, params) = (t,q,p,ω) -> equ.poisson(t, q, p, ω, params)
 _get_invariant(::HODE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
-_functions(equ::HODE) = (v = equ.v, f = equ.f, poisson = equ.poisson, h = equ.hamiltonian)
-_functions(equ::HODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), poisson = _get_poisson(equ, params), h = _get_h(equ, params))
+_functions(equ::HODE) = (v = equ.v, f = equ.f, h = equ.hamiltonian)
+_functions(equ::HODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), h = _get_h(equ, params))

@@ -55,7 +55,7 @@ function hode_ω(t, q, p, ω, params)
     ω[2,2] = p[1]
 end
 
-hode_eqs = (pode_v, pode_f, hode_ω, hode_h)
+hode_eqs = (pode_v, pode_f, hode_h)
 
 
 function iode_ϑ(t, q, v, p, params)

@@ -321,9 +321,9 @@ end
 
 @testset "$(rpad("Hamiltonian Ordinary Differential Equations (HODE)",80))" begin
 
-    hode_eqs = (pode_v, pode_f, hode_ω, hode_h)
+    hode_eqs = (pode_v, pode_f, hode_h)
 
-    hode  = HODE(pode_v, pode_f, hode_ω, hode_h, NullInvariants(), NullParameters(), NullPeriodicity())
+    hode  = HODE(pode_v, pode_f, hode_h, NullInvariants(), NullParameters(), NullPeriodicity())
 
     hode1 = HODE(hode_eqs...)
     hode2 = HODE(hode_eqs...; invariants=NullInvariants())
@@ -340,7 +340,7 @@ end
     @test hash(hode) == hash(hode3)
     @test hash(hode) == hash(hode4)
 
-    @test functions(hode) == NamedTuple{(:v,:f,:poisson,:h)}((pode_v, pode_f, hode_ω, hode_h))
+    @test functions(hode) == NamedTuple{(:v,:f,:h)}((pode_v, pode_f, hode_h))
     @test solutions(hode) == NamedTuple()
 
     @test parameters(hode) == NullParameters()
@@ -364,14 +364,14 @@ end
     @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀), NullParameters())
     @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀), NullParameters())
     @test_nowarn funcs.h(t₀, q₀, p₀, NullParameters())
-    @test_nowarn funcs.poisson(t₀, q₀, p₀, zeros(2,2), NullParameters())
+    # @test_nowarn funcs.poisson(t₀, q₀, p₀, zeros(2,2), NullParameters())
 
     funcs = functions(hode, NullParameters())
 
     @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀))
     @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀))
     @test_nowarn funcs.h(t₀, q₀, p₀)
-    @test_nowarn funcs.poisson(t₀, q₀, p₀, zeros(2,2))
+    # @test_nowarn funcs.poisson(t₀, q₀, p₀, zeros(2,2))
 
     # funcs = functions(hode)
     # @test funcs.v == pode_v == hode.v
