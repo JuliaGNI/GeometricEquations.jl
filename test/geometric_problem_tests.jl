@@ -27,7 +27,7 @@ include("initial_conditions.jl")
     @test tend(prob) == t₁
     @test tstep(prob) == Δt
 
-    @test initial_conditions(prob) == (t₀, x₀)
+    @test initial_conditions(prob) == (t = t₀, q = x₀)
     @test parameters(prob) == NullParameters()
     @test equation(prob) == ode
     @test nsamples(prob) == 1

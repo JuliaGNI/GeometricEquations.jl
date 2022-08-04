@@ -86,7 +86,7 @@ GeometricBase.functions(prob::GeometricProblem) = functions(equation(prob), para
 GeometricBase.solutions(prob::GeometricProblem) = solutions(equation(prob), parameters(prob))
 GeometricBase.invariants(prob::GeometricProblem) = invariants(equation(prob), parameters(prob))
 
-initial_conditions(prob::GeometricProblem) = (tbegin(prob), prob.ics...)
+initial_conditions(prob::GeometricProblem) = merge( (t = tbegin(prob),), prob.ics )
 
 function Base.similar(prob::GeometricProblem, tspan, tstep = tstep(prob), ics = prob.ics, parameters = parameters(prob))
     GeometricProblem(equation(prob), tspan, tstep, ics, parameters)
