@@ -133,6 +133,8 @@ function ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
     ODEProblem(v, tspan, tstep, ics; kwargs...)
 end
 
+GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
+
 
 @doc raw"""
 `PODEProblem`: Partitioned Ordinary Differential Equation Problem
@@ -175,6 +177,8 @@ function PODEProblem(v, f, tspan, tstep, q₀::State, p₀::State; kwargs...)
     ics = (q = q₀, p = p₀)
     PODEProblem(v, f, tspan, tstep, ics; kwargs...)
 end
+
+GeometricBase.periodicity(prob::PODEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity())
 
 
 @doc raw"""
@@ -225,6 +229,8 @@ function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::State, p₀::State; 
     HODEProblem(v, f, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
+GeometricBase.periodicity(prob::HODEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity())
+
 
 @doc raw"""
 `IODEProblem`: Implicit Ordinary Differential Equation Problem
@@ -255,6 +261,8 @@ function IODEProblem(ϑ, f, g, tspan, tstep, q₀::State, p₀::State, λ₀::St
     ics = (q = q₀, p = p₀, λ = λ₀)
     IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
 end
+
+GeometricBase.periodicity(prob::IODEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 
 
 @doc raw"""
@@ -292,6 +300,8 @@ function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State, λ
     ics = (q = q₀, p = p₀, λ = λ₀)
     LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
 end
+
+GeometricBase.periodicity(prob::LODEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 
 
 @doc raw"""
@@ -379,6 +389,8 @@ function SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
     SODEProblem(v, tspan, tstep, ics; kwargs...)
 end
 
+GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)), )
+
 
 @doc raw"""
 `DAEProblem`: Differential Algebraic Equation Problem
@@ -413,6 +425,8 @@ function DAEProblem(v, u, ϕ, tspan, tstep, q₀::State, λ₀::State; kwargs...
     ics = (q = q₀, λ = λ₀)
     DAEProblem(v, u, ϕ, tspan, tstep, ics; kwargs...)
 end
+
+GeometricBase.periodicity(prob::DAEProblem) = (q = periodicity(equation(prob)), λ = NullPeriodicity(), μ = NullPeriodicity())
 
 
 @doc raw"""
@@ -450,6 +464,8 @@ function PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ�
     ics = (q = q₀, p = p₀, λ = λ₀)
     PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics; kwargs...)
 end
+
+GeometricBase.periodicity(prob::PDAEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 
 
 @doc raw"""
@@ -490,6 +506,7 @@ function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, q₀::State, p�
     HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
+GeometricBase.periodicity(prob::HDAEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(), μ = NullPeriodicity())
 
 
 @doc raw"""
@@ -528,6 +545,8 @@ function IDAEProblem(ϑ, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ
     ics = (q = q₀, p = p₀, λ = λ₀)
     IDAEProblem(ϑ, f, u, g, ϕ, tspan, tstep, ics; kwargs...)
 end
+
+GeometricBase.periodicity(prob::IDAEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(), μ = NullPeriodicity())
 
 
 @doc raw"""
@@ -572,11 +591,15 @@ function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, q₀::State,
     LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics; kwargs...)
 end
 
+GeometricBase.periodicity(prob::LDAEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(), μ = NullPeriodicity())
+
 
 """
 
 """
 const SPDAEProblem = GeometricProblem{SPDAE}
+
+GeometricBase.periodicity(prob::SPDAEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 
 
 """

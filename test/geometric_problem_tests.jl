@@ -67,6 +67,8 @@ end
     @test typeof(prob) <: ODEProblem
     @test equtype(prob) == ODE
 
+    @test periodicity(prob).q == periodicity(equation(prob))
+
     prob1 = ODEProblem(ode_v, (t₀,t₁), Δt, ics)
     prob2 = ODEProblem(ode_v, (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
     prob3 = ODEProblem(ode_v, (t₀,t₁), Δt, ics...)
@@ -89,6 +91,8 @@ end
     @test typeof(prob) <: GeometricProblem
     @test typeof(prob) <: SODEProblem
     @test equtype(prob) == SODE
+
+    @test periodicity(prob).q == periodicity(equation(prob))
 
     prob1 = SODEProblem(sode_v, (t₀,t₁), Δt, ics)
     prob2 = SODEProblem(sode_v, (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
@@ -131,6 +135,9 @@ end
     @test typeof(prob) <: PODEProblem
     @test equtype(prob) == PODE
 
+    @test periodicity(prob).q == periodicity(equation(prob))
+    @test periodicity(prob).p == NullPeriodicity()
+
     prob1 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, ics)
     prob2 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
     prob3 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, ics...)
@@ -153,6 +160,10 @@ end
     @test typeof(prob) <: GeometricProblem
     @test typeof(prob) <: IODEProblem
     @test equtype(prob) == IODE
+
+    @test periodicity(prob).q == periodicity(equation(prob))
+    @test periodicity(prob).p == NullPeriodicity()
+    @test periodicity(prob).λ == NullPeriodicity()
 
     prob1 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, ics)
     prob2 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
@@ -177,6 +188,9 @@ end
     @test typeof(prob) <: HODEProblem
     @test equtype(prob) == HODE
 
+    @test periodicity(prob).q == periodicity(equation(prob))
+    @test periodicity(prob).p == NullPeriodicity()
+
     prob1 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, ics)
     prob2 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
     prob3 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, ics...)
@@ -199,6 +213,10 @@ end
     @test typeof(prob) <: GeometricProblem
     @test typeof(prob) <: LODEProblem
     @test equtype(prob) == LODE
+
+    @test periodicity(prob).q == periodicity(equation(prob))
+    @test periodicity(prob).p == NullPeriodicity()
+    @test periodicity(prob).λ == NullPeriodicity()
 
     prob1 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, ics)
     prob2 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
