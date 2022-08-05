@@ -82,5 +82,7 @@ module GeometricEquations
     include("geometric_problem.jl")
 
     include("conversion.jl")
+
+    include("tests.jl")
     
 end

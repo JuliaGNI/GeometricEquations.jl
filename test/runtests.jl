@@ -8,3 +8,4 @@ using SafeTestsets
 @safetestset "Stochastic Differential Equations                                               " begin include("stochastic_differential_equations_tests.jl") end
 @safetestset "Abstract Problem                                                                " begin include("geometric_problem_tests.jl") end
 @safetestset "Geometric Problem                                                               " begin include("geometric_problem_tests.jl") end
+@safetestset "Test Problems                                                                   " begin include("tests_tests.jl") end
