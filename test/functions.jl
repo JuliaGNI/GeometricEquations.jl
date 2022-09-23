@@ -1,4 +1,6 @@
 
+using Parameters: @unpack
+
 using GeometricEquations: _idae_default_v̄, _ldae_default_v̄
 
 function ode_v(t, x, ẋ, params)
@@ -166,56 +168,66 @@ ldae_ω = lode_ω
 ldae_v = _ldae_default_v̄
 
 
-function sde_v(λ, t, q, v)
+function sde_v(t, q, v, params)
+    @unpack λ = params
     v[1] = λ*q[1]
     v[2] = λ*q[2]
 end
 
-function sde_B(μ, t, q, u)
-    u[1] = μ*q[1]
-    u[2] = μ*q[2]
+function sde_B(t, q, B::AbstractVector, params)
+    @unpack μ = params
+    B[1] = μ*q[1]
+    B[2] = μ*q[2]
+end
+
+function sde_B(t, q, B::AbstractMatrix, params)
+    @unpack μ = params
+    B[1,:] = μ*q[1]
+    B[2,:] = μ*q[2]
 end
 
 
-function psde_v(t, q, p, v)
+function psde_v(t, q, p, v, params)
     v[1] = p[1]
 end
 
-function psde_f(t, q, p, f)
+function psde_f(t, q, p, f, params)
     f[1] = - q[1]
 end
 
-function psde_B(t, q, p, B)
+function psde_B(t, q, p, B, params)
+    @unpack noise_intensity = params
     B[1,1] = noise_intensity * p[1]
 end
 
-function psde_G(t, q, p, G)
+function psde_G(t, q, p, G, params)
+    @unpack noise_intensity = params
     G[1,1] = - noise_intensity * q[1]
 end
 
 
-function spsde_v(t, q, p, v)
+function spsde_v(t, q, p, v, params)
     v[1] = p[1]
 end
 
-function spsde_f1(t, q, p, f)
+function spsde_f1(t, q, p, f, params)
     f[1] = - q[1]
 end
 
-function spsde_f2(t, q, p, f)
+function spsde_f2(t, q, p, f, params)
     f[1] = 0
 end
 
-function spsde_B(t, q, p, B)
+function spsde_B(t, q, p, B, params)
+    @unpack noise_intensity = params
     B[1,1] = noise_intensity * p[1]
 end
 
-function spsde_G1(t, q, p, G)
+function spsde_G1(t, q, p, G, params)
+    @unpack noise_intensity = params
     G[1,1] = - noise_intensity * q[1]
 end
 
-function spsde_G2(t, q, p, G)
+function spsde_G2(t, q, p, G, params)
     G[1,1] = 0
 end
-
-    
