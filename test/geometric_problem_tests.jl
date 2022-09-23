@@ -1,5 +1,5 @@
+using GeometricBase
 using GeometricEquations
-using GeometricEquations: datatype, timetype, arrtype, equtype
 using Test
 
 include("functions.jl")
