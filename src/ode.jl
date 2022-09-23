@@ -10,7 +10,7 @@ with vector field ``v``, initial condition ``q_{0}`` and the solution
 
 ### Parameters
 
-* `vType <: Function`: type of `v`
+* `vType <: Callable`: type of `v`
 * `invType <: OptionalNamedTuple`: invariants type
 * `parType <: OptionalNamedTuple`: parameters type
 * `perType <: OptionalArray{AT}`: periodicity type
