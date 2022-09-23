@@ -3,8 +3,10 @@ module GeometricEquations
     using GeometricBase
 
     import Base: Callable
-    import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity, timestep
-
+    import GeometricBase: datatype, timetype, arrtype, equtype
+    import GeometricBase: tspan, tstep, tbegin, tend, timestep
+    import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity
+           
     export NullInvariants, NullParameters, NullPeriodicity
 
     export OptionalAbstractArray, OptionalArray,
@@ -50,10 +52,6 @@ module GeometricEquations
            hasinvariants, hasparameters, hasperiodicity,
            hashamiltonian, haslagrangian
 
-    export tspan, tstep, tbegin, tend
-
-    export datatype, timetype, arrtype, equtype
-           
     
     include("utils.jl")
 

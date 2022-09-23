@@ -2,21 +2,19 @@
 abstract type AbstractProblem{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}} end
 
 "Returns the parent equation object of the problem."
-equation(prob::AbstractProblem) = error("equation() not implemented for ", typeof(prob), ".")
+GeometricBase.equation(prob::AbstractProblem) = error("equation() not implemented for ", typeof(prob), ".")
 
 "Returns a NamedTuple containing all functions (e.g. vector fields) provided by the equation."
-functions(prob::AbstractProblem) = functions(equation(prob))
+GeometricBase.functions(prob::AbstractProblem) = functions(equation(prob))
 
 "Returns a NamedTuple containing all solutions provided by the equation."
-solutions(prob::AbstractProblem) = solutions(equation(prob))
+GeometricBase.solutions(prob::AbstractProblem) = solutions(equation(prob))
 
 "Returns a NamedTuple containing all invariants provided by the equation."
-invariants(prob::AbstractProblem) = invariants(equation(prob))
+GeometricBase.invariants(prob::AbstractProblem) = invariants(equation(prob))
 
-tspan(prob::AbstractProblem) = error("tspan() not implemented for ", typeof(prob), ".")
-tstep(prob::AbstractProblem) = error("tstep() not implemented for ", typeof(prob), ".")
-tbegin(prob::AbstractProblem) = tspan(prob)[begin]
-tend(prob::AbstractProblem) = tspan(prob)[end]
+GeometricBase.tspan(prob::AbstractProblem) = error("tspan() not implemented for ", typeof(prob), ".")
+GeometricBase.tstep(prob::AbstractProblem) = error("tstep() not implemented for ", typeof(prob), ".")
 
 GeometricBase.parameters(prob::AbstractProblem) = error("parameters() not implemented for ", typeof(prob), ".")
 GeometricBase.periodicity(prob::AbstractProblem) = periodicity(equation(prob))

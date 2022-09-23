@@ -118,12 +118,12 @@ function check_methods(equ::SODE, tspan, ics, params)
     return true
 end
 
-function datatype(equ::SODE, ics::NamedTuple)
+function GeometricBase.datatype(equ::SODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     return eltype(ics.q)
 end
 
-function arrtype(equ::SODE, ics::NamedTuple)
+function GeometricBase.arrtype(equ::SODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     typeof(ics.q)
 end

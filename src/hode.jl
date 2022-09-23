@@ -108,12 +108,12 @@ function check_methods(equ::HODE, tspan, ics, params)
     return true
 end
 
-function datatype(equ::HODE, ics::NamedTuple)
+function GeometricBase.datatype(equ::HODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     return eltype(ics.q)
 end
 
-function arrtype(equ::HODE, ics::NamedTuple)
+function GeometricBase.arrtype(equ::HODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     typeof(ics.q)
 end

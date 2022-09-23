@@ -159,12 +159,12 @@ function check_methods(equ::DAE, tspan, ics::NamedTuple, params)
     return true
 end
 
-function datatype(equ::DAE, ics::NamedTuple)
+function GeometricBase.datatype(equ::DAE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     return eltype(ics.q)
 end
 
-function arrtype(equ::DAE, ics::NamedTuple)
+function GeometricBase.arrtype(equ::DAE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     return typeof(ics.q)
 end

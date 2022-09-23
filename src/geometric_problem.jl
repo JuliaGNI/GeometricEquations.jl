@@ -66,25 +66,23 @@ GeometricProblem(equ, tspan, tstep, ics, ::Nothing) = GeometricProblem(equ, tspa
 #                              && prob1.ics        == prob2.ics
 #                              && prob1.parameters == prob2.parameters)
 
-datatype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = DT
-timetype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = TT
-arrtype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = AT
-equtype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = ST
+@inline GeometricBase.datatype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = DT
+@inline GeometricBase.timetype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = TT
+@inline GeometricBase.arrtype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = AT
+@inline GeometricBase.equtype(::GeometricProblem{ST,DT,TT,AT}) where {ST,DT,TT,AT} = ST
 
-GeometricBase.equation(prob::GeometricProblem) = prob.equation
-tspan(prob::GeometricProblem) = prob.tspan
-tstep(prob::GeometricProblem) = prob.tstep
-tbegin(prob::GeometricProblem) = prob.tspan[begin]
-tend(prob::GeometricProblem) = prob.tspan[end]
+@inline GeometricBase.equation(prob::GeometricProblem) = prob.equation
+@inline GeometricBase.tspan(prob::GeometricProblem) = prob.tspan
+@inline GeometricBase.tstep(prob::GeometricProblem) = prob.tstep
 
-GeometricBase.timestep(prob::GeometricProblem) = tstep(prob)
-GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
-GeometricBase.nsamples(::GeometricProblem) = 1
-GeometricBase.ntime(prob::GeometricProblem) = Int(abs(div(tend(prob) - tbegin(prob), tstep(prob), RoundUp)))
+@inline GeometricBase.timestep(prob::GeometricProblem) = tstep(prob)
+@inline GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
+@inline GeometricBase.nsamples(::GeometricProblem) = 1
+@inline GeometricBase.ntime(prob::GeometricProblem) = Int(abs(div(tend(prob) - tbegin(prob), tstep(prob), RoundUp)))
 
-GeometricBase.functions(prob::GeometricProblem) = functions(equation(prob), parameters(prob))
-GeometricBase.solutions(prob::GeometricProblem) = solutions(equation(prob), parameters(prob))
-GeometricBase.invariants(prob::GeometricProblem) = invariants(equation(prob), parameters(prob))
+@inline GeometricBase.functions(prob::GeometricProblem) = functions(equation(prob), parameters(prob))
+@inline GeometricBase.solutions(prob::GeometricProblem) = solutions(equation(prob), parameters(prob))
+@inline GeometricBase.invariants(prob::GeometricProblem) = invariants(equation(prob), parameters(prob))
 
 initial_conditions(prob::GeometricProblem) = merge( (t = tbegin(prob),), prob.ics )
 

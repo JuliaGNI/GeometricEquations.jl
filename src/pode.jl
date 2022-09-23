@@ -99,12 +99,12 @@ function check_methods(equ::PODE, tspan, ics, params)
     return true
 end
 
-function datatype(equ::PODE, ics::NamedTuple)
+function GeometricBase.datatype(equ::PODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     return eltype(ics.q)
 end
 
-function arrtype(equ::PODE, ics::NamedTuple)
+function GeometricBase.arrtype(equ::PODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     typeof(ics.q)
 end

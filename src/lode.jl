@@ -177,12 +177,12 @@ function check_methods(equ::LODE, tspan, ics, params)
     return true
 end
 
-function datatype(equ::LODE, ics::NamedTuple)
+function GeometricBase.datatype(equ::LODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     return eltype(ics.q)
 end
 
-function arrtype(equ::LODE, ics::NamedTuple)
+function GeometricBase.arrtype(equ::LODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     typeof(ics.q)
 end

@@ -156,12 +156,12 @@ function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
     return true
 end
 
-function datatype(equ::IODE, ics::NamedTuple)
+function GeometricBase.datatype(equ::IODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     return eltype(ics.q)
 end
 
-function arrtype(equ::IODE, ics::NamedTuple)
+function GeometricBase.arrtype(equ::IODE, ics::NamedTuple)
     @assert check_initial_conditions(equ, ics)
     typeof(ics.q)
 end
