@@ -2,6 +2,8 @@
 using Parameters: @unpack
 
 using GeometricEquations: _idae_default_v̄, _ldae_default_v̄
+using GeometricEquations: parameter_types
+
 
 function ode_v(t, x, ẋ, params)
     ẋ[1] = x[2]

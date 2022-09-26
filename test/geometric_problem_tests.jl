@@ -489,3 +489,28 @@ end
     @test prob4 == prob
     
 end
+
+
+@testset "$(rpad("SDE Problem",80))" begin
+
+    ics  = (q=x₀,)
+    sde  = SDE(sde_v, sde_B)
+    prob = GeometricProblem(sde, (t₀,t₁), Δt, ics)
+
+    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: SDEProblem
+    @test equtype(prob) == SDE
+
+    @test periodicity(prob).q == periodicity(equation(prob))
+
+    prob1 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, ics)
+    prob2 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, ics...)
+    prob4 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+
+    @test prob1 == prob
+    @test prob2 == prob
+    @test prob3 == prob
+    @test prob4 == prob
+    
+end

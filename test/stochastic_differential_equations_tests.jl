@@ -8,45 +8,51 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Stochastic Differential Equations (SDE)",80))" begin
 
-    λ  = 2.
-    μ  = 1.
-
-    sde_v_params = (t, q, v) -> sde_v(λ, t, q, v)
-    sde_B_params = (t, q, v) -> sde_B(μ, t, q, v)
-
-    sde  = SDE(1, 1, sde_v_params, sde_B_params, t₀, x₀)
-    sde1 = SDE(1, 1, sde_v_params, sde_B_params, x₀)
-    sde2 = SDE(1, 3, sde_v_params, sde_B_params, x₀)
-    sde3 = SDE(1, 1, sde_v_params, sde_B_params, x₁ₛ)
-
-    @test ndims(sde) == 2
-    @test periodicity(sde) == zero(x₀)
-    @test functions(sde) == NamedTuple{(:v,:B)}((sde_v_params, sde_B_params))
+    sde  = SDE(sde_v, sde_B, NullInvariants(), NullParameters(), NullPeriodicity())
+    sde1 = SDE(sde_v, sde_B)
+    sde2 = SDE(sde_v, sde_B; invariants=NullInvariants())
+    sde3 = SDE(sde_v, sde_B; parameters=NullParameters())
+    sde4 = SDE(sde_v, sde_B; periodicity=NullPeriodicity())
 
     @test sde == sde1
-    @test sde != sde2
-    @test sde != sde3
+    @test sde == sde2
+    @test sde == sde3
+    @test sde == sde4
 
     @test hash(sde) == hash(sde1)
-    @test hash(sde) != hash(sde2)
-    @test hash(sde) != hash(sde3)
+    @test hash(sde) == hash(sde2)
+    @test hash(sde) == hash(sde3)
+    @test hash(sde) == hash(sde4)
 
-    @test sde1.d == 2
-    @test sde2.d == 2
-    @test sde3.d == 2
+    @test functions(sde) == NamedTuple{(:v,:B)}((sde_v,sde_B))
+    @test solutions(sde) == NamedTuple()
 
-    @test sde1.ns == 1
-    @test sde2.ns == 3
-    @test sde3.ns == 1
+    @test parameters(sde) == NullParameters()
+    @test invariants(sde) == NullInvariants()
+    @test periodicity(sde) == NullPeriodicity()
 
-    @test nsamples(sde1) == 1
-    @test nsamples(sde2) == 1
-    @test nsamples(sde3) == 3
+    @test hasvectorfield(sde) == true
+    @test hassolution(sde) == false
+    @test hasprimary(sde) == false
+    @test hassecondary(sde) == false
 
-    @test sde == similar(sde, t₀, x₀, 1)
-    @test sde == similar(sde, t₀, x₀)
-    @test sde == similar(sde, x₀, 1)
-    @test sde == similar(sde, x₀)
+    @test hasinvariants(sde) == false
+    @test hasparameters(sde) == false
+    @test hasperiodicity(sde) == false
+
+    @test hashamiltonian(sde) == false
+    @test haslagrangian(sde) == false
+
+
+    sde  = SDE(sde_v, sde_B, NullInvariants(), sde_param_types, NullPeriodicity())
+
+    funcs = functions(sde)
+
+    @test_nowarn funcs.v(t₀, x₀, zero(x₀), sde_params)
+
+    funcs = functions(sde, sde_params)
+
+    @test_nowarn funcs.v(t₀, x₀, zero(x₀))
 
 end
 

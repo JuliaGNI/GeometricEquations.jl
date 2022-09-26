@@ -605,6 +605,18 @@ GeometricBase.periodicity(prob::SPDAEProblem) = (q = periodicity(equation(prob))
 """
 const SDEProblem = GeometricProblem{SDE}
 
+function SDEProblem(v, B, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = SDE(v, B, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function SDEProblem(v, B, tspan, tstep, q₀::State; kwargs...)
+    ics = (q = q₀,)
+    SDEProblem(v, B, tspan, tstep, ics; kwargs...)
+end
+
+GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)), )
+
 
 """
 

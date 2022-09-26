@@ -1,3 +1,6 @@
+
+# TODO: Fix example
+
 @doc raw"""
 `SDE`: Stratonovich Stochastic Differential Equation
 
@@ -13,38 +16,51 @@ taking values in ``\mathbb{R}^{d}``, and the m-dimensional Wiener process W
 
 ### Parameters
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
-* `vType <: Function`: type of `v`
-* `BType <: Function`: type of `B`
-* `pType <: Union{NamedTuple,Nothing}`: parameters type
+* `vType <: Callable`: type of `v`
+* `BType <: Callable`: type of `B`
+* `invType <: OptionalNamedTuple`: invariants type
+* `parType <: OptionalNamedTuple`: parameters type
+* `perType <: OptionalArray{AT}`: periodicity type
 
 ### Fields
 
-* `d`:  dimension of dynamical variable ``q`` and the vector field ``v``
-* `m`:  dimension of the Wiener process
-* `ns`: number of sample paths
 * `v`:  function computing the deterministic vector field
 * `B`:  function computing the d x m diffusion matrix
-* `t₀`: initial time
-* `q₀`: initial condition for dynamical variable ``q`` (may be a random variable itself)
-* `parameters`: either a `NamedTuple` containing the equations parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
+* `nsample`: number of sample paths
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
-The functions `v` and `B`, providing the drift vector field and diffusion matrix,
-`v(t, q, v)` and `B(t, q, B, col=0)`, where `t` is the current time, `q` is the
-current solution vector, and `v` and `B` are the variables which hold the result
-of evaluating the vector field ``v`` and the matrix ``B`` on `t` and `q` (if col==0),
-or the column col of the matrix B (if col>0).
+The functions `v` and `B`, providing the drift vector field and diffusion matrix.
+The function `v` must have the interface
+```julia
+    function v(t, q, v, params)
+        v[1] = ...
+        v[2] = ...
+        ...
+    end
+```
+where `t` is the current time, `q` is the current solution vector, `v` is the
+vector which holds the result of evaluating the vector field ``v`` on `t` and
+`q`, and params are additional parameters.
+The function `B` should have two methods with interfaces
+    ```julia
+    function B(t, q, B::AbstractVector, params, col)
+        ...
+    end
+
+    function B(t, q, B::AbstractMatrix, params)
+        ...
+    end
+```
+where the first method returns a single column of B and the second method returns
+the whole matrix.
 
 ### Constructors
 
 ```julia
-SDE(m, ns, v, B, t₀, q₀; parameters=NullParameters(), periodicity=zero(q₀[begin]))
-SDE(m, ns, v, B, q₀::StateVector; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...)
-SDE(m, ns, v, B, t₀, q₀::State; kwargs...) = SDE(m, ns, v, B, t₀, [q₀]; kwargs...)
-SDE(m, ns, v, B, q₀::State; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...)
+SDE(v, B, nsamples, invariants, parameters, periodicity)
+SDE(v, B; nsamples=1, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 ```
 
 ### Example
@@ -75,97 +91,57 @@ SDE(m, ns, v, B, q₀::State; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...
     sde = SDE(v, B, t₀, q₀; parameters=p)
 ```
 """
-struct SDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-           vType <: Function, BType <: Function,
-           pType <: OptionalParameters} <: AbstractEquationSDE{Nothing,Nothing,Nothing}
+struct SDE{vType <: Callable,
+           BType <: Callable,
+           invType <: OptionalInvariants,
+           parType <: OptionalParameters,
+           perType <: OptionalPeriodicity} <: AbstractEquationSDE{invType,parType,perType}
 
-    d::Int
-    m::Int
-    ns::Int
     v::vType
     B::BType
-    t₀::tType
-    q₀::Vector{arrayType}
-    parameters::pType
-    periodicity::arrayType
 
-    function SDE(m, ns, v::vType, B::BType, t₀::tType, q₀::Vector{arrayType};
-                 parameters=NullParameters(), periodicity=zero(q₀[begin])) where {
-                        dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-                        vType <: Function, BType <: Function}
+    invariants::invType
+    parameters::parType
+    periodicity::perType
 
-        d  = length(q₀[begin])
-        ni = length(q₀)
-
-        @assert all(length(q) == d for q in q₀)
-
-        @assert ns ≥ 1
-        @assert ni == 1 || ns == 1
-        # either multiple deterministic initial conditions and one sample path
-        # or one deterministic initial condition and multiple sample paths
-
-        new{dType,tType,arrayType,vType,BType,typeof(parameters)}(d, m, ns, v, B, t₀, q₀, parameters, periodicity)
+    function SDE(v, B, invariants, parameters, periodicity)
+        new{typeof(v), typeof(B), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, B, invariants, parameters, periodicity)
     end
 end
 
+SDE(v, B; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SDE(v, B, invariants, parameters, periodicity)
 
-SDE(m, ns, v, B, q₀::StateVector; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...)
-SDE(m, ns, v, B, t₀, q₀::State; kwargs...) = SDE(m, ns, v, B, t₀, [q₀]; kwargs...)
-SDE(m, ns, v, B, q₀::State; kwargs...) = SDE(m, ns, v, B, 0.0, q₀; kwargs...)
+GeometricBase.invariants(equation::SDE) = equation.invariants
+GeometricBase.parameters(equation::SDE) = equation.parameters
+GeometricBase.periodicity(equation::SDE) = equation.periodicity
 
-# const SDEHT{HT,DT,TT,AT,VT,BT,PT} = SDE{DT,TT,AT,VT,BT,HT,PT} # type alias for dispatch on Hamiltonian type parameter
-# const SDEPT{PT,DT,TT,AT,VT,BT,HT} = SDE{DT,TT,AT,VT,BT,HT,PT} # type alias for dispatch on parameters type parameter
-const SDEPT{PT,DT,TT,AT,VT,BT} = SDE{DT,TT,AT,VT,BT,PT} # type alias for dispatch on parameters type parameter
+hasvectorfield(::SDE) = true
 
-Base.hash(sde::SDE, h::UInt) = hash(sde.d, hash(sde.m, hash(sde.ns,
-                               hash(sde.v, hash(sde.B, hash(sde.t₀, hash(sde.q₀,
-                               hash(sde.parameters, hash(sde.periodicity, h)))))))))
-
-Base.:(==)(sde1::SDE, sde2::SDE) = (
-                                sde1.d == sde2.d
-                             && sde1.m == sde2.m
-                             && sde1.ns == sde2.ns
-                             && sde1.v == sde2.v
-                             && sde1.B == sde2.B
-                             && sde1.t₀ == sde2.t₀
-                             && sde1.q₀ == sde2.q₀
-                             && sde1.parameters == sde2.parameters
-                             && sde1.periodicity == sde2.periodicity)
-
-function Base.similar(equ::SDE, t₀::Real, q₀::StateVector, ns::Int=equ.ns)
-    @assert all([length(q) == ndims(equ) for q in q₀])
-    SDE(equ.m, ns, equ.v, equ.B, t₀, q₀; parameters=equ.parameters, periodicity=equ.periodicity)
+function check_initial_conditions(::SDE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    return true
 end
 
-Base.similar(equ::SDE, t₀::Real, q₀::State, ns::Int=equ.ns; kwargs...) = similar(equ, t₀, [q₀], ns; kwargs...)
-Base.similar(equ::SDE, q₀::Union{State,StateVector}, ns::Int=equ.ns; kwargs...) = similar(equ, equ.t₀, q₀, ns; kwargs...)
+function check_methods(equ::SDE, tspan, ics, params)
+    applicable(equ.v, tspan[begin], ics.q, zero(ics.q), params) || return false
+    return true
+end
 
-Base.ndims(sde::SDE) = sde.d
-Base.axes(equ::SDE) = axes(equ.q₀[begin])
-GeometricBase.nsamples(equ::SDE) = length(equ.q₀)
-GeometricBase.periodicity(equ::SDE) = equ.periodicity
+function GeometricBase.datatype(equ::SDE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
 
-initial_conditions(equ::SDE) = (equ.t₀, equ.q₀)
+function GeometricBase.arrtype(equ::SDE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    typeof(ics.q)
+end
 
-# hashamiltonian(::SDEHT{<:Nothing}) = false
-# hashamiltonian(::SDEHT{<:Function}) = true
-
-hasparameters(::SDEPT{<:NullParameters}) = false
-hasparameters(::SDEPT{<:NamedTuple}) = true
-
-_get_v(equ::SDE) = hasparameters(equ) ? (t,q,v) -> equ.v(t, q, v, equ.parameters) : equ.v
-_get_B(equ::SDE) = hasparameters(equ) ? (t,q,B,col=0) -> equ.B(t, q, B, equ.parameters, col) : equ.B
-# _get_h(equ::SDE) = hasparameters(equ) ? (t,q) -> equ.h(t, q, equ.parameters) : equ.h
+_get_v(equ::SDE, params) = (t,q,v) -> equ.v(t, q, v, params)
+_get_B(equ::SDE, params) = (t,q,v) -> equ.B(t, q, B, params)
+_get_v̄(equ::SDE, params) = _get_v(equ, params)
 _get_invariant(::SDE, inv, params) = (t,q) -> inv(t, q, params)
 
-function functions(equ::SDE)
-    names = (:v,:B)
-    equs  = (_get_v(equ), _get_B(equ))
-
-    # if hashamiltonian(equ)
-    #     names = (names..., :h)
-    #     equs  = (equs..., _get_h(equ))
-    # end
-
-    NamedTuple{names}(equs)
-end
+_functions(equ::SDE) = (v = equ.v, B = equ.B)
+_functions(equ::SDE, params::OptionalParameters) = (v = _get_v(equ, params), B = _get_B(equ, params))
