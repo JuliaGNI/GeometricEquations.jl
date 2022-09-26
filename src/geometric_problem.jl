@@ -641,7 +641,20 @@ GeometricBase.periodicity(prob::PSDEProblem) = (q = periodicity(equation(prob)),
 """
 const SPSDEProblem = GeometricProblem{SPSDE}
 
+function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = SPSDE(v, f1, f2, B, G1, G2, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
 
+function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::State, p₀::State; kwargs...)
+    ics = (q = q₀, p = p₀)
+    SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics; kwargs...)
+end
+
+GeometricBase.periodicity(prob::SPSDEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity())
+
+
+# Union types for problems of similar kind
 
 const AbstractProblemODE = Union{ODEProblem,SODEProblem}
 const AbstractProblemDAE = Union{DAEProblem}

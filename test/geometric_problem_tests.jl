@@ -540,3 +540,29 @@ end
     @test prob4 == prob
     
 end
+
+
+@testset "$(rpad("SPSDE Problem",80))" begin
+
+    ics  = (q=q₀,p=p₀)
+    psde = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2)
+    prob = GeometricProblem(psde, (t₀,t₁), Δt, ics)
+
+    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: SPSDEProblem
+    @test equtype(prob) == SPSDE
+
+    @test periodicity(prob).q == periodicity(equation(prob))
+    @test periodicity(prob).p == NullPeriodicity()
+
+    prob1 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, ics)
+    prob2 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, ics...)
+    prob4 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+
+    @test prob1 == prob
+    @test prob2 == prob
+    @test prob3 == prob
+    @test prob4 == prob
+    
+end

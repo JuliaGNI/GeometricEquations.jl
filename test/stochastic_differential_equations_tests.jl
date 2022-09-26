@@ -112,39 +112,54 @@ end
 
 @testset "$(rpad("Split Partitioned Stochastic Differential Equations (SPSDE)",80))" begin
 
-    spsde  = SPSDE(1, 1, spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, t₀, q₀, p₀)
-    spsde1 = SPSDE(1, 1, spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, q₀, p₀)
-    spsde2 = SPSDE(1, 3, spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, q₀, p₀)
-    spsde3 = SPSDE(1, 1, spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, q₁ₛ, p₁ₛ)
+    psde  = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, NullInvariants(), NullParameters(), NullPeriodicity())
+    psde1 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2)
+    psde2 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2; invariants=NullInvariants())
+    psde3 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2; parameters=NullParameters())
+    psde4 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2; periodicity=NullPeriodicity())
 
-    @test ndims(spsde) == 1
-    @test periodicity(spsde) == zero(q₀)
-    @test functions(spsde) == NamedTuple{(:v,:f1,:f2,:B,:G1,:G2)}((spsde_v,spsde_f1,spsde_f2,spsde_B,spsde_G1,spsde_G2))
+    @test psde == psde1
+    @test psde == psde2
+    @test psde == psde3
+    @test psde == psde4
 
-    @test spsde == spsde1
-    @test spsde != spsde2
-    @test spsde != spsde3
+    @test hash(psde) == hash(psde1)
+    @test hash(psde) == hash(psde2)
+    @test hash(psde) == hash(psde3)
+    @test hash(psde) == hash(psde4)
 
-    @test hash(spsde) == hash(spsde1)
-    @test hash(spsde) != hash(spsde2)
-    @test hash(spsde) != hash(spsde3)
+    @test functions(psde) == NamedTuple{(:v,:f1,:f2,:B,:G1,:G2)}((spsde_v,spsde_f1,spsde_f2,spsde_B,spsde_G1,spsde_G2))
+    @test solutions(psde) == NamedTuple()
 
-    @test spsde1.d == 1
-    @test spsde2.d == 1
-    @test spsde3.d == 1
+    @test parameters(psde) == NullParameters()
+    @test invariants(psde) == NullInvariants()
+    @test periodicity(psde) == NullPeriodicity()
 
-    @test spsde1.ns == 1
-    @test spsde2.ns == 3
-    @test spsde3.ns == 1
+    @test hasvectorfield(psde) == true
+    @test hassolution(psde) == false
+    @test hasprimary(psde) == false
+    @test hassecondary(psde) == false
 
-    @test nsamples(spsde1) == 1
-    @test nsamples(spsde2) == 1
-    @test nsamples(spsde3) == 3
+    @test hasinvariants(psde) == false
+    @test hasparameters(psde) == false
+    @test hasperiodicity(psde) == false
 
-    @test spsde == similar(spsde, t₀, q₀, p₀, 1)
-    @test spsde == similar(spsde, q₀, p₀, 1)
+    @test hashamiltonian(psde) == false
+    @test haslagrangian(psde) == false
 
-    @test spsde != similar(spsde, t₀, q₁ₛ, p₁ₛ)
-    @test spsde != similar(spsde, q₁ₛ, p₁ₛ)
+
+    psde = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, NullInvariants(), sde_param_types, NullPeriodicity())
+
+    funcs = functions(psde)
+
+    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀), sde_params)
+    @test_nowarn funcs.f1(t₀, q₀, p₀, zero(p₀), sde_params)
+    @test_nowarn funcs.f2(t₀, q₀, p₀, zero(p₀), sde_params)
+
+    funcs = functions(psde, sde_params)
+
+    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀))
+    @test_nowarn funcs.f1(t₀, q₀, p₀, zero(p₀))
+    @test_nowarn funcs.f2(t₀, q₀, p₀, zero(p₀))
 
 end
