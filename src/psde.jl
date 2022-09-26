@@ -76,113 +76,69 @@ PSDE(m, ns, v, f, B, G, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f,
     sde = SDE(v_sde, B_sde, t₀, q₀)
 ```
 """
-struct PSDE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-            vType <: Function, fType <: Function,
-            BType <: Function, GType <: Function,
-            pType <: OptionalParameters} <: AbstractEquationPSDE{Nothing,Nothing,Nothing}
+struct PSDE{vType <: Callable,
+            fType <: Callable,
+            BType <: Callable,
+            GType <: Callable,
+            invType <: OptionalInvariants,
+            parType <: OptionalParameters,
+            perType <: OptionalPeriodicity} <: AbstractEquationPSDE{invType,parType,perType}
 
-    d::Int
-    m::Int
-    ns::Int
     v::vType
     f::fType
     B::BType
     G::GType
-    t₀::tType
-    q₀::Vector{arrayType}
-    p₀::Vector{arrayType}
-    parameters::pType
-    periodicity::arrayType
 
-    function PSDE(m, ns, v::vType, f::fType, B::BType, G::GType,
-                  t₀::tType, q₀::Vector{arrayType}, p₀::Vector{arrayType};
-                  parameters=NullParameters(), periodicity=zero(q₀[begin])) where {
-                        dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-                        vType <: Function, fType <: Function,
-                        BType <: Function, GType <: Function}
+    invariants::invType
+    parameters::parType
+    periodicity::perType
 
-        d  = length(q₀[begin])
-        ni = length(q₀)
-
-        @assert length(q₀) == length(p₀)
-        @assert all(length(q) == d for q in q₀)
-        @assert all(length(p) == d for p in p₀)
-
-        @assert ns ≥ 1
-        @assert ni == 1 || ns == 1
-        # either multiple deterministic initial conditions and one sample path
-        # or one deterministic initial condition and multiple sample paths
-
-        new{dType, tType, arrayType, vType, fType, BType, GType, typeof(parameters)}(d, m, ns, v, f, B, G, t₀, q₀, p₀, parameters, periodicity)
+    function PSDE(v, f, B, G, invariants, parameters, periodicity)
+        new{typeof(v), typeof(f), typeof(B), typeof(G), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f, B, G, invariants, parameters, periodicity)
     end
 end
 
-PSDE(m, ns, v, f, B, G, q₀::StateVector, p₀::StateVector; kwargs...) = PSDE(m, ns, v, f, B, G, 0.0, q₀, p₀; kwargs...)
-PSDE(m, ns, v, f, B, G, t₀, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f, B, G, t₀, [q₀], [p₀]; kwargs...)
-PSDE(m, ns, v, f, B, G, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f, B, G, 0.0, q₀, p₀; kwargs...)
+PSDE(v, f, B, G; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PSDE(v, f, B, G, invariants, parameters, periodicity)
 
-# const PSDEHT{HT,DT,TT,AT,VT,FT,BT,GT,PT} = PSDE{DT,TT,AT,VT,FT,BT,GT,HT,PT} # type alias for dispatch on Hamiltonian type parameter
-# const PSDEPT{PT,DT,TT,AT,VT,FT,BT,GT,HT} = PSDE{DT,TT,AT,VT,FT,BT,GT,HT,PT} # type alias for dispatch on parameters type parameter
-const PSDEPT{PT,DT,TT,AT,VT,FT,BT,GT} = PSDE{DT,TT,AT,VT,FT,BT,GT,PT} # type alias for dispatch on parameters type parameter
+GeometricBase.invariants(equation::PSDE) = equation.invariants
+GeometricBase.parameters(equation::PSDE) = equation.parameters
+GeometricBase.periodicity(equation::PSDE) = equation.periodicity
 
+hasvectorfield(::PSDE) = true
 
-Base.hash(sde::PSDE, h::UInt) = hash(sde.d, hash(sde.m, hash(sde.ns,
-                                hash(sde.v, hash(sde.f, hash(sde.B, hash(sde.G,
-                                hash(sde.t₀, hash(sde.q₀, hash(sde.p₀,
-                                hash(sde.parameters, hash(sde.periodicity, h))))))))))))
-
-Base.:(==)(sde1::PSDE, sde2::PSDE) = (
-                                sde1.d == sde2.d
-                             && sde1.m == sde2.m
-                             && sde1.ns == sde2.ns
-                             && sde1.v == sde2.v
-                             && sde1.f == sde2.f
-                             && sde1.B == sde2.B
-                             && sde1.G == sde2.G
-                             && sde1.t₀ == sde2.t₀
-                             && sde1.q₀ == sde2.q₀
-                             && sde1.p₀ == sde2.p₀
-                             && sde1.parameters  == sde2.parameters
-                             && sde1.periodicity == sde2.periodicity)
-
-function Base.similar(equ::PSDE, t₀::Real, q₀::StateVector, p₀::StateVector, ns::Int=equ.ns)
-    @assert all([length(q) == ndims(equ) for q in q₀])
-    @assert all([length(p) == ndims(equ) for p in p₀])
-    PSDE(equ.m, ns, equ.v, equ.f, equ.B, equ.G, t₀, q₀, p₀; parameters=equ.parameters, periodicity=equ.periodicity)
+function check_initial_conditions(::PSDE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    haskey(ics, :p) || return false
+    eltype(ics.q) == eltype(ics.p) || return false
+    typeof(ics.q) == typeof(ics.p) || return false
+    axes(ics.q) == axes(ics.p) || return false
+    return true
 end
 
-Base.similar(equ::PSDE, t₀::Real, q₀::State, p₀::State, ns::Int=equ.ns; kwargs...) = similar(equ, t₀, [q₀], [p₀], ns; kwargs...)
-Base.similar(equ::PSDE, q₀::Union{State,StateVector}, p₀::Union{State,StateVector}, ns::Int=equ.ns; kwargs...) = similar(equ, equ.t₀, q₀, p₀, ns; kwargs...)
+function check_methods(equ::PSDE, tspan, ics, params)
+    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
+    applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
+    return true
+end
 
-Base.ndims(equ::PSDE) = equ.d
-Base.axes(equ::PSDE) = axes(equ.q₀[begin])
-GeometricBase.nsamples(equ::PSDE) = length(equ.q₀)
-GeometricBase.periodicity(equ::PSDE) = equ.periodicity
+function GeometricBase.datatype(equ::PSDE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    return eltype(ics.q)
+end
 
-initial_conditions(equ::PSDE) = (equ.t₀, equ.q₀, equ.p₀)
+function GeometricBase.arrtype(equ::PSDE, ics::NamedTuple)
+    @assert check_initial_conditions(equ, ics)
+    typeof(ics.q)
+end
 
-# hashamiltonian(::PSDEHT{<:Nothing}) = false
-# hashamiltonian(::PSDEHT{<:Function}) = true
-
-hasparameters(::PSDEPT{<:NullParameters}) = false
-hasparameters(::PSDEPT{<:NamedTuple}) = true
-
-_get_v(equ::PSDE) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, equ.parameters) : equ.v
-_get_f(equ::PSDE) = hasparameters(equ) ? (t,q,p,f) -> equ.f(t, q, p, f, equ.parameters) : equ.f
-_get_B(equ::PSDE) = hasparameters(equ) ? (t,q,p,B) -> equ.B(t, q, p, B, equ.parameters) : equ.B
-_get_G(equ::PSDE) = hasparameters(equ) ? (t,q,p,G) -> equ.G(t, q, p, G, equ.parameters) : equ.G
-# _get_h(equ::PSDE) = hasparameters(equ) ? (t,q,p) -> equ.h(t, q, p, equ.parameters) : equ.h
+_get_v(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, params) : equ.v
+_get_f(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,f) -> equ.f(t, q, p, f, params) : equ.f
+_get_B(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,B) -> equ.B(t, q, p, B, params) : equ.B
+_get_G(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,G) -> equ.G(t, q, p, G, params) : equ.G
+_get_v̄(equ::PSDE, params) = _get_v(equ, params)
+_get_f̄(equ::PSDE, params) = _get_f(equ, params)
 _get_invariant(::PSDE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
-
-function functions(equ::PSDE)
-    names = (:v,:f,:B,:G)
-    equs  = (_get_v(equ), _get_f(equ), _get_B(equ), _get_G(equ))
-
-    # if hashamiltonian(equ)
-    #     names = (names..., :h)
-    #     equs  = (equs..., _get_h(equ))
-    # end
-
-    NamedTuple{names}(equs)
-end
+_functions(equ::PSDE) = (v = equ.v, f = equ.f, B = equ.B, G = equ.G)
+_functions(equ::PSDE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), B = _get_B(equ, params), G = _get_G(equ, params))

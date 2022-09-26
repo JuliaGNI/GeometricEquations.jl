@@ -59,40 +59,53 @@ end
 
 @testset "$(rpad("Partitioned Stochastic Differential Equations (PSDE)",80))" begin
 
-    psde  = PSDE(1, 1, psde_v, psde_f, psde_B, psde_G, t₀, q₀, p₀)
-    psde1 = PSDE(1, 1, psde_v, psde_f, psde_B, psde_G, q₀, p₀)
-    psde2 = PSDE(1, 3, psde_v, psde_f, psde_B, psde_G, q₀, p₀)
-    psde3 = PSDE(1, 1, psde_v, psde_f, psde_B, psde_G, q₁ₛ, p₁ₛ)
-
-    @test ndims(psde) == 1
-    @test periodicity(psde) == zero(q₀)
-    @test functions(psde) == NamedTuple{(:v,:f,:B,:G)}((psde_v,psde_f,psde_B,psde_G))
+    psde  = PSDE(psde_v, psde_f, psde_B, psde_G, NullInvariants(), NullParameters(), NullPeriodicity())
+    psde1 = PSDE(psde_v, psde_f, psde_B, psde_G)
+    psde2 = PSDE(psde_v, psde_f, psde_B, psde_G; invariants=NullInvariants())
+    psde3 = PSDE(psde_v, psde_f, psde_B, psde_G; parameters=NullParameters())
+    psde4 = PSDE(psde_v, psde_f, psde_B, psde_G; periodicity=NullPeriodicity())
 
     @test psde == psde1
-    @test psde != psde2
-    @test psde != psde3
+    @test psde == psde2
+    @test psde == psde3
+    @test psde == psde4
 
     @test hash(psde) == hash(psde1)
-    @test hash(psde) != hash(psde2)
-    @test hash(psde) != hash(psde3)
+    @test hash(psde) == hash(psde2)
+    @test hash(psde) == hash(psde3)
+    @test hash(psde) == hash(psde4)
 
-    @test psde1.d == 1
-    @test psde2.d == 1
-    @test psde3.d == 1
+    @test functions(psde) == NamedTuple{(:v,:f,:B,:G)}((psde_v,psde_f,psde_B,psde_G))
+    @test solutions(psde) == NamedTuple()
 
-    @test psde1.ns == 1
-    @test psde2.ns == 3
-    @test psde3.ns == 1
+    @test parameters(psde) == NullParameters()
+    @test invariants(psde) == NullInvariants()
+    @test periodicity(psde) == NullPeriodicity()
 
-    @test nsamples(psde1) == 1
-    @test nsamples(psde2) == 1
-    @test nsamples(psde3) == 3
+    @test hasvectorfield(psde) == true
+    @test hassolution(psde) == false
+    @test hasprimary(psde) == false
+    @test hassecondary(psde) == false
 
-    @test psde == similar(psde, t₀, q₀, p₀, 1)
-    @test psde == similar(psde, q₀, p₀, 1)
+    @test hasinvariants(psde) == false
+    @test hasparameters(psde) == false
+    @test hasperiodicity(psde) == false
 
-    @test psde != similar(psde, t₀, q₁ₛ, p₁ₛ)
-    @test psde != similar(psde, q₁ₛ, p₁ₛ)
+    @test hashamiltonian(psde) == false
+    @test haslagrangian(psde) == false
+
+
+    psde = PSDE(psde_v, psde_f, psde_B, psde_G, NullInvariants(), sde_param_types, NullPeriodicity())
+
+    funcs = functions(psde)
+
+    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀), sde_params)
+    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀), sde_params)
+
+    funcs = functions(psde, sde_params)
+
+    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀))
+    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀))
 
 end
 

@@ -514,3 +514,29 @@ end
     @test prob4 == prob
     
 end
+
+
+@testset "$(rpad("PSDE Problem",80))" begin
+
+    ics  = (q=q₀,p=p₀)
+    psde = PSDE(psde_v, psde_f, psde_B, psde_G)
+    prob = GeometricProblem(psde, (t₀,t₁), Δt, ics)
+
+    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: PSDEProblem
+    @test equtype(prob) == PSDE
+
+    @test periodicity(prob).q == periodicity(equation(prob))
+    @test periodicity(prob).p == NullPeriodicity()
+
+    prob1 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, ics)
+    prob2 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, ics...)
+    prob4 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+
+    @test prob1 == prob
+    @test prob2 == prob
+    @test prob3 == prob
+    @test prob4 == prob
+    
+end
