@@ -1,6 +1,3 @@
-
-# TODO: Fix example
-
 @doc raw"""
 `SDE`: Stratonovich Stochastic Differential Equation
 
@@ -26,7 +23,6 @@ taking values in ``\mathbb{R}^{d}``, and the m-dimensional Wiener process W
 
 * `v`:  function computing the deterministic vector field
 * `B`:  function computing the d x m diffusion matrix
-* `nsample`: number of sample paths
 * `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
 * `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
 * `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
@@ -59,36 +55,8 @@ the whole matrix.
 ### Constructors
 
 ```julia
-SDE(v, B, nsamples, invariants, parameters, periodicity)
-SDE(v, B; nsamples=1, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-```
-
-### Example
-
-```julia
-    function v(t, q, v, p)
-        λ = p[:λ]
-        v[1] = λ*q[1]
-        v[2] = λ*q[2]
-    end
-
-    function B(t, q, B, p, col=0)
-        μ = p[:μ]
-        if col==0 #whole matrix
-            B[1,1] = μ*q[1]
-            B[2,1] = μ*q[2]
-        elseif col==1
-            #just first column
-        end
-    end
-
-    t₀ = 0.
-    q₀ = [1., 1.]
-    λ  = 2.
-    μ  = 1.
-    p = (λ=λ, μ=μ)
-
-    sde = SDE(v, B, t₀, q₀; parameters=p)
+SDE(v, B, invariants, parameters, periodicity)
+SDE(v, B; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 ```
 """
 struct SDE{vType <: Callable,

@@ -14,29 +14,23 @@ values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener
 
 ### Parameters
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
 * `vType <: Function`: type of `v`
 * `fType <: Function`: type of `f`
 * `BType <: Function`: type of `B`
 * `GType <: Function`: type of `G`
-* `pType <: Union{NamedTuple,Nothing}`: parameters type
+* `invType <: OptionalNamedTuple`: invariants type
+* `parType <: OptionalNamedTuple`: parameters type
+* `perType <: OptionalArray{AT}`: periodicity type
 
 ### Fields
 
-* `d`:  dimension of dynamical variable ``q`` and the vector field ``v``
-* `m`:  dimension of the Wiener process
-* `ns`: number of sample paths
 * `v`:  function computing the drift vector field for the position variable ``q``
 * `f`:  function computing the drift vector field for the momentum variable ``p``
 * `B`:  function computing the d x m diffusion matrix for the position variable ``q``
 * `G`:  function computing the d x m diffusion matrix for the momentum variable ``p``
-* `t₀`: initial time
-* `q₀`: initial condition for dynamical variable ``q`` (may be a random variable itself)
-* `p₀`: initial condition for dynamical variable ``p`` (may be a random variable itself)
-* `parameters`: either a `NamedTuple` containing the equations parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 The functions `v`, `f`, `B` and `G`, providing the drift vector fields and diffusion matrices, take four arguments,
 `v(t, q, p, v)`, `f(t, q, p, f)`, `B(t, q, p,  B)` and `G(t, q, p, G)`, where `t` is the current time, `(q, p)` is the
@@ -46,34 +40,8 @@ of evaluating the vector fields ``v``, ``f`` and the matrices ``B``, ``G`` on `t
 ### Constructors
 
 ```julia
-PSDE(m, ns, v, f, B, G, t₀, q₀, p₀; parameters=NullParameters(), periodicity=zero(q₀[begin]))
-PSDE(m, ns, v, f, B, G, q₀::StateVector, p₀::StateVector; kwargs...) = PSDE(m, ns, v, f, B, G, 0.0, q₀, p₀; kwargs...)
-PSDE(m, ns, v, f, B, G, t₀, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f, B, G, t₀, [q₀], [p₀]; kwargs...)
-PSDE(m, ns, v, f, B, G, q₀::State, p₀::State; kwargs...) = PSDE(m, ns, v, f, B, G, 0.0, q₀, p₀; kwargs...)
-```
-
-### Example
-
-```julia
-    function v(λ, t, q, v)
-        v[1] = λ*q[1]
-        v[2] = λ*q[2]
-    end
-
-    function B(μ, t, q, B)
-        B[1] = μ*q[1]
-        B[2] = μ*q[2]
-    end
-
-    t₀ = 0.
-    q₀ = [1., 1.]
-    λ  = 2.
-    μ  = 1.
-
-    v_sde = (t, q, v) -> v(λ, t, q, v)
-    B_sde = (t, q, B) -> B(μ, t, q, B)
-
-    sde = SDE(v_sde, B_sde, t₀, q₀)
+PSDE(v, f, B, G, invariants, parameters, periodicity)
+PSDE(v, f, B, G; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 ```
 """
 struct PSDE{vType <: Callable,

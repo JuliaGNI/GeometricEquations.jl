@@ -600,8 +600,38 @@ const SPDAEProblem = GeometricProblem{SPDAE}
 GeometricBase.periodicity(prob::SPDAEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 
 
-"""
+@doc raw"""
+`SDEProblem`: Stratonovich Stochastic Differential Equation Problem
 
+Defines a stochastic differential initial value problem
+```math
+\begin{aligned}
+dq (t) &= v(t, q(t)) \, dt + B(t, q(t)) \circ dW , & q(t_{0}) &= q_{0} ,
+\end{aligned}
+```
+with drift vector field ``v``, diffusion matrix ``B``,
+initial conditions ``q_{0}``, the dynamical variable ``q``
+taking values in ``\mathbb{R}^{d}``, and the m-dimensional Wiener process W
+
+
+### Example: Kubo Oscillator
+
+```julia
+    function v(t, q, v, params)
+        v[1] = + params.λ * q[2]
+        v[2] = - params.λ * q[1]
+    end
+
+    function B(t, q, B, params)
+        for j in axes(B, 2)
+            B[1,j] = + params.ν * q[2]
+            B[2,j] = - params.ν * q[1]
+        end
+    end
+
+    tspan = (0.0, 1.0); Δt = 0.01; q₀ = [0.5, 0.0];
+    sde = SDEProblem(v, B, tspan, Δt, q₀; parameters = (λ=2., μ=1.))
+```
 """
 const SDEProblem = GeometricProblem{SDE}
 
@@ -618,8 +648,43 @@ end
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)), )
 
 
-"""
+@doc raw"""
+`PSDEProblem`: Stratonovich Partitioned Stochastic Differential Equation Problem
 
+Defines a partitioned stochastic differential initial value problem
+```math
+\begin{aligned}
+dq (t) &= v(t, q(t)) \, dt + B(t, q(t)) \circ dW , & q(t_{0}) &= q_{0} , \\
+dp (t) &= f(t, q(t)) \, dt + G(t, q(t)) \circ dW , & p(t_{0}) &= p_{0}
+\end{aligned}
+```
+with the drift vector fields ``v`` and ``f``, diffusion matrices ``B`` and ``G``,
+initial conditions ``q_{0}`` and ``p_{0}``, the dynamical variables ``(q,p)`` taking
+values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener process W
+
+
+### Example: Kubo Oscillator
+
+```julia
+    function v(t, q, p, v, params)
+        v[1] = + params.λ * p[1]
+    end
+
+    function f(t, q, p, f, params)
+        f[1] = - params.λ * q[1]
+    end
+
+    function B(t, q, p, B, params)
+        B[1,1] = params.ν * p[1]
+    end
+
+    function G(t, q, p, G, params)
+        G[1,1] = - params.ν * q[1]
+    end
+
+    tspan = (0.0, 1.0); Δt = 0.01; q₀ = [0.5]; p₀ = [0.0];
+    equ = PSDEProblem(v, f, B, G, tspan, Δt, q₀, p₀; parameters = (λ=2., μ=1.))
+```
 """
 const PSDEProblem = GeometricProblem{PSDE}
 
@@ -636,8 +701,51 @@ end
 GeometricBase.periodicity(prob::PSDEProblem) = (q = periodicity(equation(prob)), p = NullPeriodicity())
 
 
-"""
+@doc raw"""
+`SPSDEProblem`: Stratonovich Split Partitioned Stochastic Differential Equation Problem
 
+Defines a partitioned stochastic differential initial value problem
+```math
+\begin{aligned}
+dq (t) &=   v(t, q(t)) \, dt + B(t, q(t)) \circ dW , & q(t_{0}) &= q_{0} , \\
+dp (t) &= [ f_1(t, q(t)) + f_2(t, q(t)) ] \, dt + [ G_1(t, q(t)) + G_2(t, q(t)) ] \circ dW , & p(t_{0}) &= p_{0} ,
+\end{aligned}
+```
+with the drift vector fields ``v`` and ``f_i``, diffusion matrices ``B`` and ``G_i``,
+initial conditions ``q_{0}`` and ``p_{0}``, the dynamical variables ``(q,p)`` taking
+values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener process W
+
+
+### Example: Kubo Oscillator
+
+```julia
+    function v(t, q, p, v, params)
+        v[1] = + params.λ * p[1]
+    end
+
+    function f1(t, q, p, f, params)
+        f[1] = - params.λ * q[1]
+    end
+
+    function f2(t, q, p, f, params)
+        f[1] = 0
+    end
+
+    function B(t, q, p, B, params)
+        B[1,1] = params.ν * p[1]
+    end
+
+    function G1(t, q, p, G, params)
+        G[1,1] = - params.ν * q[1]
+    end
+
+    function G2(t, q, p, G, params)
+        G[1,1] = 0
+    end
+
+    tspan = (0.0, 1.0); Δt = 0.01; q₀ = [0.5]; p₀ = [0.0];
+    equ = PSDEProblem(v, f1, f2, B, G1, G2, tspan, Δt, q₀, p₀; parameters = (λ=2., μ=1.))
+```
 """
 const SPSDEProblem = GeometricProblem{SPSDE}
 

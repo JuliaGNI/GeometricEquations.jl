@@ -14,34 +14,27 @@ values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener
 
 ### Parameters
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
 * `vType <: Function`: type of `v`
 * `f1Type <: Function`: type of `f1`
 * `f2Type <: Function`: type of `f2`
 * `BType <: Function`: type of `B`
 * `G1Type <: Function`: type of `G1`
 * `G2Type <: Function`: type of `G2`
-* `pType <: Union{NamedTuple,Nothing}`: parameters type
+* `invType <: OptionalNamedTuple`: invariants type
+* `parType <: OptionalNamedTuple`: parameters type
+* `perType <: OptionalArray{AT}`: periodicity type
 
 ### Fields
 
-* `d`:  dimension of dynamical variable ``q`` and the vector fields ``vi``
-* `m`:  dimension of the Wiener process
-* `ni`: number of initial conditions
-* `ns`: number of sample paths
 * `v` :  function computing the drift vector field for the position variable ``q``
 * `f1`:  function computing the drift vector field for the momentum variable ``p``
 * `f2`:  function computing the drift vector field for the momentum variable ``p``
 * `B` :  function computing the d x m diffusion matrix for the position variable ``q``
 * `G1`:  function computing the d x m diffusion matrix for the momentum variable ``p``
 * `G2`:  function computing the d x m diffusion matrix for the momentum variable ``p``
-* `t₀`: initial time
-* `q₀`: initial condition for dynamical variable ``q`` (may be a random variable itself)
-* `p₀`: initial condition for dynamical variable ``p`` (may be a random variable itself)
-* `parameters`: either a `NamedTuple` containing the equations parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 The functions `v`, `f`, `B` and `G`, providing the drift vector fields and diffusion matrices, take four arguments,
 `v(t, q, p, v)`, `f(t, q, p, f)`, `B(t, q, p,  B)` and `G(t, q, p, G)`, where `t` is the current time, `(q, p)` is the
@@ -51,34 +44,8 @@ of evaluating the vector fields ``v``, ``f`` and the matrices ``B``, ``G`` on `t
 ### Constructors
 
 ```julia
-SPSDE(m, ns, v, f1, f2, B, G1, G2, t₀, q₀, p₀; parameters=NullParameters(), periodicity=zero(q₀[begin]))
-SPSDE(m, ns, v, f1, f2, B, G1, G2, q₀::StateVector, p₀::StateVector; kwargs...) = SPSDE(m, ns, v, f1, f2, B, G1, G2, 0.0, q₀, p₀; kwargs...)
-SPSDE(m, ns, v, f1, f2, B, G1, G2, t₀, q₀::State, p₀::State; kwargs...) = SPSDE(m, ns, v, f1, f2, B, G1, G2, t₀, [q₀], [p₀]; kwargs...)
-SPSDE(m, ns, v, f1, f2, B, G1, G2, q₀::State, p₀::State; kwargs...) = SPSDE(m, ns, v, f1, f2, B, G1, G2, 0.0, q₀, p₀; kwargs...)
-```
-
-### Example
-
-```julia
-    function v(λ, t, q, v)
-        v[1] = λ*q[1]
-        v[2] = λ*q[2]
-    end
-
-    function B(μ, t, q, B)
-        B[1] = μ*q[1]
-        B[2] = μ*q[2]
-    end
-
-    t₀ = 0.
-    q₀ = [1., 1.]
-    λ  = 2.
-    μ  = 1.
-
-    v_sde = (t, q, v) -> v(λ, t, q, v)
-    B_sde = (t, q, B) -> B(μ, t, q, B)
-
-    sde = SDE(v_sde, B_sde, t₀, q₀)
+SPSDE(v, f1, f2, B, G1, G2, invariants, parameters, periodicity)
+SPSDE(v, f1, f2, B, G1, G2; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 ```
 """
 struct SPSDE{vType <: Callable,
