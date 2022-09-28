@@ -17,9 +17,9 @@ For each type, there are several subtypes
 * partitioned equations ([`PODE`](@ref), [`PDAE`](@ref), [`PSDE`](@ref)),
 * Hamiltonian equations ([`HODE`](@ref), [`HDAE`](@ref)),
 * Lagrangian equations ([`LODE`](@ref), [`LDAE`](@ref)),
-* split equations ([`SODE`](@ref), [`SPDAE`](@ref)), [`SPSDE`](@ref)).
+* split equations ([`SODE`](@ref), [`SPDAE`](@ref), [`SPSDE`](@ref)).
 
-Each equation holds a number of functions determining the vector field, constraints, initial conditions, and possibly additional information like parameters, periodicity, invariants and the Hamiltonian or Lagrangian.
+Each equation holds a number of functions determining the vector field, constraints, and possibly additional information like parameters, periodicity, invariants and the Hamiltonian or Lagrangian.
 
 ## Library
 
