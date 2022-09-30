@@ -85,8 +85,8 @@ function check_initial_conditions(::PSDE, ics::NamedTuple)
 end
 
 function check_methods(equ::PSDE, tspan, ics, params)
-    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
-    applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
+    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -100,13 +100,13 @@ function GeometricBase.arrtype(equ::PSDE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, params) : equ.v
-_get_f(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,f) -> equ.f(t, q, p, f, params) : equ.f
-_get_B(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,B) -> equ.B(t, q, p, B, params) : equ.B
-_get_G(equ::PSDE, params) = hasparameters(equ) ? (t,q,p,G) -> equ.G(t, q, p, G, params) : equ.G
+_get_v(equ::PSDE, params) = hasparameters(equ) ? (v, t, q, p) -> equ.v(v, t, q, p, params) : equ.v
+_get_f(equ::PSDE, params) = hasparameters(equ) ? (f, t, q, p) -> equ.f(f, t, q, p, params) : equ.f
+_get_B(equ::PSDE, params) = hasparameters(equ) ? (B, t, q, p) -> equ.B(B, t, q, p, params) : equ.B
+_get_G(equ::PSDE, params) = hasparameters(equ) ? (G, t, q, p) -> equ.G(G, t, q, p, params) : equ.G
 _get_v̄(equ::PSDE, params) = _get_v(equ, params)
 _get_f̄(equ::PSDE, params) = _get_f(equ, params)
-_get_invariant(::PSDE, inv, params) = (t,q,p) -> inv(t, q, p, params)
+_get_invariant(::PSDE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::PSDE) = (v = equ.v, f = equ.f, B = equ.B, G = equ.G)
 _functions(equ::PSDE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), B = _get_B(equ, params), G = _get_G(equ, params))

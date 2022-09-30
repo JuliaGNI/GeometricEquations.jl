@@ -30,7 +30,7 @@ v (t) = v_1 (t) + ... + v_r (t) .
 
 The functions `v_i` providing the vector field must have the interface
 ```julia
-    function v_i(t, q, v, params)
+    function v_i(v, t, q, params)
         v[1] = ...
         v[2] = ...
         ...
@@ -38,16 +38,15 @@ The functions `v_i` providing the vector field must have the interface
 ```
 and the functions `q_i` providing the solutions must have the interface
 ```julia
-    function q_i(t, q₀, q₁, h, params)
+    function q_i(q₁, t₁, q₀, t₀, params)
         q₁[1] = q₀[1] + ...
         q₁[2] = q₀[2] + ...
         ...
     end
 ```
-where `t` is the current time, `q₀` is the current solution vector, `q₁` is the
-new solution vector which holds the result of computing one substep with the
-vector field ``v_i`` on `t` and `q₀`, and `h` is the (sub-)timestep to compute
-the update for.
+where `t₀` is the current time, `q₀` is the current solution vector, `q₁` is the
+new solution vector at time `t₁`, holding the result of computing one substep
+with the vector field ``v_i``.
 
 ### Constructors
 
@@ -107,12 +106,12 @@ end
 function check_methods(equ::SODE, tspan, ics, params)
     if hasvectorfield(equ)
         for v in equ.v
-            applicable(v, tspan[begin], ics.q, zero(ics.q), params) || return false
+            applicable(v, zero(ics.q), tspan[begin], ics.q, params) || return false
         end
     end
     if hassolution(equ)
         for q in equ.q
-            applicable(q, tspan[begin], ics.q, zero(ics.q), tspan[end], params) || return false
+            applicable(q, zero(ics.q), tspan[end], ics.q, tspan[begin], params) || return false
         end
     end
     return true
@@ -128,9 +127,9 @@ function GeometricBase.arrtype(equ::SODE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::SODE, params) = Tuple((t,q,v) -> V(t, q, v, params) for V in equ.v)
-_get_q(equ::SODE, params) = Tuple((t,q̄,q,h) -> Q(t, q̄, q, h, params) for Q in equ.q)
-_get_invariant(::SODE, inv, params) = (t,q) -> inv(t, q, params)
+_get_v(equ::SODE, params) = Tuple((v, t, q) -> V(v, t, q, params) for V in equ.v)
+_get_q(equ::SODE, params) = Tuple((q̄, t̄, q, t) -> Q(q̄, t̄, q, t, params) for Q in equ.q)
+_get_invariant(::SODE, inv, params) = (t, q) -> inv(t, q, params)
 
 _functions(equ::SODE) = (v = equ.v,)
 _solutions(equ::SODE) = (q = equ.q,)

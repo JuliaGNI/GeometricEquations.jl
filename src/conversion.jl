@@ -30,10 +30,10 @@ function Base.convert(::Type{ODEProblem}, prob::Union{PODEProblem{DT,TT,AT}, HOD
     # extend periodicity
     ode_periodicity = convert_periodicity(ODE, prob)
 
-    v = (t, x, ẋ, params) -> begin
+    v = (ẋ, t, x, params) -> begin
         @_create_pode_argument_views
-        equation(prob).v(t, q, p, q̇, params)
-        equation(prob).f(t, q, p, ṗ, params)
+        equation(prob).v(q̇, t, q, p, params)
+        equation(prob).f(ṗ, t, q, p, params)
     end
 
     ODEProblem(v, prob.tspan, prob.tstep, x₀; parameters=prob.parameters, periodicity=ode_periodicity)
@@ -48,13 +48,13 @@ function Base.convert(::Type{SODEProblem}, prob::Union{PODEProblem{DT,TT,AT}, HO
     # extend periodicity
     ode_periodicity = convert_periodicity(SODE, prob)
 
-    v₁ = (t, x, ẋ, params) -> begin
+    v₁ = (ẋ, t, x, params) -> begin
         @_create_pode_argument_views
-        equation(prob).v(t, q, p, q̇, params)
+        equation(prob).v(q̇, t, q, p, params)
     end
-    v₂ = (t, x, ẋ, params) -> begin
+    v₂ = (ẋ, t, x, params) -> begin
         @_create_pode_argument_views
-        equation(prob).f(t, q, p, ṗ, params)
+        equation(prob).f(ṗ, t, q, p, params)
     end
 
     SODEProblem((v₁, v₂), prob.tspan, prob.tstep, x₀; parameters=parameters(prob), periodicity=ode_periodicity)
@@ -93,7 +93,7 @@ function get_invariants(equ::Union{IODE,LODE,IDAE,LDAE})
         invs = ()
         for (key, inv) in pairs(equ.invariants)
             keys = (keys..., key)
-            invs = (invs..., hasparameters(equ) ? (t,q,v) -> inv(t, q, v, equ.parameters) : inv)
+            invs = (invs..., hasparameters(equ) ? (t, q, v) -> inv(t, q, v, equ.parameters) : inv)
         end
         return NamedTuple{keys}(invs)
     else
@@ -107,7 +107,7 @@ function get_invariants(equ::Union{PODE,HODE,PDAE,PDAE,SPDAE})
         invs = ()
         for (key, inv) in pairs(equ.invariants)
             keys = (keys..., key)
-            invs = (invs..., hasparameters(equ) ? (t,q,p) -> inv(t, q, p, equ.parameters) : inv)
+            invs = (invs..., hasparameters(equ) ? (t, q, p) -> inv(t, q, p, equ.parameters) : inv)
         end
         return NamedTuple{keys}(invs)
     else

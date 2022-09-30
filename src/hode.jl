@@ -102,8 +102,8 @@ function check_initial_conditions(::HODE, ics::NamedTuple)
 end
 
 function check_methods(equ::HODE, tspan, ics, params)
-    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
-    applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
+    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
@@ -118,12 +118,12 @@ function GeometricBase.arrtype(equ::HODE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::HODE, params) = (t,q,p,v) -> equ.v(t, q, p, v, params)
-_get_f(equ::HODE, params) = (t,q,p,f) -> equ.f(t, q, p, f, params)
+_get_v(equ::HODE, params) = (v, t, q, p) -> equ.v(v, t, q, p, params)
+_get_f(equ::HODE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
 _get_v̄(equ::HODE, params) = _get_v(equ, params)
 _get_f̄(equ::HODE, params) = _get_f(equ, params)
-_get_h(equ::HODE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
-_get_invariant(::HODE, inv, params) = (t,q,p) -> inv(t, q, p, params)
+_get_h(equ::HODE, params) = (t, q, p) -> equ.hamiltonian(t, q, p, params)
+_get_invariant(::HODE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::HODE) = (v = equ.v, f = equ.f, h = equ.hamiltonian)
 _functions(equ::HODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), h = _get_h(equ, params))

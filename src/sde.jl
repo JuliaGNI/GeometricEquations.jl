@@ -92,7 +92,8 @@ function check_initial_conditions(::SDE, ics::NamedTuple)
 end
 
 function check_methods(equ::SDE, tspan, ics, params)
-    applicable(equ.v, tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, params) || return false
+    # TODO add missing methods
     return true
 end
 
@@ -106,10 +107,10 @@ function GeometricBase.arrtype(equ::SDE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::SDE, params) = (t,q,v) -> equ.v(t, q, v, params)
-_get_B(equ::SDE, params) = (t,q,v) -> equ.B(t, q, B, params)
+_get_v(equ::SDE, params) = (v, t, q) -> equ.v(v, t, q, params)
+_get_B(equ::SDE, params) = (B, t, q) -> equ.B(B, t, q, params)
 _get_v̄(equ::SDE, params) = _get_v(equ, params)
-_get_invariant(::SDE, inv, params) = (t,q) -> inv(t, q, params)
+_get_invariant(::SDE, inv, params) = (t, q) -> inv(t, q, params)
 
 _functions(equ::SDE) = (v = equ.v, B = equ.B)
 _functions(equ::SDE, params::OptionalParameters) = (v = _get_v(equ, params), B = _get_B(equ, params))

@@ -59,7 +59,7 @@ variables ``(q,p)`` and algebraic variable ``v``.
 
 The functions `ϑ` and `f` must have the interface
 ```julia
-    function ϑ(t, q, v, p)
+    function ϑ(p, t, q, v)
         p[1] = ...
         p[2] = ...
         ...
@@ -67,7 +67,7 @@ The functions `ϑ` and `f` must have the interface
 ```
 and
 ```julia
-    function f(t, q, v, f)
+    function f(f, t, q, v)
         f[1] = ...
         f[2] = ...
         ...
@@ -78,7 +78,7 @@ current velocity and `f` and `p` are the vectors which hold the result of
 evaluating the functions ``f`` and ``ϑ`` on `t`, `q` and `v`.
 The funtions `g` and `v` are specified by
 ```julia
-    function g(t, q, λ, g)
+    function g(g, t, q, λ)
         g[1] = ...
         g[2] = ...
         ...
@@ -86,7 +86,7 @@ The funtions `g` and `v` are specified by
 ```
 and
 ```julia
-    function v(t, q, p, v)
+    function v(v, t, q, p)
         v[1] = ...
         v[2] = ...
         ...
@@ -170,9 +170,12 @@ function check_initial_conditions(::LODE, ics::NamedTuple)
 end
 
 function check_methods(equ::LODE, tspan, ics, params)
-    applicable(equ.ϑ, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
-    applicable(equ.f, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
-    applicable(equ.g, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    # TODO add missing methods
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.lagrangian, tspan[begin], ics.q, zero(ics.q), params) || return false
     return true
 end
@@ -187,14 +190,14 @@ function GeometricBase.arrtype(equ::LODE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_ϑ(equ::LODE, params) = (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, params)
-_get_f(equ::LODE, params) = (t,q,v,f) -> equ.f(t, q, v, f, params)
-_get_g(equ::LODE, params) = (t,q,v,g) -> equ.g(t, q, v, g, params)
-_get_ω(equ::LODE, params) = (t,q,v,ω) -> equ.ω(t, q, v, ω, params)
-_get_v̄(equ::LODE, params) = (t,q,v)   -> equ.v̄(t, q, v, params)
-_get_f̄(equ::LODE, params) = (t,q,v,f) -> equ.f̄(t, q, v, f, params)
-_get_l(equ::LODE, params) = (t,q,v)   -> equ.lagrangian(t, q, v, params)
-_get_invariant(::LODE, inv, params) = (t,q,v) -> inv(t, q, v, params)
+_get_ϑ(equ::LODE, params) = (ϑ, t, q, v) -> equ.ϑ(ϑ, t, q, v, params)
+_get_f(equ::LODE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
+_get_g(equ::LODE, params) = (g, t, q, v) -> equ.g(g, t, q, v, params)
+_get_ω(equ::LODE, params) = (ω, t, q, v) -> equ.ω(ω, t, q, v, params)
+_get_v̄(equ::LODE, params) = (v, t, q)    -> equ.v̄(v, t, q, params)
+_get_f̄(equ::LODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
+_get_l(equ::LODE, params) = (t, q, v)    -> equ.lagrangian(t, q, v, params)
+_get_invariant(::LODE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
 _functions(equ::LODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, ω = equ.ω, v̄ = equ.v̄, f̄ = equ.f̄, l = equ.lagrangian)
 _functions(equ::LODE, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params),

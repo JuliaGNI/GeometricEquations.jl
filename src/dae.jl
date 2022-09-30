@@ -73,17 +73,17 @@ DAE(v, u, ū, ϕ, ψ, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwar
 ### Example
 
 ```julia
-    function v(t, q, v)
+    function v(v, t, q)
         v[1] = q[1]
         v[2] = q[2]
     end
 
-    function u(t, q, λ, u)
+    function u(u, t, q, λ)
         u[1] = +λ[1]
         u[2] = -λ[1]
     end
 
-    function ϕ(t, q, λ, ϕ)
+    function ϕ(ϕ, t, q, λ)
         ϕ[1] = q[2] - q[1]
     end
 
@@ -153,9 +153,9 @@ function check_initial_conditions(equ::DAE, ics::NamedTuple)
 end
 
 function check_methods(equ::DAE, tspan, ics::NamedTuple, params)
-    applicable(equ.v, tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.u, tspan[begin], ics.q, ics.λ, zero(ics.q), params) || return false
-    applicable(equ.ϕ, tspan[begin], ics.q, zero(ics.λ), params) || return false
+    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, params) || return false
     return true
 end
 
@@ -169,12 +169,12 @@ function GeometricBase.arrtype(equ::DAE, ics::NamedTuple)
     return typeof(ics.q)
 end
 
-_get_v(equ::DAE, params) = (t,q,v)   -> equ.v(t, q, v, params)
-_get_u(equ::DAE, params) = (t,q,λ,u) -> equ.u(t, q, λ, u, params)
-_get_ϕ(equ::DAE, params) = (t,q,ϕ)   -> equ.ϕ(t, q, ϕ, params)
-_get_ū(equ::DAE, params) = (t,q,λ,u) -> equ.ū(t, q, λ, u, params)
-_get_ψ(equ::DAE, params) = (t,q,v,ψ) -> equ.ψ(t, q, v, ϕ, params)
-_get_v̄(equ::DAE, params) = (t,q,v)   -> equ.v̄(t, q, v, params)
+_get_v(equ::DAE, params) = (v, t, q)    -> equ.v(v, t, q, params)
+_get_u(equ::DAE, params) = (u, t, q, λ) -> equ.u(u, t, q, λ, params)
+_get_ϕ(equ::DAE, params) = (ϕ, t, q)    -> equ.ϕ(ϕ, t, q, params)
+_get_ū(equ::DAE, params) = (u, t, q, λ) -> equ.ū(u, t, q, λ, params)
+_get_ψ(equ::DAE, params) = (ψ, t, q, v) -> equ.ψ(ψ, t, q, v, params)
+_get_v̄(equ::DAE, params) = (v, t, q)    -> equ.v̄(v, t, q, params)
 _get_invariant(::DAE, inv, params) = (t,q) -> inv(t, q, params)
 
 function _functions(equ::DAE)
