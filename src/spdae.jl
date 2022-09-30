@@ -169,10 +169,10 @@ function functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT,
 end
 
 function functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NamedTuple}
-    vₚ = (t,q,p,v)   -> equation.v(t, q, p, v, equation.parameters)
-    fₚ = (t,q,p,f)   -> equation.f(t, q, p, f, equation.parameters)
-    ϕₚ = (t,q,p,ϕ)   -> equation.ϕ(t, q, p, ϕ, equation.parameters)
-    ψₚ = (t,q,p,v,f,ψ) -> equation.ψ(t, q, p, v, f, ψ, equation.parameters)
+    vₚ = (v, t, q, p)   -> equation.v(v, t, q, p, equation.parameters)
+    fₚ = (f, t, q, p)   -> equation.f(f, t, q, p, equation.parameters)
+    ϕₚ = (ϕ, t, q, p)   -> equation.ϕ(ϕ, t, q, p, equation.parameters)
+    ψₚ = (ψ, t, q, p, v, f) -> equation.ψ(ψ, t, q, p, v, f, equation.parameters)
 
     names = (:v, :f, :ϕ, :ψ)
     equs  = (vₚ, fₚ, ϕₚ, ψₚ)

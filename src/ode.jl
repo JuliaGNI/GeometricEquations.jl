@@ -24,7 +24,7 @@ with vector field ``v``, initial condition ``q_{0}`` and the solution
 
 The function `v` providing the vector field must have the interface
 ```julia
-    function v(t, q, v, params)
+    function v(v, t, q, params)
         v[1] = ...
         v[2] = ...
         ...
@@ -76,7 +76,7 @@ function check_initial_conditions(::ODE, ics::NamedTuple)
 end
 
 function check_methods(equ::ODE, tspan, ics, params)
-    applicable(equ.v, tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, params) || return false
     return true
 end
 
@@ -90,9 +90,9 @@ function GeometricBase.arrtype(equ::ODE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::ODE, params) = (t,q,v) -> equ.v(t, q, v, params)
+_get_v(equ::ODE, params) = (v, t, q) -> equ.v(v, t, q, params)
 _get_v̄(equ::ODE, params) = _get_v(equ, params)
-_get_invariant(::ODE, inv, params) = (t,q) -> inv(t, q, params)
+_get_invariant(::ODE, inv, params) = (t, q) -> inv(t, q, params)
 
 _functions(equ::ODE) = (v = equ.v,)
 _functions(equ::ODE, params::OptionalParameters) = (v = _get_v(equ, params),)

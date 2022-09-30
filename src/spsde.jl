@@ -93,9 +93,10 @@ function check_initial_conditions(::SPSDE, ics::NamedTuple)
 end
 
 function check_methods(equ::SPSDE, tspan, ics, params)
-    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
-    applicable(equ.f1, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
-    applicable(equ.f2, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
+    applicable(equ.v,  zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f1, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f2, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+    # TODO add missing methods
     return true
 end
 
@@ -109,15 +110,15 @@ function GeometricBase.arrtype(equ::SPSDE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::SPSDE, params) = hasparameters(equ) ? (t,q,p,v) -> equ.v(t, q, p, v, params) : equ.v
-_get_f1(equ::SPSDE, params) = hasparameters(equ) ? (t,q,p,f) -> equ.f1(t, q, p, f, params) : equ.f1
-_get_f2(equ::SPSDE, params) = hasparameters(equ) ? (t,q,p,f) -> equ.f2(t, q, p, f, params) : equ.f2
-_get_B(equ::SPSDE, params) = hasparameters(equ) ? (t,q,p,B) -> equ.B(t, q, p, B, params) : equ.B
-_get_G1(equ::SPSDE, params) = hasparameters(equ) ? (t,q,p,G) -> equ.G1(t, q, p, G, params) : equ.G1
-_get_G2(equ::SPSDE, params) = hasparameters(equ) ? (t,q,p,G) -> equ.G2(t, q, p, G, params) : equ.G2
-_get_v̄(equ::SPSDE, params) = _get_v(equ, params)
-_get_f̄(equ::SPSDE, params) = _get_f(equ, params)
-_get_invariant(::SPSDE, inv, params) = (t,q,p) -> inv(t, q, p, params)
+_get_v(equ::SPSDE, params)  = hasparameters(equ) ? (v, t, q, p) -> equ.v(v, t, q, p, params) : equ.v
+_get_f1(equ::SPSDE, params) = hasparameters(equ) ? (f, t, q, p) -> equ.f1(f, t, q, p, params) : equ.f1
+_get_f2(equ::SPSDE, params) = hasparameters(equ) ? (f, t, q, p) -> equ.f2(f, t, q, p, params) : equ.f2
+_get_B(equ::SPSDE, params)  = hasparameters(equ) ? (B, t, q, p) -> equ.B(B, t, q, p, params) : equ.B
+_get_G1(equ::SPSDE, params) = hasparameters(equ) ? (G, t, q, p) -> equ.G1(G, t, q, p, params) : equ.G1
+_get_G2(equ::SPSDE, params) = hasparameters(equ) ? (G, t, q, p) -> equ.G2(G, t, q, p, params) : equ.G2
+_get_v̄(equ::SPSDE, params)  = _get_v(equ, params)
+_get_f̄(equ::SPSDE, params)  = _get_f(equ, params)
+_get_invariant(::SPSDE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::SPSDE) = (v = equ.v, f1 = equ.f1, f2 = equ.f2, B = equ.B, G1 = equ.G1, G2 = equ.G2)
 _functions(equ::SPSDE, params::OptionalParameters) = (

@@ -152,9 +152,17 @@ function check_initial_conditions(equ::HDAE, ics::NamedTuple)
 end
 
 function check_methods(equ::HDAE, tspan, ics::NamedTuple, params)
-    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
-    applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
-    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, zero(ics.λ), params) || return false
+    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+    # applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
+    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
     # TODO add missing methods
     return true
 end
@@ -169,18 +177,18 @@ function GeometricBase.arrtype(equ::HDAE, ics::NamedTuple)
     return typeof(ics.q)
 end
 
-_get_v(equ::HDAE, params) = (t,q,p,v)     -> equ.v(t, q, p, v, params)
-_get_f(equ::HDAE, params) = (t,q,p,f)     -> equ.f(t, q, p, f, params)
-_get_u(equ::HDAE, params) = (t,q,p,λ,u)   -> equ.u(t, q, p, λ, u, params)
-_get_g(equ::HDAE, params) = (t,q,p,λ,g)   -> equ.g(t, q, p, λ, g, params)
-_get_ϕ(equ::HDAE, params) = (t,q,p,ϕ)     -> equ.ϕ(t, q, p, ϕ, params)
-_get_ū(equ::HDAE, params) = (t,q,p,λ,u)   -> equ.ū(t, q, p, λ, u, params)
-_get_ḡ(equ::HDAE, params) = (t,q,p,λ,g)   -> equ.ḡ(t, q, p, λ, g, params)
-_get_ψ(equ::HDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
-_get_v̄(equ::HDAE, params) = (t,q,p,v)     -> equ.v̄(t, q, p, v, params)
-_get_f̄(equ::HDAE, params) = (t,q,p,f)     -> equ.f̄(t, q, p, f, params)
-_get_h(equ::HDAE, params) = (t,q,p) -> equ.hamiltonian(t, q, p, params)
-_get_invariant(::HDAE, inv, params) = (t,q,p) -> inv(t, q, p, params)
+_get_v(equ::HDAE, params) = (v, t, q, p)       -> equ.v(v, t, q, p, params)
+_get_f(equ::HDAE, params) = (f, t, q, p)       -> equ.f(f, t, q, p, params)
+_get_u(equ::HDAE, params) = (u, t, q, p, λ)    -> equ.u(u, t, q, p, λ, params)
+_get_g(equ::HDAE, params) = (g, t, q, p, λ)    -> equ.g(g, t, q, p, λ, params)
+_get_ϕ(equ::HDAE, params) = (ϕ, t, q, p)       -> equ.ϕ(ϕ, t, q, p, params)
+_get_ū(equ::HDAE, params) = (u, t, q, p, λ)    -> equ.ū(u, t, q, p, λ, params)
+_get_ḡ(equ::HDAE, params) = (g, t, q, p, λ)    -> equ.ḡ(g, t, q, p, λ, params)
+_get_ψ(equ::HDAE, params) = (ψ, t, q, p, v, f) -> equ.ψ(ψ, t, q, p, v, f, params)
+_get_v̄(equ::HDAE, params) = (v, t, q, p)       -> equ.v̄(v, t, q, p, params)
+_get_f̄(equ::HDAE, params) = (f, t, q, p)       -> equ.f̄(f, t, q, p, params)
+_get_h(equ::HDAE, params) = (p, t, q)          -> equ.hamiltonian(t, q, p, params)
+_get_invariant(::HDAE, inv, params) = (t,q,p)  -> inv(t, q, p, params)
 
 function _functions(equ::HDAE)
     if hassecondary(equ)

@@ -46,7 +46,7 @@ variables ``(q,p)`` and algebraic variable ``v``.
 
 The functions `ϑ` and `f` must have the interface
 ```julia
-    function ϑ(t, q, v, p)
+    function ϑ(p, t, q, v)
         p[1] = ...
         p[2] = ...
         ...
@@ -54,7 +54,7 @@ The functions `ϑ` and `f` must have the interface
 ```
 and
 ```julia
-    function f(t, q, v, f)
+    function f(f, t, q, v)
         f[1] = ...
         f[2] = ...
         ...
@@ -65,19 +65,19 @@ current velocity and `f` and `p` are the vectors which hold the result of
 evaluating the functions ``f`` and ``ϑ`` on `t`, `q` and `v`.
 In addition, the functions `g`, `v̄` and `f̄` are specified by
 ```julia
-    function g(t, q, λ, g)
+    function g(g, t, q, λ)
         g[1] = ...
         g[2] = ...
         ...
     end
 
-    function v̄(t, q, v)
+    function v̄(v, t, q)
         v[1] = ...
         v[2] = ...
         ...
     end
 
-    function f̄(t, q, v, f)
+    function f̄(f, t, q, v)
         f[1] = ...
         f[2] = ...
         ...
@@ -99,7 +99,7 @@ IODE(ϑ, f, q₀::State, p₀::State, λ₀::StateVector=zero(q₀); kwargs...)
 
 ### Keyword arguments
 
-* `v̄ = (t,q,v) -> nothing`
+* `v̄ = (v, t, q) -> nothing`
 * `f̄ = f`
 * `invariants = nothing`
 * `parameters = nothing`
@@ -150,9 +150,11 @@ function check_initial_conditions(::IODE, ics::NamedTuple)
 end
 
 function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
-    applicable(equ.ϑ, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
-    applicable(equ.f, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
-    applicable(equ.g, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
+    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
 end
 
@@ -166,11 +168,11 @@ function GeometricBase.arrtype(equ::IODE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_ϑ(equ::IODE, params) = (t,q,v,ϑ) -> equ.ϑ(t, q, v, ϑ, params)
-_get_f(equ::IODE, params) = (t,q,v,f) -> equ.f(t, q, v, f, params)
-_get_g(equ::IODE, params) = (t,q,v,g) -> equ.g(t, q, v, g, params)
-_get_v̄(equ::IODE, params) = (t,q,v) -> equ.v̄(t, q, v, params)
-_get_f̄(equ::IODE, params) = (t,q,v,f) -> equ.f̄(t, q, v, f, params)
+_get_ϑ(equ::IODE, params) = (ϑ, t, q, v) -> equ.ϑ(ϑ, t, q, v, params)
+_get_f(equ::IODE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
+_get_g(equ::IODE, params) = (g, t, q, v) -> equ.g(g, t, q, v, params)
+_get_v̄(equ::IODE, params) = (v, t, q)    -> equ.v̄(v, t, q, params)
+_get_f̄(equ::IODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IODE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 
 _functions(equ::IODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, v̄ = equ.v̄, f̄ = equ.f̄)

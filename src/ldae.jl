@@ -68,7 +68,7 @@ variables ``(q,p)`` and algebraic variables ``v``, ``\lambda`` and ``\mu``.
 
 The functions `ϑ` and `f` must have the interface
 ```julia
-    function ϑ(t, q, v, p)
+    function ϑ(p, t, q, v)
         p[1] = ...
         p[2] = ...
         ...
@@ -76,7 +76,7 @@ The functions `ϑ` and `f` must have the interface
 ```
 and
 ```julia
-    function f(t, q, v, f)
+    function f(f, t, q, v)
         f[1] = ...
         f[2] = ...
         ...
@@ -87,19 +87,19 @@ current velocity and `f` and `p` are the vectors which hold the result of
 evaluating the functions ``f`` and ``ϑ`` on `t`, `q` and `v`.
 The funtions `g`, `v̄` and `f̄` are specified by
 ```julia
-    function g(t, q, λ, g)
+    function g(g, t, q, λ)
         g[1] = ...
         g[2] = ...
         ...
     end
 
-    function v̄(t, q, v)
+    function v̄(v, t, q)
         v[1] = ...
         v[2] = ...
         ...
     end
 
-    function f̄(t, q, v, f)
+    function f̄(f, t, q, v)
         f[1] = ...
         f[2] = ...
         ...
@@ -207,9 +207,17 @@ function check_initial_conditions(equ::LDAE, ics::NamedTuple)
 end
 
 function check_methods(equ::LDAE, tspan, ics::NamedTuple, params)
-    applicable(equ.ϑ, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
-    applicable(equ.f, tspan[begin], ics.q, zero(ics.q), zero(ics.p), params) || return false
-    applicable(equ.ϕ, tspan[begin], ics.q, ics.p, zero(ics.λ), params) || return false
+    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    # equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
     # TODO add missing methods
     return true
 end
@@ -224,18 +232,18 @@ function GeometricBase.arrtype(equ::LDAE, ics::NamedTuple)
     return typeof(ics.q)
 end
 
-_get_ϑ(equ::LDAE, params) = (t,q,v,ϑ)     -> equ.ϑ(t, q, v, ϑ, params)
-_get_f(equ::LDAE, params) = (t,q,v,f)     -> equ.f(t, q, v, f, params)
-_get_u(equ::LDAE, params) = (t,q,p,λ,u)   -> equ.u(t, q, p, λ, u, params)
-_get_g(equ::LDAE, params) = (t,q,p,λ,g)   -> equ.g(t, q, p, λ, g, params)
-_get_ϕ(equ::LDAE, params) = (t,q,p,ϕ)     -> equ.ϕ(t, q, p, ϕ, params)
-_get_ū(equ::LDAE, params) = (t,q,p,λ,u)   -> equ.ū(t, q, p, λ, u, params)
-_get_ḡ(equ::LDAE, params) = (t,q,p,λ,g)   -> equ.ḡ(t, q, p, λ, g, params)
-_get_ψ(equ::LDAE, params) = (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, params)
-_get_v̄(equ::LDAE, params) = (t,q,v)       -> equ.v̄(t, q, v, params)
-_get_f̄(equ::LDAE, params) = (t,q,v,f)     -> equ.f̄(t, q, v, f, params)
-_get_ω(equ::LDAE, params) = (t,q,v,ω)     -> equ.ω(t, q, v, ω, params)
-_get_l(equ::LDAE, params) = (t,q,v)       -> equ.lagrangian(t, q, v, params)
+_get_ϑ(equ::LDAE, params) = (ϑ, t, q, v)       -> equ.ϑ(ϑ, t, q, v, params)
+_get_f(equ::LDAE, params) = (f, t, q, v)       -> equ.f(f, t, q, v, params)
+_get_u(equ::LDAE, params) = (u, t, q, p, λ)    -> equ.u(u, t, q, p, λ, params)
+_get_g(equ::LDAE, params) = (g, t, q, p, λ)    -> equ.g(g, t, q, p, λ, params)
+_get_ϕ(equ::LDAE, params) = (ϕ, t, q, p)       -> equ.ϕ(ϕ, t, q, p, params)
+_get_ū(equ::LDAE, params) = (u, t, q, p, λ)    -> equ.ū(u, t, q, p, λ, params)
+_get_ḡ(equ::LDAE, params) = (g, t, q, p, λ)    -> equ.ḡ(g, t, q, p, λ, params)
+_get_ψ(equ::LDAE, params) = (ψ, t, q, p, v, f) -> equ.ψ(ψ, t, q, p, v, f, params)
+_get_v̄(equ::LDAE, params) = (v, t, q)          -> equ.v̄(v, t, q, params)
+_get_f̄(equ::LDAE, params) = (f, t, q, v)       -> equ.f̄(f, t, q, v, params)
+_get_ω(equ::LDAE, params) = (ω, t, q, v)       -> equ.ω(ω, t, q, v, params)
+_get_l(equ::LDAE, params) = (t, q, v)          -> equ.lagrangian(t, q, v, params)
 _get_invariant(::LDAE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 
 function _functions(equ::LDAE)

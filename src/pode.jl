@@ -31,7 +31,7 @@ with vector fields ``v`` and ``f``, initial conditions ``(q_{0}, p_{0})`` and th
 
 The functions `v` and `f` must have the interface
 ```julia
-    function v(t, q, p, v, params)
+    function v(v, t, q, p, params)
         v[1] = ...
         v[2] = ...
         ...
@@ -39,7 +39,7 @@ The functions `v` and `f` must have the interface
 ```
 and
 ```julia
-    function f(t, q, p, f, params)
+    function f(f, t, q, p, params)
         f[1] = ...
         f[2] = ...
         ...
@@ -94,8 +94,8 @@ function check_initial_conditions(::PODE, ics::NamedTuple)
 end
 
 function check_methods(equ::PODE, tspan, ics, params)
-    applicable(equ.v, tspan[begin], ics.q, ics.p, zero(ics.q), params) || return false
-    applicable(equ.f, tspan[begin], ics.q, ics.p, zero(ics.p), params) || return false
+    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -109,8 +109,8 @@ function GeometricBase.arrtype(equ::PODE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::PODE, params) = (t,q,p,v) -> equ.v(t, q, p, v, params)
-_get_f(equ::PODE, params) = (t,q,p,f) -> equ.f(t, q, p, f, params)
+_get_v(equ::PODE, params) = (v, t, q, p) -> equ.v(v, t, q, p, params)
+_get_f(equ::PODE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
 _get_v̄(equ::PODE, params) = _get_v(equ, params)
 _get_f̄(equ::PODE, params) = _get_f(equ, params)
 _get_invariant(::PODE, inv, params) = (t,q,p) -> inv(t, q, p, params)
