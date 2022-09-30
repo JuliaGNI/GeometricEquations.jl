@@ -32,13 +32,13 @@ The function `v` providing the vector field must have the interface
 ```
 where `t` is the current time, `q` is the current solution vector, `v` is the
 vector which holds the result of evaluating the vector field ``v`` on `t` and
-`q`, and params are additional parameters.
+`q`, and `params` are additional parameters on which the vector field may depend.
 
 ### Constructors
 
 ```julia
 ODE(v, invariants, parameters, periodicity)
-ODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+ODE(v; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
 """
