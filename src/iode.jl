@@ -65,7 +65,7 @@ current velocity and `f` and `p` are the vectors which hold the result of
 evaluating the functions ``f`` and ``ϑ`` on `t`, `q` and `v`.
 In addition, the functions `g`, `v̄` and `f̄` are specified by
 ```julia
-    function g(g, t, q, λ)
+    function g(g, t, q, v, λ)
         g[1] = ...
         g[2] = ...
         ...
@@ -152,7 +152,7 @@ end
 function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
     applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), ics.λ, params) || return false
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
@@ -170,8 +170,8 @@ end
 
 _get_ϑ(equ::IODE, params) = (ϑ, t, q, v) -> equ.ϑ(ϑ, t, q, v, params)
 _get_f(equ::IODE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
-_get_g(equ::IODE, params) = (g, t, q, v) -> equ.g(g, t, q, v, params)
 _get_v̄(equ::IODE, params) = (v, t, q)    -> equ.v̄(v, t, q, params)
+_get_g(equ::IODE, params) = (g, t, q, v, λ) -> equ.g(g, t, q, v, λ, params)
 _get_f̄(equ::IODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IODE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 

@@ -195,7 +195,7 @@ module HarmonicOscillator
         nothing
     end
 
-    function oscillator_iode_g(g, t, q, λ, params)
+    function oscillator_iode_g(g, t, q, v, λ, params)
         g[1] = 0
         g[2] = λ[1]
         nothing

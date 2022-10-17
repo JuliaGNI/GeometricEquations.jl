@@ -46,11 +46,11 @@ include("initial_conditions.jl")
 
     funcs = functions(ode)
 
-    @test_nowarn funcs.v(t₀, x₀, zero(x₀), NullParameters())
+    @test_nowarn funcs.v(zero(x₀), t₀, x₀, NullParameters())
 
     funcs = functions(ode, NullParameters())
 
-    @test_nowarn funcs.v(t₀, x₀, zero(x₀))
+    @test_nowarn funcs.v(zero(x₀), t₀, x₀)
 
 end
 
@@ -206,13 +206,13 @@ end
 
     funcs = functions(pode)
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀), NullParameters())
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀), NullParameters())
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀, NullParameters())
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀, NullParameters())
 
     funcs = functions(pode, NullParameters())
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀))
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀)
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀)
 
     # funcs = functions(pode)
     # @test funcs.v == pode_v == pode.v
@@ -292,15 +292,15 @@ end
 
     funcs = functions(iode)
 
-    @test_nowarn funcs.ϑ(t₀, q₀, p₀, zero(q₀), NullParameters())
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(q₀), NullParameters())
-    @test_nowarn funcs.g(t₀, q₀, p₀, zero(q₀), NullParameters())
+    @test_nowarn funcs.ϑ(zero(p₀), t₀, q₀, p₀, NullParameters())
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀, NullParameters())
+    @test_nowarn funcs.g(zero(p₀), t₀, q₀, p₀, λ₀, NullParameters())
 
     funcs = functions(iode, NullParameters())
 
-    @test_nowarn funcs.ϑ(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.g(t₀, q₀, p₀, zero(q₀))
+    @test_nowarn funcs.ϑ(zero(p₀), t₀, q₀, p₀)
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀)
+    @test_nowarn funcs.g(zero(p₀), t₀, q₀, p₀, λ₀)
 
     # @test periodicity(iode) == zero(q₀)
     # @test initial_conditions(iode) == (t₀, [q₀], [p₀], [λ₀])
@@ -361,15 +361,15 @@ end
 
     funcs = functions(hode)
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀), NullParameters())
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀), NullParameters())
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀, NullParameters())
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀, NullParameters())
     @test_nowarn funcs.h(t₀, q₀, p₀, NullParameters())
     # @test_nowarn funcs.poisson(t₀, q₀, p₀, zeros(2,2), NullParameters())
 
     funcs = functions(hode, NullParameters())
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀))
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀)
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀)
     @test_nowarn funcs.h(t₀, q₀, p₀)
     # @test_nowarn funcs.poisson(t₀, q₀, p₀, zeros(2,2))
 
@@ -457,19 +457,19 @@ end
 
     funcs = functions(lode)
 
-    @test_nowarn funcs.ϑ(t₀, q₀, p₀, zero(q₀), NullParameters())
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(q₀), NullParameters())
-    @test_nowarn funcs.g(t₀, q₀, p₀, zero(q₀), NullParameters())
+    @test_nowarn funcs.ϑ(zero(p₀), t₀, q₀, p₀, NullParameters())
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀, NullParameters())
+    @test_nowarn funcs.g(zero(p₀), t₀, q₀, p₀, λ₀, NullParameters())
+    @test_nowarn funcs.ω(zeros(2,2), t₀, q₀, p₀, NullParameters())
     @test_nowarn funcs.l(t₀, q₀, p₀, NullParameters())
-    @test_nowarn funcs.ω(t₀, q₀, p₀, zeros(2,2), NullParameters())
 
     funcs = functions(lode, NullParameters())
 
-    @test_nowarn funcs.ϑ(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.g(t₀, q₀, p₀, zero(q₀))
+    @test_nowarn funcs.ϑ(zero(p₀), t₀, q₀, p₀)
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀)
+    @test_nowarn funcs.g(zero(p₀), t₀, q₀, p₀, λ₀)
+    @test_nowarn funcs.ω(zeros(2,2), t₀, q₀, p₀)
     @test_nowarn funcs.l(t₀, q₀, p₀)
-    @test_nowarn funcs.ω(t₀, q₀, p₀, zeros(2,2))
 
     # funcs = functions(lode)
     # @test funcs.ϑ == iode_ϑ == lode.ϑ

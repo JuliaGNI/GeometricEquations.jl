@@ -48,11 +48,11 @@ include("initial_conditions.jl")
 
     funcs = functions(sde)
 
-    @test_nowarn funcs.v(t₀, x₀, zero(x₀), sde_params)
+    @test_nowarn funcs.v(zero(x₀), t₀, x₀, sde_params)
 
     funcs = functions(sde, sde_params)
 
-    @test_nowarn funcs.v(t₀, x₀, zero(x₀))
+    @test_nowarn funcs.v(zero(x₀), t₀, x₀)
 
 end
 
@@ -99,13 +99,13 @@ end
 
     funcs = functions(psde)
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀), sde_params)
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀), sde_params)
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀, sde_params)
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀, sde_params)
 
     funcs = functions(psde, sde_params)
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.f(t₀, q₀, p₀, zero(p₀))
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀)
+    @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀)
 
 end
 
@@ -152,14 +152,14 @@ end
 
     funcs = functions(psde)
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀), sde_params)
-    @test_nowarn funcs.f1(t₀, q₀, p₀, zero(p₀), sde_params)
-    @test_nowarn funcs.f2(t₀, q₀, p₀, zero(p₀), sde_params)
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀, sde_params)
+    @test_nowarn funcs.f1(zero(p₀), t₀, q₀, p₀, sde_params)
+    @test_nowarn funcs.f2(zero(p₀), t₀, q₀, p₀, sde_params)
 
     funcs = functions(psde, sde_params)
 
-    @test_nowarn funcs.v(t₀, q₀, p₀, zero(q₀))
-    @test_nowarn funcs.f1(t₀, q₀, p₀, zero(p₀))
-    @test_nowarn funcs.f2(t₀, q₀, p₀, zero(p₀))
+    @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀)
+    @test_nowarn funcs.f1(zero(p₀), t₀, q₀, p₀, )
+    @test_nowarn funcs.f2(zero(p₀), t₀, q₀, p₀, )
 
 end

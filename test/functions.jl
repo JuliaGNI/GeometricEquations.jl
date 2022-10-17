@@ -5,26 +5,26 @@ using GeometricEquations: _idae_default_v̄, _ldae_default_v̄
 using GeometricEquations: parameter_types
 
 
-function ode_v(t, x, ẋ, params)
+function ode_v(ẋ, t, x, params)
     ẋ[1] = x[2]
     ẋ[2] = 2x[1]
 end
 
 
-function sode_v1(t, x, v, params)
+function sode_v1(v, t, x, params)
     v[1] = x[2]
 end
 
-function sode_v2(t, x, v, params)
+function sode_v2(v, t, x, params)
     v[2] = 2x[1]
 end
 
-function sode_q1(t, x̄, x, h, params)
+function sode_q1(x, t, x̄, t̄, params)
     x[1] = x̄[1]
     x[2] = x̄[2]
 end
 
-function sode_q2(t, x̄, x, h, params)
+function sode_q2(x, t, x̄, t̄, params)
     x[1] = x̄[1]
     x[2] = x̄[2]
 end
@@ -33,11 +33,11 @@ sode_v = (sode_v1, sode_v2)
 sode_q = (sode_q1, sode_q2)
 
 
-function pode_v(t, q, p, v, params)
+function pode_v(v, t, q, p, params)
     v[1] = p[1]
 end
 
-function pode_f(t, q, p, f, params)
+function pode_f(f, t, q, p, params)
     f[1] = 2q[1]
 end
 
@@ -52,7 +52,7 @@ function hode_h(t, q, p, params)
     p[1]^2/2 + cos(q[1])
 end
 
-function hode_ω(t, q, p, ω, params)
+function hode_ω(ω, t, q, p, params)
     ω[1,1] = sin(q[1])
     ω[1,2] = 0
     ω[2,1] = 0
@@ -62,23 +62,23 @@ end
 hode_eqs = (pode_v, pode_f, hode_h)
 
 
-function iode_ϑ(t, q, v, p, params)
+function iode_ϑ(p, t, q, v, params)
     p[1] = v[1]
 end
 
-function iode_f(t, q, v, f, params)
+function iode_f(f, t, q, v, params)
     f[1] = sin(q[1])
 end
 
-function iode_u(t, q, λ, u, params)
+function iode_u(u, t, q, v, λ, params)
     u[1] = λ[1]
 end
 
-function iode_g(t, q, λ, g, params)
+function iode_g(g, t, q, v, λ, params)
     g[1] = λ[1]
 end
 
-function iode_v(t, q, p, v, params)
+function iode_v(v, t, q, p, params)
     v[1] = p[1]
 end
 
@@ -93,7 +93,7 @@ function lode_l(t, q, v, params)
     v[1]^2/2 - cos(q[1])
 end
 
-function lode_ω(t, q, v, ω, params)
+function lode_ω(ω, t, q, v, params)
     ω[1,1] = sin(q[1])
     ω[1,2] = 0
     ω[2,1] = 0
@@ -103,55 +103,55 @@ end
 lode_eqs = (iode_ϑ, iode_f, iode_g, lode_ω, lode_l)
 
 
-function dae_v(t, x, v, params)
+function dae_v(v, t, x, params)
     v[1] = x[1]
     v[2] = x[2]
 end
 
-function dae_u(t, x, λ, u, params)
+function dae_u(u, t, x, λ, params)
     u[1] = +λ[1]
     u[2] = -λ[1]
 end
 
-function dae_ū(t, x, λ, u, params)
+function dae_ū(u, t, x, λ, params)
     u[1] = +λ[1]
     u[2] = -λ[1]
 end
 
-function dae_ϕ(t, x, ϕ, params)
+function dae_ϕ(ϕ, t, x, params)
     ϕ[1] = x[2] - x[1]
 end
 
-function dae_ψ(t, x, v, ψ, params)
+function dae_ψ(ψ, t, x, v, params)
     ψ[1] = v[2] - v[1]
 end
 
 
-function pdae_v(t, q, p, v, params)
+function pdae_v(v, t, q, p, params)
     v[1] = p[1]
 end
 
-function pdae_f(t, q, p, f, params)
+function pdae_f(f, t, q, p, params)
     f[1] = q[1]
 end
 
-function pdae_p(t, q, v, p, params)
+function pdae_p(p, t, q, v, params)
     p[1] = v[1]
 end
 
-function pdae_u(t, q, p, λ, u, params)
+function pdae_u(u, t, q, p, λ, params)
     u[1] = λ[1]
 end
 
-function pdae_g(t, q, p, λ, g, params)
+function pdae_g(g, t, q, p, λ, params)
     g[1] = λ[1]
 end
 
-function pdae_ϕ(t, q, p, ϕ, params)
+function pdae_ϕ(ϕ, t, q, p, params)
     ϕ[1] = p[1] - q[1]
 end
 
-function pdae_ψ(t, q, p, λ, μ, ψ, params)
+function pdae_ψ(ψ, t, q, p, λ, μ, params)
     ψ[1] = μ[1] - λ[1]
 end
 
@@ -170,66 +170,66 @@ ldae_ω = lode_ω
 ldae_v = _ldae_default_v̄
 
 
-function sde_v(t, q, v, params)
+function sde_v(v, t, q, params)
     @unpack λ = params
     v[1] = λ*q[1]
     v[2] = λ*q[2]
 end
 
-function sde_B(t, q, B::AbstractVector, params)
+function sde_B(B::AbstractVector, t, q, params)
     @unpack μ = params
     B[1] = μ*q[1]
     B[2] = μ*q[2]
 end
 
-function sde_B(t, q, B::AbstractMatrix, params)
+function sde_B(B::AbstractMatrix, t, q, params)
     @unpack μ = params
     B[1,:] = μ*q[1]
     B[2,:] = μ*q[2]
 end
 
 
-function psde_v(t, q, p, v, params)
+function psde_v(v, t, q, p, params)
     v[1] = p[1]
 end
 
-function psde_f(t, q, p, f, params)
+function psde_f(f, t, q, p, params)
     f[1] = - q[1]
 end
 
-function psde_B(t, q, p, B, params)
+function psde_B(B, t, q, p, params)
     @unpack noise_intensity = params
     B[1,1] = noise_intensity * p[1]
 end
 
-function psde_G(t, q, p, G, params)
+function psde_G(G, t, q, p, params)
     @unpack noise_intensity = params
     G[1,1] = - noise_intensity * q[1]
 end
 
 
-function spsde_v(t, q, p, v, params)
+function spsde_v(v, t, q, p, params)
     v[1] = p[1]
 end
 
-function spsde_f1(t, q, p, f, params)
+function spsde_f1(f, t, q, p, params)
     f[1] = - q[1]
 end
 
-function spsde_f2(t, q, p, f, params)
+function spsde_f2(f, t, q, p, params)
     f[1] = 0
 end
 
-function spsde_B(t, q, p, B, params)
+function spsde_B(B, t, q, p, params)
     @unpack noise_intensity = params
     B[1,1] = noise_intensity * p[1]
 end
 
-function spsde_G1(t, q, p, G, params)
+function spsde_G1(G, t, q, p, params)
     @unpack noise_intensity = params
     G[1,1] = - noise_intensity * q[1]
 end
 
-function spsde_G2(t, q, p, G, params)
+function spsde_G2(G, t, q, p, params)
     G[1,1] = 0
 end

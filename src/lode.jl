@@ -172,7 +172,7 @@ end
 function check_methods(equ::LODE, tspan, ics, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
     applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), ics.λ, params) || return false
     # TODO add missing methods
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
@@ -192,7 +192,7 @@ end
 
 _get_ϑ(equ::LODE, params) = (ϑ, t, q, v) -> equ.ϑ(ϑ, t, q, v, params)
 _get_f(equ::LODE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
-_get_g(equ::LODE, params) = (g, t, q, v) -> equ.g(g, t, q, v, params)
+_get_g(equ::LODE, params) = (g, t, q, v, λ) -> equ.g(g, t, q, v, λ, params)
 _get_ω(equ::LODE, params) = (ω, t, q, v) -> equ.ω(ω, t, q, v, params)
 _get_v̄(equ::LODE, params) = (v, t, q)    -> equ.v̄(v, t, q, params)
 _get_f̄(equ::LODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
