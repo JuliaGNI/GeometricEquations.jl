@@ -21,11 +21,7 @@ For each type, there are several subtypes
 
 Each equation holds a number of functions determining the vector field, constraints, and possibly additional information like parameters, periodicity, invariants and the Hamiltonian or Lagrangian.
 
-## Library
+## Index
 
 ```@index
-```
-
-```@autodocs
-Modules = [GeometricEquations]
 ```

@@ -1,0 +1,35 @@
+# Equations
+
+```@docs
+GeometricEquations.GeometricEquation
+```
+
+## Ordinary Differential Equations
+
+```@docs
+GeometricEquations.ODE
+GeometricEquations.PODE
+GeometricEquations.HODE
+GeometricEquations.IODE
+GeometricEquations.LODE
+GeometricEquations.SODE
+```
+
+## Differential Algebraic Equations
+
+```@docs
+GeometricEquations.DAE
+GeometricEquations.PDAE
+GeometricEquations.HDAE
+GeometricEquations.IDAE
+GeometricEquations.LDAE
+GeometricEquations.SPDAE
+```
+
+## Stochastic Differential Equations
+
+```@docs
+GeometricEquations.SDE
+GeometricEquations.PSDE
+GeometricEquations.SPSDE
+```
