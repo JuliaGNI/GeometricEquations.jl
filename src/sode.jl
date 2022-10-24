@@ -161,10 +161,10 @@ $(sode_equations)
 ### Constructors
 
 ```julia
-ODEProblem(v, q, tspan, tstep, ics::NamedTuple; kwargs...)
-ODEProblem(v, q, tspan, tstep, q₀::State; kwargs...)
-ODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
-ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+SODEProblem(v, q, tspan, tstep, ics::NamedTuple; kwargs...)
+SODEProblem(v, q, tspan, tstep, q₀::State; kwargs...)
+SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
+SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
 ```
 
 where `v` is a tuple of functions computing the vector fields for each substep, 
@@ -175,11 +175,7 @@ where `v` is a tuple of functions computing the vector fields for each substep,
 The initial condition `q₀` can also be prescribed directly, with
 `State` an `AbstractArray{<:Number}`.
 
-### Keyword arguments:
-
-* `invariants = NullInvariants()`
-* `parameters = NullParameters()`
-* `periodicity = NullPeriodicity()`
+For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
     
 ### Function Definitions
 
