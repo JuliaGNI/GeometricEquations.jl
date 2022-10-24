@@ -79,6 +79,17 @@ module GeometricEquations
 
     include("conversion.jl")
 
+    
+    # Union types for problems of similar kind
+
+    const AbstractProblemODE = Union{ODEProblem, SODEProblem}
+    const AbstractProblemDAE = Union{DAEProblem}
+    const AbstractProblemSDE = Union{SDEProblem}
+    const AbstractProblemPODE = Union{PODEProblem, HODEProblem, IODEProblem, LODEProblem}
+    const AbstractProblemPDAE = Union{PDAEProblem, HDAEProblem, IDAEProblem, LDAEProblem}
+    const AbstractProblemPSDE = Union{PSDEProblem, SPSDEProblem}
+
+
     include("tests.jl")
     
 end
