@@ -1,6 +1,5 @@
-@doc raw"""
-`SODE`: Split Ordinary Differential Equation
 
+const sode_equations = raw"""
 Defines an initial value problem
 ```math
 \dot{q} (t) = v(t, q(t)) , \qquad q(t_{0}) = q_{0} ,
@@ -11,23 +10,9 @@ is given as a sum of vector fields
 ```math
 v (t) = v_1 (t) + ... + v_r (t) .
 ```
+"""
 
-### Parameters
-
-* `vType <: Union{Tuple,Nothing}`: type of `v`
-* `qType <: Union{Tuple,Nothing}`: type of `q`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
-
-### Fields
-
-* `v`: tuple of functions computing the vector field
-* `q`: tuple of functions computing the solution
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
-
+const sode_functions = raw"""
 The functions `v_i` providing the vector field must have the interface
 ```julia
     function v_i(v, t, q, params)
@@ -46,7 +31,34 @@ and the functions `q_i` providing the solutions must have the interface
 ```
 where `t₀` is the current time, `q₀` is the current solution vector, `q₁` is the
 new solution vector at time `t₁`, holding the result of computing one substep
+
+The fact that the function `v` returns the solution and not just the vector
+field for each substep increases the flexibility for the use of splitting
+methods, e.g., it allows to use another integrator for solving substeps.
 with the vector field ``v_i``.
+"""
+
+
+@doc """
+`SODE`: Split Ordinary Differential Equation
+
+$(sode_equations)
+
+### Parameters
+
+* `vType <: Union{Tuple,Nothing}`: type of `v`
+* `qType <: Union{Tuple,Nothing}`: type of `q`
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
+
+### Fields
+
+* `v`: tuple of functions computing the vector fields for each substep
+* `q`: tuple of functions computing the solutions for each substep
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 ### Constructors
 
@@ -56,6 +68,10 @@ SODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=Nu
 SODE(v, q, invariants, parameters, periodicity)
 SODE(v, q; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 ```
+
+### Function Definitions
+
+$(sode_functions)
 
 """
 struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing},
@@ -135,3 +151,62 @@ _functions(equ::SODE) = (v = equ.v,)
 _solutions(equ::SODE) = (q = equ.q,)
 _functions(equ::SODE, params::OptionalParameters) = (v = _get_v(equ, params),)
 _solutions(equ::SODE, params::OptionalParameters) = (q = _get_q(equ, params),)
+
+
+@doc """
+`SODEProblem`: Split Ordinary Differential Equation Problem
+
+$(sode_equations)
+
+### Constructors
+
+```julia
+ODEProblem(v, q, tspan, tstep, ics::NamedTuple; kwargs...)
+ODEProblem(v, q, tspan, tstep, q₀::State; kwargs...)
+ODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
+ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+```
+
+where `v` is a tuple of functions computing the vector fields for each substep, 
+`q` is an optional tuple of functions computing the solution for each substep,
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entry `q`.
+The initial condition `q₀` can also be prescribed directly, with
+`State` an `AbstractArray{<:Number}`.
+
+### Keyword arguments:
+
+* `invariants = NullInvariants()`
+* `parameters = NullParameters()`
+* `periodicity = NullPeriodicity()`
+    
+### Function Definitions
+
+$(sode_functions)
+
+"""
+const SODEProblem = GeometricProblem{SODE}
+
+function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, ics::NamedTuple;
+                     invariants = NullInvariants(), parameters = NullParameters(),
+                     periodicity = NullPeriodicity())
+    equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::State; kwargs...)
+    ics = (q = q₀,)
+    SODEProblem(v, q, tspan, tstep, ics; kwargs...)
+end
+
+function SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
+    SODEProblem(v, nothing, tspan, tstep, ics; kwargs...)
+end
+
+function SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+    ics = (q = q₀,)
+    SODEProblem(v, tspan, tstep, ics; kwargs...)
+end
+
+GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)

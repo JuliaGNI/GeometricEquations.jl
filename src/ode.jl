@@ -1,27 +1,14 @@
-@doc raw"""
-`ODE`: Ordinary Differential Equation
 
-Defines an initial value problem
+const ode_equations = raw"""
+Ordinary differential equations define an initial value problem of the form
 ```math
 \dot{q} (t) = v(t, q(t)) , \qquad q(t_{0}) = q_{0} ,
 ```
 with vector field ``v``, initial condition ``q_{0}`` and the solution
 ``q`` taking values in ``\mathbb{R}^{d}``.
+"""
 
-### Parameters
-
-* `vType <: Callable`: type of `v`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
-
-### Fields
-
-* `v`: function computing the vector field
-* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
-* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
-
+const ode_functions = raw"""
 The function `v` providing the vector field must have the interface
 ```julia
     function v(v, t, q, params)
@@ -32,7 +19,63 @@ The function `v` providing the vector field must have the interface
 ```
 where `t` is the current time, `q` is the current solution vector, `v` is the
 vector which holds the result of evaluating the vector field ``v`` on `t` and
-`q`, and `params` are additional parameters on which the vector field may depend.
+`q`, and `params` is a `NamedTuple` of additional parameters on which the
+vector field may depend.
+"""
+
+const ode_example = raw"""
+As an example, let us consider the harmonic oscillator.
+The dynamical equations are given by
+```math
+\dot{q} (t) = \begin{pmatrix}
+0 & 1 \\
+-k & 0 \\
+\end{pmatrix} q(t) ,
+\qquad
+q \in \mathbb{R}^{2} .
+```
+
+In order to create an `ODEProblem` for the harmonic oscillator, we need to write the following code:
+```julia
+function v(v, t, x, params)
+    v[1] = x[2]
+    v[2] = - params.k * x[1]
+end
+
+tspan = (0.0, 1.0)
+tstep = 0.1
+q₀ = [0.5, 0.0]
+
+prob = ODEProblem(v, tspan, tstep, q₀; parameters = (k = 0.5,))
+```
+
+The energy of the harmonic oscillator is preserved, so we can add it as an invariant, 
+```julia
+energy(t, q, params) = q[2]^2 / 2 + params.k * q[1]^2 / 2
+
+prob = ODEProblem(v, tspan, tstep, q₀; parameters = (k = 0.5,), invariants = (h=energy,))
+```
+"""
+
+
+@doc """
+`ODE`: Ordinary Differential Equation
+
+$(ode_equations)
+
+### Parameters
+
+* `vType <: Callable`: type of `v`
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
+
+### Fields
+
+* `v`: function computing the vector field
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 ### Constructors
 
@@ -41,12 +84,15 @@ ODE(v, invariants, parameters, periodicity)
 ODE(v; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
+### Function Definitions
+
+$(ode_functions)
+
 """
 struct ODE{vType <: Callable,
            invType <: OptionalInvariants,
            parType <: OptionalParameters,
-           perType <: OptionalPeriodicity} <: AbstractEquationODE{invType,parType,perType}
-
+           perType <: OptionalPeriodicity} <: AbstractEquationODE{invType, parType, perType}
     v::vType
 
     invariants::invType
@@ -57,12 +103,17 @@ struct ODE{vType <: Callable,
         @assert !isempty(methods(v))
         # @assert hasmethod(v, (Real, AbstractArray, AbstractArray, OptionalParameters))
 
-        new{typeof(v), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, invariants, parameters, periodicity)
+        new{typeof(v), typeof(invariants), typeof(parameters), typeof(periodicity)}(v,
+                                                                                    invariants,
+                                                                                    parameters,
+                                                                                    periodicity)
     end
 end
 
-ODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = ODE(v, invariants, parameters, periodicity)
+function ODE(v; invariants = NullInvariants(), parameters = NullParameters(),
+             periodicity = NullPeriodicity())
+    ODE(v, invariants, parameters, periodicity)
+end
 
 GeometricBase.invariants(equation::ODE) = equation.invariants
 GeometricBase.parameters(equation::ODE) = equation.parameters
@@ -96,3 +147,44 @@ _get_invariant(::ODE, inv, params) = (t, q) -> inv(t, q, params)
 
 _functions(equ::ODE) = (v = equ.v,)
 _functions(equ::ODE, params::OptionalParameters) = (v = _get_v(equ, params),)
+
+
+@doc """
+`ODEProblem`: Ordinary Differential Equation Problem
+
+$(ode_equations)
+
+### Constructors
+
+```julia
+ODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
+ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+```
+where `v` is the function computing the vector field, 
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entry `q`.
+The initial condition `q₀` can also be prescribed directly, with
+`State` an `AbstractArray{<:Number}`.
+
+For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
+
+### Function Definitions
+
+$(ode_functions)
+
+"""
+const ODEProblem = GeometricProblem{ODE}
+
+function ODEProblem(v, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(),
+                    parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = ODE(v, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+    ics = (q = q₀,)
+    ODEProblem(v, tspan, tstep, ics; kwargs...)
+end
+
+GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)

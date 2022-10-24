@@ -1,7 +1,6 @@
-@doc raw"""
-`PDAE`: Partitioned Differential Algebraic Equation
 
-Defines a partitioned differential algebraic initial value problem
+const pdae_equations = raw"""
+A partitioned differential algebraic equation has the form
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
@@ -14,65 +13,112 @@ algebraic constraint ``\phi=0``,
 conditions ``(q_{0}, p_{0})`` and ``\lambda_{0}``, the dynamical variables
 ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
 the algebraic variable ``\lambda`` taking values in ``\mathbb{R}^{m}``.
+"""
+
+const pdae_constructors = raw"""
+The functions `v` and `f` compute the vector field, `u` and `g` compute the projections,
+and `ϕ` provides the algebraic constraint.
+The functions `ψ` and `ū` are optional and provide the secondary constraint, that is the time
+derivative of the algebraic constraint, and the corresponding projection.
+"""
+
+const pdae_functions = raw"""
+The functions `v`, `f`, `u`, `g` and `ϕ` must have the interface
+
+```julia
+function v(v, t, q, p, params)
+    v[1] = ...
+    v[2] = ...
+    ...
+end
+
+function f(g, t, q, p, params)
+    f[1] = ...
+    f[2] = ...
+    ...
+end
+
+function u(u, t, q, p, λ, params)
+    u[1] = ...
+    u[2] = ...
+    ...
+end
+
+function g(g, t, q, p, λ, params)
+    g[1] = ...
+    g[2] = ...
+    ...
+end
+
+function ϕ(ϕ, t, q, p, params)
+    ϕ[1] = ...
+end
+```
+where `t` is the current time, `q`, `p` and `λ` are the current solution vectors,
+`v`, `f`, `u` and `g` are the vectors which hold the result of evaluating the
+vector fields ``v`` and ``f``, the projections ``u`` and ``g``, and `ϕ` holds the
+algebraic constraint ``\phi``, evaluated on `t`, `q`, `p` and `λ`.
+"""
+
+
+@doc """
+`PDAE`: Partitioned Differential Algebraic Equation
+
+$(pdae_equations)
 
 ### Parameters
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
-* `vType <: Function`: type of `v`
-* `fType <: Function`: type of `f`
-* `uType <: Function`: type of `u`
-* `gType <: Function`: type of `g`
-* `ϕType <: Function`: type of `ϕ`
-* `ūType <: Function`: type of `ū`
-* `ḡType <: Function`: type of `ḡ`
-* `ψType <: Function`: type of `ψ`
-* `v̄Type <: Function`: type of `v̄`
-* `f̄Type <: Function`: type of `f̄`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
+* `vType <: Callable`: type of `v`
+* `fType <: Callable`: type of `f`
+* `uType <: Callable`: type of `u`
+* `gType <: Callable`: type of `g`
+* `ϕType <: Callable`: type of `ϕ`
+* `ūType <: Callable`: type of `ū`
+* `ḡType <: Callable`: type of `ḡ`
+* `ψType <: Callable`: type of `ψ`
+* `v̄Type <: Callable`: type of `v̄`
+* `f̄Type <: Callable`: type of `f̄`
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
 
 ### Fields
 
-* `d`: dimension of dynamical variables ``q`` and ``p`` as well as the vector fields ``f`` and ``p``
-* `m`: dimension of algebraic variable ``\lambda`` and the constraint ``\phi``
 * `v`: function computing the vector field ``v``
 * `f`: function computing the vector field ``f``
 * `u`: function computing the projection for ``q``
 * `g`: function computing the projection for ``p``
 * `ϕ`: algebraic constraints
-* `ū`: function computing the secondary projection field ``\bar{u}`` (optional)
-* `ḡ`: function computing the secondary projection field ``\bar{g}`` (optional)
-* `ψ`: secondary constraints (optional)
-* `v̄`: function computing an initial guess for the velocity field ``v`` (optional)
-* `f̄`: function computing an initial guess for the force field ``f`` (optional)
-* `t₀`: initial time
-* `q₀`: initial condition for dynamical variable ``q``
-* `p₀`: initial condition for dynamical variable ``p``
-* `λ₀`: initial condition for algebraic variable ``\lambda``
-* `μ₀`: initial condition for algebraic variable ``μ`` (optional)
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
+* `ū`: function computing the secondary projection field ``\\bar{u}`` (*optional*)
+* `ḡ`: function computing the secondary projection field ``\\bar{g}`` (*optional*)
+* `ψ`: secondary constraints (*optional*)
+* `v̄`: function computing an initial guess for the velocity field ``v`` (*optional*, defaults to `v`)
+* `f̄`: function computing an initial guess for the force field ``f`` (*optional*, defaults to `f`)
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 ### Constructors
 
 ```julia
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, invariants, parameters, periodicity)
-
-PDAE(v, f, u, g, ϕ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-PDAE(v, f, u, g, ϕ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-PDAE(v, f, u, g, ϕ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-PDAE(v, f, u, g, ϕ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; kwargs...)
+PDAE(v, f, u, g, ϕ; kwargs...)
 ```
 
+$(pdae_constructors)
+
+### Function Definitions
+
+The functions are defined by
+
+$(pdae_functions)
+
+The `PDAE` is created by
+
+```julia
+equ = PDAE(v, f, u, g, ϕ)
+```
 """
 struct PDAE{vType <: Callable, fType <: Callable,
             uType <: Callable, gType <: Callable, ϕType <: Callable,
@@ -186,4 +232,77 @@ function _functions(equ::PDAE, params::OptionalParameters)
     else
         (v = _get_v(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
     end
+end
+
+
+@doc """
+`PDAEProblem`: Partitioned Differential Algebraic Equation Problem
+
+$(pdae_equations)
+
+### Constructors
+
+```julia
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
+```
+
+$(pdae_constructors)
+
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
+The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed directly,
+with `State` an `AbstractArray{<:Number}`.
+
+In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+a `PDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
+values `v̄ = v` and `f̄ = f`.
+    
+### Function Definitions
+
+$(pdae_functions)
+
+With the above function definitions the `PDAEProblem` can be created by
+
+```julia
+tspan = (0.0, 1.0)
+tstep = 0.1
+q₀ = [1., 1.]
+p₀ = [1., 0.]
+λ₀ = [0.]
+
+prob = PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀, p₀, λ₀)
+```
+"""
+const PDAEProblem = GeometricProblem{PDAE}
+
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
+                     f̄ = f, invariants = NullInvariants(), parameters = NullParameters(),
+                     periodicity = NullPeriodicity())
+    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
+               periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State,
+                     λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
+    PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
+end
+
+function PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
+    PDAEProblem(v, f, u, g, ϕ, nothing, nothing, nothing, tspan, tstep, ics; kwargs...)
+end
+
+function PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ₀::State;
+                     kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀)
+    PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics; kwargs...)
+end
+
+function GeometricBase.periodicity(prob::PDAEProblem)
+    (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 end

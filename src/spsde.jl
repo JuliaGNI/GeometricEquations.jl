@@ -1,16 +1,99 @@
-@doc raw"""
-`SPSDE`: Stratonovich Split Partitioned Stochastic Differential Equation
 
+const spsde_equations = raw"""
 Defines a partitioned stochastic differential initial value problem
 ```math
 \begin{aligned}
-dq (t) &=   v(t, q(t)) \, dt + B(t, q(t)) \circ dW , & q(t_{0}) &= q_{0} , \\
-dp (t) &= [ f_1(t, q(t)) + f_2(t, q(t)) ] \, dt + [ G_1(t, q(t)) + G_2(t, q(t)) ] \circ dW , & p(t_{0}) &= p_{0} ,
+dq (t) &=   v(t, q(t), p(t)) \, dt + B(t, q(t), p(t)) \circ dW , & q(t_{0}) &= q_{0} , \\
+dp (t) &= [ f_1(t, q(t), p(t)) + f_2(t, q(t), p(t)) ] \, dt + [ G_1(t, q(t), p(t)) + G_2(t, q(t), p(t)) ] \circ dW , & p(t_{0}) &= p_{0} ,
 \end{aligned}
 ```
 with the drift vector fields ``v`` and ``f_i``, diffusion matrices ``B`` and ``G_i``,
 initial conditions ``q_{0}`` and ``p_{0}``, the dynamical variables ``(q,p)`` taking
 values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener process W
+"""
+
+const spsde_functions = raw"""
+The functions `v`, `f1`, `f2, `B`, `G1` and `G2`, providing the drift vector fields and diffusion matrices,
+all take five arguments, `(out, t, q, p, params)`.
+
+```julia
+function v(v, t, q, p, params)
+    v[1] = ...
+    v[2] = ...
+    ...
+end
+
+function f1(f, t, q, p, params)
+    f[1] = ...
+    f[2] = ...
+    ...
+end
+
+function f2(f, t, q, p, params)
+    f[1] = ...
+    f[2] = ...
+    ...
+end
+
+function B(B, t, q, p, params)
+    B[1,1] = ...
+    ...
+end
+
+function G1(G, t, q, p, params)
+    G[1,1] = ...
+    ...
+end
+
+function G2(G, t, q, p, params)
+    G[1,1] = ...
+    ...
+end
+```
+
+where `t` is the current time, `(q,p)` is the current solution vector, and `v`, `f`, `B` and `G`
+are the variables which hold the result of evaluating the vector fields ``v``, ``f`` and the
+matrices ``B_i``, ``G_i`` on `(t,q,p)`.
+"""
+
+const spsde_examples = raw"""
+
+#### Example: Kubo Oscillator
+
+```julia
+function v(v, t, q, p, params)
+    v[1] = + params.λ * p[1]
+end
+
+function f1(f, t, q, p, params)
+    f[1] = - params.λ * q[1]
+end
+
+function f2(f, t, q, p, params)
+    f[1] = 0
+end
+
+function B(B, t, q, p, params)
+    B[1,1] = params.ν * p[1]
+end
+
+function G1(G, t, q, p, params)
+    G[1,1] = - params.ν * q[1]
+end
+
+function G2(G, t, q, p, params)
+    G[1,1] = 0
+end
+
+tspan = (0.0, 1.0); Δt = 0.01; q₀ = [0.5]; p₀ = [0.0];
+prob = PSDEProblem(v, f1, f2, B, G1, G2, tspan, Δt, q₀, p₀; parameters = (λ=2., μ=1.))
+```
+"""
+
+@doc """
+`SPSDE`: Stratonovich Split Partitioned Stochastic Differential Equation
+
+$(spsde_equations)
 
 ### Parameters
 
@@ -20,9 +103,9 @@ values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener
 * `BType <: Function`: type of `B`
 * `G1Type <: Function`: type of `G1`
 * `G2Type <: Function`: type of `G2`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
 
 ### Fields
 
@@ -36,17 +119,15 @@ values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener
 * `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
 * `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
-The functions `v`, `f`, `B` and `G`, providing the drift vector fields and diffusion matrices, take four arguments,
-`v(t, q, p, v)`, `f(t, q, p, f)`, `B(t, q, p,  B)` and `G(t, q, p, G)`, where `t` is the current time, `(q, p)` is the
-current solution vector, and `v`, `f`, `B` and `G` are the variables which hold the result
-of evaluating the vector fields ``v``, ``f`` and the matrices ``B``, ``G`` on `t` and `(q,p)`.
-
 ### Constructors
 
 ```julia
 SPSDE(v, f1, f2, B, G1, G2, invariants, parameters, periodicity)
-SPSDE(v, f1, f2, B, G1, G2; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+SPSDE(v, f1, f2, B, G1, G2; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
+
+$(spsde_functions)
+
 """
 struct SPSDE{vType <: Callable,
              f1Type <: Callable,
@@ -129,3 +210,48 @@ _functions(equ::SPSDE, params::OptionalParameters) = (
         G1 = _get_G1(equ, params),
         G2 = _get_G2(equ, params)
     )
+
+
+@doc """
+`SPSDEProblem`: Stratonovich Split Partitioned Stochastic Differential Equation Problem
+
+$(spsde_equations)
+
+### Constructors
+
+```julia
+SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics::NamedTuple; kwargs...)
+SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::State; p₀::State; kwargs...)
+```
+where `v` and `f` are the functions computing the vector field and `Bᵢ` and `Gᵢ`
+compute the diffusion matrices,
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entry `q`.
+The initial condition `q₀` can also be prescribed directly, with
+`State` an `AbstractArray{<:Number}`.
+
+For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
+
+### Function Definitions
+
+$(spsde_functions)
+
+"""
+const SPSDEProblem = GeometricProblem{SPSDE}
+
+function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics::NamedTuple;
+                      invariants = NullInvariants(), parameters = NullParameters(),
+                      periodicity = NullPeriodicity())
+    equ = SPSDE(v, f1, f2, B, G1, G2, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::State, p₀::State; kwargs...)
+    ics = (q = q₀, p = p₀)
+    SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics; kwargs...)
+end
+
+function GeometricBase.periodicity(prob::SPSDEProblem)
+    (q = periodicity(equation(prob)), p = NullPeriodicity())
+end

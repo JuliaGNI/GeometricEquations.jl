@@ -1,87 +1,89 @@
-@doc raw"""
-`IDAE`: Implicit Differential Algebraic Equation
 
-Defines an implicit differential algebraic initial value problem
+const idae_equations = raw"""
+An implicit differential algebraic initial value problem takes the form
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t) + u(t, q(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
 \dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), p(t), \lambda(t)) , & p(t_{0}) &= p_{0} , \\
-p(t) &= p(t, q(t), v(t)) , && \\
+p(t) &= ϑ(t, q(t), v(t)) , && \\
 0 &= \phi (t, q(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
 \end{aligned}
 ```
-with force field ``f``, the momentum defined by ``p``, projection ``g`` and ``r``,
-algebraic constraint ``\phi=0``,
-conditions ``(q_{0}, p_{0})`` and ``\lambda_{0}``, the dynamical variables
-``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
-the algebraic variable ``\lambda`` taking values in ``\mathbb{R}^{m}``.
+with force field ``f``, the momentum defined by ``ϑ``, projections ``u`` and ``g``,
+algebraic constraint ``\phi(t,q,p)=0``, the dynamical variables ``(q,p)`` taking
+values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, the algebraic variable ``\lambda``
+taking values in ``\mathbb{R}^{m}``, and initial conditions ``(q_{0}, p_{0})`` and
+``\lambda_{0}``,
+"""
+
+const idae_constructors = raw"""
+The function `ϑ` computes the momentum, `f` computes the force field, `u` and `g` compute
+the projections, and `ϕ` provides the algebraic constraint.
+The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint, that is
+the time derivative of the algebraic constraint, and the corresponding projection.
+"""
+
+const idae_functions = raw"""
+
+"""
+
+
+@doc """
+`IDAE`: Implicit Differential Algebraic Equation
+
+$(idae_equations)
 
 ### Parameters
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
-* `ϑType <: Function`: type of `ϑ`
-* `fType <: Function`: type of `f`
-* `uType <: Function`: type of `u`
-* `gType <: Function`: type of `g`
-* `ϕType <: Function`: type of `ϕ`
-* `ūType <: Function`: type of `ū`
-* `ḡType <: Function`: type of `ḡ`
-* `ψType <: Function`: type of `ψ`
-* `v̄Type <: Function`: type of `v̄`
-* `f̄Type <: Function`: type of `f̄`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
+* `ϑType <: Callable`: type of `ϑ`
+* `fType <: Callable`: type of `f`
+* `uType <: Callable`: type of `u`
+* `gType <: Callable`: type of `g`
+* `ϕType <: Callable`: type of `ϕ`
+* `ūType <: Callable`: type of `ū`
+* `ḡType <: Callable`: type of `ḡ`
+* `ψType <: Callable`: type of `ψ`
+* `v̄Type <: Callable`: type of `v̄`
+* `f̄Type <: Callable`: type of `f̄`
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
 
 ### Fields
 
-* `d`: dimension of dynamical variables ``q`` and ``p`` as well as the vector fields ``f`` and ``p``
-* `m`: dimension of algebraic variable ``\lambda`` and the constraint ``\phi``
 * `ϑ`: function determining the momentum
 * `f`: function computing the vector field ``f``
 * `u`: function computing the projection for ``q``
 * `g`: function computing the projection for ``p``
 * `ϕ`: algebraic constraints
-* `ū`: function computing the secondary projection field ``\bar{u}`` (optional)
-* `ḡ`: function computing the secondary projection field ``\bar{g}`` (optional)
-* `ψ`: secondary constraints (optional)
-* `v̄`: function computing an initial guess for the velocity field ``v`` (optional)
-* `f̄`: function computing an initial guess for the force field ``f`` (optional)
-* `t₀`: initial time (optional)
-* `q₀`: initial condition for dynamical variable ``q``
-* `p₀`: initial condition for dynamical variable ``p``
-* `λ₀`: initial condition for algebraic variable `λ`
-* `μ₀`: initial condition for algebraic variable `μ` (optional)
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
+* `ū`: function computing the secondary projection field ``\\bar{u}`` (*optional*)
+* `ḡ`: function computing the secondary projection field ``\\bar{g}`` (*optional*)
+* `ψ`: secondary constraints (*optional*)
+* `v̄`: function computing an initial guess for the velocity field ``v`` (*optional*)
+* `f̄`: function computing an initial guess for the force field ``f`` (*optional*)
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 ### Constructors
 
 ```julia
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
-
-IDAE(ϑ, f, u, g, ϕ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-IDAE(ϑ, f, u, g, ϕ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-IDAE(ϑ, f, u, g, ϕ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-IDAE(ϑ, f, u, g, ϕ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+IDAE(ϑ, f, u, g, ϕ; v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
-### Keyword arguments
+where 
 
-* `v̄ = (t,q,v) -> nothing`
-* `f̄ = f`
-* `invariants = nothing`
-* `parameters = nothing`
-* `periodicity = nothing`
+```julia
+_idae_default_v̄(v, t, q, params) = nothing
+```
 
+$(idae_constructors)
+
+### Function Definitions
+
+$(idae_functions)
 
 """
 struct IDAE{ϑType <: Callable, fType <: Callable,
@@ -203,4 +205,67 @@ function _functions(equ::IDAE, params::OptionalParameters)
     else
         (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
     end
+end
+
+
+@doc """
+`IDAEProblem`: Implicit Differential Algebraic Equation Problem
+
+$(idae_equations)
+
+### Constructors
+
+```julia
+IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
+IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+IDAEProblem(ϑ, f, u, g, ϕ, tspan, tstep, ics; kwargs...)
+IDAEProblem(ϑ, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+```
+
+$(idae_constructors)
+
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entries `q` and `p`.
+The initial conditions `q₀` and `p₀` can also be prescribed
+directly, with `State` an `AbstractArray{<:Number}`.
+
+In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+an `IDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
+values `v̄ = _idae_default_v̄` and `f̄ = f`.
+
+### Function Definitions
+
+$(idae_functions)
+
+"""
+const IDAEProblem = GeometricProblem{IDAE}
+
+function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple;
+                     v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(),
+                     parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
+               periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State,
+                     λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
+    IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
+end
+
+function IDAEProblem(ϑ, f, u, g, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
+    IDAEProblem(ϑ, f, u, g, ϕ, nothing, nothing, nothing, tspan, tstep, ics; kwargs...)
+end
+
+function IDAEProblem(ϑ, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ₀::State;
+                     kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀)
+    IDAEProblem(ϑ, f, u, g, ϕ, tspan, tstep, ics; kwargs...)
+end
+
+function GeometricBase.periodicity(prob::IDAEProblem)
+    (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
+     μ = NullPeriodicity())
 end

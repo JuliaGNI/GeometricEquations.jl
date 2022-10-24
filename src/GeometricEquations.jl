@@ -56,6 +56,7 @@ module GeometricEquations
     include("utils.jl")
 
     include("geometric_equation.jl")
+    include("geometric_problem.jl")
 
     include("ode.jl")
     include("hode.jl")
@@ -75,9 +76,6 @@ module GeometricEquations
     include("sde.jl")
     include("psde.jl")
     include("spsde.jl")
-
-    include("abstract_problem.jl")
-    include("geometric_problem.jl")
 
     include("conversion.jl")
 

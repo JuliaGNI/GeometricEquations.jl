@@ -1,26 +1,91 @@
-@doc raw"""
-`PSDE`: Stratonovich Partitioned Stochastic Differential Equation
 
-Defines a partitioned stochastic differential initial value problem
+const psde_equations = raw"""
+A partitioned stochastic differential equations is an initial value problem of the form
 ```math
 \begin{aligned}
-dq (t) &= v(t, q(t)) \, dt + B(t, q(t)) \circ dW , & q(t_{0}) &= q_{0} , \\
-dp (t) &= f(t, q(t)) \, dt + G(t, q(t)) \circ dW , & p(t_{0}) &= p_{0}
+dq (t) &= v(t, q(t), p(t)) \, dt + B(t, q(t), p(t)) \circ dW , & q(t_{0}) &= q_{0} , \\
+dp (t) &= f(t, q(t), p(t)) \, dt + G(t, q(t), p(t)) \circ dW , & p(t_{0}) &= p_{0}
 \end{aligned}
 ```
 with the drift vector fields ``v`` and ``f``, diffusion matrices ``B`` and ``G``,
 initial conditions ``q_{0}`` and ``p_{0}``, the dynamical variables ``(q,p)`` taking
 values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener process W
+"""
+
+const psde_functions = raw"""
+The functions `v`, `f`, `B` and `G`, providing the drift vector fields and diffusion matrices, each take five arguments,
+`v(v, t, q, p, params)`, `f(f, t, q, p, params)`, `B(B, t, q, p, params)` and `G(G, t, q, p, params)`,
+where `t` is the current time, `(q, p)` is the current solution, and `v`, `f`, `B` and `G` are the variables which hold the result
+of evaluating the vector fields ``v``, ``f`` and the matrices ``B``, ``G`` on `t` and `(q,p)`, and `params` are optional parameters.
+
+The corresponding methods should have the following signatures:
+
+```julia
+function v(v, t, q, p, params)
+    v[1] = ...
+    v[2] = ...
+    ...
+end
+
+function f(f, t, q, p, params)
+    f[1] = ...
+    f[2] = ...
+    ...
+end
+
+function B(B, t, q, p, params)
+    B[1,1] = ...
+    ...
+end
+
+function G(G, t, q, p, params)
+    G[1,1] = ...
+    ...
+end
+```
+"""
+
+const psde_examples = raw"""
+
+#### Example: Kubo Oscillator
+
+```julia
+function v(v, t, q, p, params)
+    v[1] = + params.λ * p[1]
+end
+
+function f(f, t, q, p, params)
+    f[1] = - params.λ * q[1]
+end
+
+function B(B, t, q, p, params)
+    B[1,1] = params.ν * p[1]
+end
+
+function G(G, t, q, p, params)
+    G[1,1] = - params.ν * q[1]
+end
+
+tspan = (0.0, 1.0); Δt = 0.01; q₀ = [0.5]; p₀ = [0.0];
+prob = PSDEProblem(v, f, B, G, tspan, Δt, q₀, p₀; parameters = (λ=2., μ=1.))
+```
+"""
+
+
+@doc """
+`PSDE`: Stratonovich Partitioned Stochastic Differential Equation
+
+$(psde_equations)
 
 ### Parameters
 
-* `vType <: Function`: type of `v`
-* `fType <: Function`: type of `f`
-* `BType <: Function`: type of `B`
-* `GType <: Function`: type of `G`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
+* `vType <: Callable`: type of `v`
+* `fType <: Callable`: type of `f`
+* `BType <: Callable`: type of `B`
+* `GType <: Callable`: type of `G`
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
 
 ### Fields
 
@@ -32,17 +97,15 @@ values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener
 * `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
 * `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
-The functions `v`, `f`, `B` and `G`, providing the drift vector fields and diffusion matrices, take four arguments,
-`v(t, q, p, v)`, `f(t, q, p, f)`, `B(t, q, p,  B)` and `G(t, q, p, G)`, where `t` is the current time, `(q, p)` is the
-current solution vector, and `v`, `f`, `B` and `G` are the variables which hold the result
-of evaluating the vector fields ``v``, ``f`` and the matrices ``B``, ``G`` on `t` and `(q,p)`.
-
 ### Constructors
 
 ```julia
 PSDE(v, f, B, G, invariants, parameters, periodicity)
-PSDE(v, f, B, G; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+PSDE(v, f, B, G; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
+
+$(psde_functions)
+
 """
 struct PSDE{vType <: Callable,
             fType <: Callable,
@@ -110,3 +173,48 @@ _get_invariant(::PSDE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::PSDE) = (v = equ.v, f = equ.f, B = equ.B, G = equ.G)
 _functions(equ::PSDE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), B = _get_B(equ, params), G = _get_G(equ, params))
+
+
+@doc """
+`PSDEProblem`: Stratonovich Partitioned Stochastic Differential Equation Problem
+
+$(psde_equations)
+
+### Constructors
+
+```julia
+PSDEProblem(v, f, B, G, tspan, tstep, ics::NamedTuple; kwargs...)
+PSDEProblem(v, f, B, G, tspan, tstep, q₀::State; p₀::State; kwargs...)
+```
+where `v` and `f` are the functions computing the vector field and `B` and `G`
+compute the diffusion matrices,
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entry `q`.
+The initial condition `q₀` can also be prescribed directly, with
+`State` an `AbstractArray{<:Number}`.
+
+For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
+
+### Function Definitions
+
+$(psde_functions)
+
+"""
+const PSDEProblem = GeometricProblem{PSDE}
+
+function PSDEProblem(v, f, B, G, tspan, tstep, ics::NamedTuple;
+                     invariants = NullInvariants(), parameters = NullParameters(),
+                     periodicity = NullPeriodicity())
+    equ = PSDE(v, f, B, G, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function PSDEProblem(v, f, B, G, tspan, tstep, q₀::State, p₀::State; kwargs...)
+    ics = (q = q₀, p = p₀)
+    PSDEProblem(v, f, B, G, tspan, tstep, ics; kwargs...)
+end
+
+function GeometricBase.periodicity(prob::PSDEProblem)
+    (q = periodicity(equation(prob)), p = NullPeriodicity())
+end

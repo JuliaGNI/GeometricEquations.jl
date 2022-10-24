@@ -1,6 +1,5 @@
-@doc raw"""
-`LODE`: Lagrangian Ordinary Differential Equation
 
+const lode_equations = raw"""
 Defines an implicit initial value problem
 ```math
 \begin{aligned}
@@ -20,43 +19,32 @@ f &= \frac{\partial L}{\partial q} ,
 ```
 initial conditions ``(q_{0}, p_{0})`` and the solution ``(q,p)`` taking values
 in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
-This is a special case of a differential algebraic equation with dynamical
-variables ``(q,p)`` and algebraic variable ``v``.
+This is a special case of an implicit ordinary differential equation, that
+is defined by a Lagrangian, as well as a special case of a differential algebraic
+equation with dynamical variables ``(q,p)`` and algebraic variable ``v``, that is
+determined such that the constraint ``p(t) = ϑ(t, q(t), v(t))`` is satisfied.
 
-### Parameters
+Most integrators perform a projection step in order to enforce this constraint. To this end,
+the system is extended to
+```math
+\begin{aligned}
+\dot{q} (t) &= v(t) + λ(t) , &
+q(t_{0}) &= q_{0} , \\
+\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), λ(t)) , &
+p(t_{0}) &= p_{0} , \\
+p(t) &= ϑ(t, q(t), v(t)) , &
+λ(t_{0}) &= λ_{0}
+\end{aligned}
+```
+where the vector field defining the projection step is usually given as
+```math
+\begin{aligned}
+g(t, q(t), v(t), λ(t)) &= λ(t) \cdot \nabla ϑ(t, q(t), v(t)) .
+\end{aligned}
+```
+"""
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
-* `ϑType <: Function`: type of `ϑ`
-* `fType <: Function`: type of `f`
-* `gType <: Function`: type of `g`
-* `ωType <: Function`: type of `ω`
-* `v̄Type <: Function`: type of `v̄`
-* `f̄Type <: Function`: type of `f̄`
-* `lagType <: Function`: Lagrangian type
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
-
-### Fields
-
-* `d`: dimension of dynamical variables ``q`` and ``p`` as well as the vector fields ``f`` and ``p``
-* `ϑ`: function determining the momentum
-* `f`: function computing the vector field
-* `g`: function determining the projection, given by ``\nabla \vartheta (q) \cdot \lambda``
-* `ω`: function computing the symplectic matrix
-* `v̄`: function computing an initial guess for the velocity field ``v`` (optional)
-* `f̄`: function computing an initial guess for the force field ``f`` (optional)
-* `t₀`: initial time (optional)
-* `q₀`: initial condition for `q`
-* `p₀`: initial condition for `p`
-* `λ₀`: initial condition for `λ` (optional)
-* `lagrangian`: function computing the Lagrangian ``L``
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
-
+const lode_functions = raw"""
 The functions `ϑ` and `f` must have the interface
 ```julia
     function ϑ(p, t, q, v)
@@ -92,25 +80,56 @@ and
         ...
     end
 ```
+"""
+
+
+@doc """
+`LODE`: Lagrangian Ordinary Differential Equation
+
+$(lode_equations)
+
+### Parameters
+
+* `ϑType <: Function`: type of `ϑ`
+* `fType <: Function`: type of `f`
+* `gType <: Function`: type of `g`
+* `ωType <: Function`: type of `ω`
+* `v̄Type <: Function`: type of `v̄`
+* `f̄Type <: Function`: type of `f̄`
+* `lagType <: Function`: Lagrangian type
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
+
+### Fields
+
+* `ϑ`: function determining the momentum
+* `f`: function computing the vector field
+* `g`: function determining the projection, given by ``\\nabla \\vartheta (q) \\cdot \\lambda``
+* `ω`: function computing the symplectic matrix
+* `v̄`: function computing an initial guess for the velocity field ``v`` (optional)
+* `f̄`: function computing an initial guess for the force field ``f`` (optional)
+* `lagrangian`: function computing the Lagrangian ``L``
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 ### Constructors
 
 ```julia
-LODE(ϑ, f, ω, v̄, f̄, t₀, q₀, p₀, λ₀, lagrangian, invariants, parameters, periodicity)
-
-LODE(ϑ, f, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...)
-LODE(ϑ, f, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector=zero(q₀); kwargs...)
-LODE(ϑ, f, l, ω, t₀, q₀::State, p₀::State, λ₀::StateVector=zero(q₀); kwargs...)
-LODE(ϑ, f, l, ω, q₀::State, p₀::State, λ₀::StateVector=zero(q₀); kwargs...)
+IODE(ϑ, f, g, ω, l, v̄, f̄, invariants, parameters, periodicity)
+IODE(ϑ, f, g, ω, l; v̄ = _lode_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
-### Keyword arguments
+where 
 
-* `v̄ = (t,q,v) -> nothing`
-* `f̄ = f`
-* `invariants = nothing`
-* `parameters = nothing`
-* `periodicity = nothing`
+```julia
+_lode_default_v̄(v, t, q, params) = nothing
+```
+
+### Function Definitions
+
+$(lode_functions)
 
 """
 struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
@@ -148,7 +167,7 @@ struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
     end
 end
 
-_lode_default_v̄(t,q,v,params) = nothing
+_lode_default_v̄(v, t, q, params) = nothing
 
 LODE(ϑ, f, g, ω, l; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_lode_default_v̄, f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameters, periodicity)
 
@@ -207,3 +226,54 @@ _functions(equ::LODE, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params),
                                                      v̄ = _get_v̄(equ, params),
                                                      f̄ = _get_f̄(equ, params),
                                                      l = _get_l(equ, params))
+
+
+@doc """
+`LODEProblem`: Lagrangian Ordinary Differential Equation Problem
+
+$(lode_equations)
+
+### Constructors
+
+```julia
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+```
+where `ϑ`, `f` and `g` are the functions computing the momentum and the vector fields, respectively,
+`ω` determines the symplectic matrix, and `l` returns the Lagrangian,
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
+The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed
+directly, with `State` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
+
+In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
+values `v̄ = _lode_default_v̄` and `f̄ = f`.
+
+The function `g` should really be optional as it is not required for all but only for most
+integrators, but for the time being it is required.
+
+### Function Definitions
+
+$(lode_functions)
+
+"""
+const LODEProblem = GeometricProblem{LODE}
+
+function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics::NamedTuple;
+                     invariants = NullInvariants(), parameters = NullParameters(),
+                     periodicity = NullPeriodicity(), v̄ = _lode_default_v̄, f̄ = f)
+    equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State,
+                     λ₀::State = zero(q₀); kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀)
+    LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
+end
+
+function GeometricBase.periodicity(prob::LODEProblem)
+    (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
+end

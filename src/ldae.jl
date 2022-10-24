@@ -1,8 +1,7 @@
-@doc raw"""
-`LDAE`: Lagrangian Differential Algebraic Equation
 
-Defines a Lagrangian differential algebraic initial value problem, that is
-a special implicit initial value problem
+const ldae_equations = raw"""
+A special case of an implicit initial value problem is a Lagrangian differential
+algebraic equation of the form
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t) + \lambda(t), &
@@ -14,58 +13,29 @@ p(t) &= ϑ(t, q(t), v(t)) , \\
 0 &= \psi (t, q(t), p(t), \dot{q}(t), \dot{p}(t)) ,
 \end{aligned}
 ```
-with vector field ``f``, the momentum defined by ``p``, initial conditions ``(q_{0}, p_{0})`` and the solution
+with momentum ``p`` and force field ``f``, given by
+```math
+\begin{aligned}
+p &= \frac{\partial L}{\partial v} , &
+f &= \frac{\partial L}{\partial q} ,
+\end{aligned}
+```
+initial conditions ``(q_{0}, p_{0})`` and the solution
 ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
 the algebraic variables ``(v, \lambda, \mu)`` taking values in
 ``\mathbb{R}^{d} \times \mathbb{R}^{m} \times \mathbb{R}^{m}``.
 This is a special case of a differential algebraic equation with dynamical
 variables ``(q,p)`` and algebraic variables ``v``, ``\lambda`` and ``\mu``.
+"""
 
-### Parameters
+const ldae_constructors = raw"""
+The function `ϑ` computes the momentum, `f` computes the force field, `u` and `g` compute
+the projections, and `ϕ` provides the algebraic constraint.
+The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint, that is
+the time derivative of the algebraic constraint, and the corresponding projection.
+"""
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
-* `ϑType <: Function`: type of `ϑ`
-* `fType <: Function`: type of `f`
-* `uType <: Function`: type of `u`
-* `gType <: Function`: type of `g`
-* `ϕType <: Function`: type of `ϕ`
-* `ūType <: Function`: type of `ū`
-* `ḡType <: Function`: type of `ḡ`
-* `ψType <: Function`: type of `ψ`
-* `ωType <: Function`: type of `ω`
-* `v̄Type <: Function`: type of `v̄`
-* `f̄Type <: Function`: type of `f̄`
-* `lagType <: Function`: Lagrangian type
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
-
-### Fields
-
-* `d`: dimension of dynamical variables ``q`` and ``p`` as well as the vector fields ``f`` and ``p``
-* `ϑ`: function determining the momentum
-* `f`: function computing the vector field
-* `u`: function computing the projection for ``q``, for a degenerate system given by ``\lambda``
-* `g`: function computing the projection for ``p``, for a degenerate system given by ``\nabla \vartheta (q) \cdot \lambda``
-* `ϕ`: primary constraints, for a degenerate system given by ``p - \vartheta (q)``
-* `ū`: function computing the secondary projection field ``\bar{u}``, for a degenerate system given by ``\lambda`` (optional)
-* `ḡ`: function computing the secondary projection field ``\bar{g}``, for a degenerate system given by ``\lambda \cdot \nabla \vartheta (q)`` (optional)
-* `ψ`: secondary constraints, for a degenerate system given by ``\dot{p} - \dot{q} \cdot \nabla \vartheta (q)`` (optional)
-* `ω`: function computing the symplectic matrix
-* `v̄`: function computing an initial guess for the velocity field ``v`` (optional)
-* `f̄`: function computing an initial guess for the force field ``f`` (optional)
-* `t₀`: initial time (optional)
-* `q₀`: initial condition for dynamical variable `q`
-* `p₀`: initial condition for dynamical variable `p`
-* `λ₀`: initial condition for algebraic variable `λ`
-* `μ₀`: initial condition for algebraic variable `μ` (optional)
-* `lagrangian`: function computing the Lagrangian ``L``
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
-
+const ldae_functions = raw"""
 The functions `ϑ` and `f` must have the interface
 ```julia
     function ϑ(p, t, q, v)
@@ -105,30 +75,70 @@ The funtions `g`, `v̄` and `f̄` are specified by
         ...
     end
 ```
+"""
+
+
+
+@doc """
+`LDAE`: Lagrangian Differential Algebraic Equation
+
+$(ldae_equations)
+
+### Parameters
+
+* `ϑType <: Callable`: type of `ϑ`
+* `fType <: Callable`: type of `f`
+* `uType <: Callable`: type of `u`
+* `gType <: Callable`: type of `g`
+* `ϕType <: Callable`: type of `ϕ`
+* `ūType <: Callable`: type of `ū`
+* `ḡType <: Callable`: type of `ḡ`
+* `ψType <: Callable`: type of `ψ`
+* `ωType <: Callable`: type of `ω`
+* `v̄Type <: Callable`: type of `v̄`
+* `f̄Type <: Callable`: type of `f̄`
+* `lagType <: Callable`: Lagrangian type
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
+
+### Fields
+
+* `f`: function computing the vector field
+* `u`: function computing the projection for ``q``, for a degenerate system given by ``\\lambda``
+* `g`: function computing the projection for ``p``, for a degenerate system given by ``\\nabla \\vartheta (q) \\cdot \\lambda``
+* `ϕ`: primary constraints, for a degenerate system given by ``p - \\vartheta (t,q)``
+* `ū`: function computing the secondary projection field ``\\bar{u}``, for a degenerate system given by ``\\lambda`` (*optional*)
+* `ḡ`: function computing the secondary projection field ``\\bar{g}``, for a degenerate system given by ``\\lambda \\cdot \\nabla \\vartheta (t,q)`` (*optional*)
+* `ψ`: secondary constraints, for a degenerate system given by ``\\dot{p} - \\dot{q} \\cdot \\nabla \\vartheta (t,q)`` (*optional*)
+* `ω`: function computing the symplectic matrix
+* `v̄`: function computing an initial guess for the velocity field ``v`` (*optional*)
+* `f̄`: function computing an initial guess for the force field ``f`` (*optional*)
+* `lagrangian`: function computing the Lagrangian ``L``
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
+
 
 ### Constructors
 
 ```julia
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, lagrangian, invariants, parameters, periodicity)
-
-LDAE(ϑ, f, u, g, ϕ, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-LDAE(ϑ, f, u, g, ϕ, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-LDAE(ϑ, f, u, g, ϕ, l, ω, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-LDAE(ϑ, f, u, g, ϕ, l, ω, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+LDAE(ϑ, f, u, g, ϕ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
-### Keyword arguments
+where 
 
-* `v̄ = (t,q,v) -> nothing`
-* `f̄ = f`
-* `invariants = nothing`
-* `parameters = nothing`
-* `periodicity = nothing`
+```julia
+_ldae_default_v̄(v, t, q, params) = nothing
+```
+
+$(ldae_constructors)
+
+### Function Definitions
+
+$(ldae_functions)
 
 """
 struct LDAE{ϑType <: Callable, fType <: Callable,
@@ -263,6 +273,69 @@ function _functions(equ::LDAE, params::OptionalParameters)
 end
 
 
+@doc """
+`LDAEProblem`: Lagrangian Differential Algebraic Equation Problem
+
+$(ldae_equations)
+
+
+### Constructors
+
+```julia
+LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, ics; kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, ics; kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+```
+
+$(ldae_constructors)
+
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entries `q` and `p`.
+The initial conditions `q₀` and `p₀` can also be prescribed
+directly, with `State` an `AbstractArray{<:Number}`.
+
+In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+a `LDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
+values `v̄ = _ldae_default_v̄` and `f̄ = f`.
+
+### Function Definitions
+
+$(ldae_functions)
+
+"""
+const LDAEProblem = GeometricProblem{LDAE}
+
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::NamedTuple;
+                     v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(),
+                     parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants,
+               parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, q₀::State,
+                     p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
+    LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics; kwargs...)
+end
+
+function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics::NamedTuple; kwargs...)
+    LDAEProblem(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian, tspan, tstep, ics;
+                kwargs...)
+end
+
+function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, q₀::State, p₀::State,
+                     λ₀::State; kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀)
+    LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics; kwargs...)
+end
+
+function GeometricBase.periodicity(prob::LDAEProblem)
+    (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
+     μ = NullPeriodicity())
+end
 
 
 

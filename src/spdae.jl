@@ -20,33 +20,23 @@ the algebraic variables ``(\lambda, \gamma)`` taking values in
 
 ### Parameters
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
-* `vType <: Function`: type of `v`
-* `fType <: Function`: type of `f`
-* `ϕType <: Function`: type of `ϕ`
-* `ψType <: Function`: type of `ψ`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
+* `vType <: Callable`: type of `v`
+* `fType <: Callable`: type of `f`
+* `ϕType <: Callable`: type of `ϕ`
+* `ψType <: Callable`: type of `ψ`
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
 
 ### Fields
 
-* `d`: dimension of dynamical variables ``q`` and ``p`` as well as the vector fields ``v`` and ``f``
-* `m`: dimension of algebraic variables ``\lambda`` and ``\gamma`` and the constraints ``\phi`` and ``\psi``
 * `v`: tuple of functions computing the vector fields ``v_i``, ``i = 1 ... 3``
 * `f`: tuple of functions computing the vector fields ``f_i``, ``i = 1 ... 3``
 * `ϕ`: primary constraints
 * `ψ`: secondary constraints
-* `t₀`: initial time
-* `q₀`: initial condition for dynamical variable ``q``
-* `p₀`: initial condition for dynamical variable ``p``
-* `λ₀`: initial condition for algebraic variable ``λ``
-* `μ₀`: initial condition for algebraic variable ``μ`` (optional)
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 ### Constructors
 
@@ -178,4 +168,13 @@ function functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT,
     equs  = (vₚ, fₚ, ϕₚ, ψₚ)
 
     NamedTuple{names}(equs)
+end
+
+
+"""
+"""
+const SPDAEProblem = GeometricProblem{SPDAE}
+
+function GeometricBase.periodicity(prob::SPDAEProblem)
+    (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 end

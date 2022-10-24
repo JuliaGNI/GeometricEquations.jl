@@ -1,6 +1,5 @@
-@doc raw"""
-`DAE`: Differential Algebraic Equation
 
+const dae_equations = raw"""
 Defines a differential algebraic initial value problem
 ```math
 \begin{aligned}
@@ -12,87 +11,90 @@ with vector field ``v``, projection ``u``, algebraic constraint ``\phi=0``,
 initial conditions ``q_{0}`` and ``\lambda_{0}``, the dynamical variable ``q``
 taking values in ``\mathbb{R}^{d}`` and the algebraic variable ``\lambda``
 taking values in ``\mathbb{R}^{m}``.
+"""
 
-### Parameters
+const dae_constructors = raw"""
+The functions `v` and `u` compute the vector field and the projection, respectively,
+`ϕ` provides the algebraic constraint.
+The functions `ψ` and `ū` are optional and provide the secondary constraint, that is the time
+derivative of the algebraic constraint, and the corresponding projection.
+"""
 
-* `DT <: Number`: data type
-* `TT <: Real`: time step type
-* `AT <: AbstractArray{DT}`: array type
-* `vType <: Function`: type of `v`
-* `uType <: Function`: type of `u`
-* `ūType <: OptionalFunction`: type of `ū`
-* `ϕType <: Function`: type of `ϕ`
-* `ψType <: OptionalFunction`: type of `ψ`
-* `v̄Type <: Function`: type of `v̄`
-* `invType <: OptionalNamedTuple`: invariants type
-* `parType <: OptionalNamedTuple`: parameters type
-* `perType <: OptionalArray{AT}`: periodicity type
+const dae_functions = raw"""
+The functions `v`, `u` and `ϕ` must have the interface
+```julia
+function v(v, t, q, params)
+    v[1] = ...
+    v[2] = ...
+    ...
+end
 
-### Fields
+function u(u, t, q, λ, params)
+    u[1] = ...
+    u[2] = ...
+    ...
+end
 
-* `d`: dimension of dynamical variable ``q`` and the vector field ``v``
-* `m`: dimension of algebraic variable ``\lambda`` and the constraint ``\phi``
-* `v`: function computing the vector field
-* `u`: function computing the projection
-* `ū`: function computing the secondary projection field ``\bar{u}`` (optional)
-* `ϕ`: algebraic constraint
-* `ψ`: secondary constraints (optional)
-* `v̄`: function computing an initial guess for the velocity field ``v`` (defaults to `v`)
-* `t₀`: initial time
-* `q₀`: initial condition for dynamical variable ``q``
-* `λ₀`: initial condition for algebraic variable ``\lambda``
-* `μ₀`: initial condition for algebraic variable ``μ`` (optional)
-* `invariants`: either a `NamedTuple` containing the equation's invariants or `nothing`
-* `parameters`: either a `NamedTuple` containing the equation's parameters or `nothing`
-* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions
-
-The function `v`, providing the vector field, takes three arguments,
-`v(t, q, v)`, the functions `u` and `ϕ`, providing the projection and the
-algebraic constraint take four arguments, `u(t, q, λ, u)` and `ϕ(t, q, λ, ϕ)`,
+function ϕ(ϕ, t, q, params)
+    ϕ[1] = ...
+end
+```
 where `t` is the current time, `q` and `λ` are the current solution vectors,
 and `v`, `u` and `ϕ` are the vectors which hold the result of evaluating the
 vector field ``v``, the projection ``u`` and the algebraic constraint ``\phi``
 on `t`, `q` and `λ`.
+"""
+
+
+@doc """
+`DAE`: Differential Algebraic Equation
+
+$(dae_equations)
+
+### Parameters
+
+* `vType <: Callable`: type of `v`
+* `uType <: Callable`: type of `u`
+* `ϕType <: Callable`: type of `ϕ`
+* `ūType <: OptionalCallable`: type of `ū`
+* `ψType <: OptionalCallable`: type of `ψ`
+* `v̄Type <: Callable`: type of `v̄`
+* `invType <: OptionalInvariants`: invariants type
+* `parType <: OptionalParameters`: parameters type
+* `perType <: OptionalPeriodicity`: periodicity type
+
+### Fields
+
+* `v`: function computing the vector field `v(v, t, q, params)`
+* `u`: function computing the projection `u(u, t, q, λ, params)`
+* `ϕ`: algebraic constraint `ϕ(ϕ, t, q, params)`
+* `ū`: function computing the secondary projection field `ū(ū, t, q, λ, params)` (*optional*)
+* `ψ`: secondary constraint `ψ(ψ, t, q, v, params)` (*optional*)
+* `v̄`: function computing an initial guess for the velocity field ``v`` (defaults to `v`)
+* `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
+* `parameters`: type constraints for parameters, either a `NamedTuple` containing the equation's parameters or `NullParameters`
+* `periodicity`: determines the periodicity of the state vector `q` for cutting periodic solutions, either a `AbstractArray` or `NullPeriodicity`
 
 ### Constructors
 
 ```julia
-DAE(v, u, ū, ϕ, ψ, v̄, t₀, q₀, λ₀, invariants, parameters, periodicity)
-
-DAE(v, u, ϕ, t₀, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-DAE(v, u, ϕ, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-DAE(v, u, ϕ, t₀, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-DAE(v, u, ϕ, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-
-DAE(v, u, ū, ϕ, ψ, t₀, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-DAE(v, u, ū, ϕ, ψ, q₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...)
-DAE(v, u, ū, ϕ, ψ, t₀, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
-DAE(v, u, ū, ϕ, ψ, q₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...)
+DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+DAE(v, u, ϕ, ū, ψ; kwargs...)
+DAE(v, u, ϕ; kwargs...)
 ```
 
-### Example
+$(dae_constructors)
+
+### Function Definitions
+
+The functions are defined by
+
+$(dae_functions)
+
+The `DAE` is created by
 
 ```julia
-    function v(v, t, q)
-        v[1] = q[1]
-        v[2] = q[2]
-    end
-
-    function u(u, t, q, λ)
-        u[1] = +λ[1]
-        u[2] = -λ[1]
-    end
-
-    function ϕ(ϕ, t, q, λ)
-        ϕ[1] = q[2] - q[1]
-    end
-
-    t₀ = 0.
-    q₀ = [1., 1.]
-    λ₀ = [0.]
-
-    dae = DAE(v, u, ϕ, t₀, q₀, λ₀)
-
+equ = DAE(v, u, ϕ)
 ```
 
 """
@@ -191,4 +193,73 @@ function _functions(equ::DAE, params::OptionalParameters)
     else
         (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params))
     end
+end
+
+
+@doc """
+`DAEProblem`: Differential Algebraic Equation Problem
+
+$(dae_equations)
+
+### Constructors
+
+```julia
+DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; kwargs...)
+DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::State, λ₀::State; kwargs...)
+DAEProblem(v, u, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
+DAEProblem(v, u, ϕ, tspan, tstep, q₀::State, λ₀::State; kwargs...)
+```
+
+$(dae_constructors)
+
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entries `q` and `λ`.
+The initial conditions `q₀` and `λ₀` can also be prescribed directly, with
+`State` an `AbstractArray{<:Number}`.
+
+In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+a `DAEProblem` accepts a function `v̄` for the computation of an initial guess for the vector field with default value `v̄ = v`.
+
+### Function Definitions
+
+$(dae_functions)
+
+With the above function definitions the `DAEProblem` can be created by
+
+```julia
+tspan = (0.0, 1.0)
+tstep = 0.1
+q₀ = [1., 1.]
+λ₀ = [0.]
+
+prob = DAEProblem(v, u, ϕ, tspan, tstep, q₀, λ₀)
+```
+"""
+const DAEProblem = GeometricProblem{DAE}
+
+function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
+                    invariants = NullInvariants(), parameters = NullParameters(),
+                    periodicity = NullPeriodicity())
+    equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
+    GeometricProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::State, λ₀::State,
+                    μ₀::State = zero(λ₀); kwargs...)
+    ics = (q = q₀, λ = λ₀, μ = μ₀)
+    DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics; kwargs...)
+end
+
+function DAEProblem(v, u, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
+    DAEProblem(v, u, ϕ, nothing, nothing, tspan, tstep, ics; kwargs...)
+end
+
+function DAEProblem(v, u, ϕ, tspan, tstep, q₀::State, λ₀::State; kwargs...)
+    ics = (q = q₀, λ = λ₀)
+    DAEProblem(v, u, ϕ, tspan, tstep, ics; kwargs...)
+end
+
+function GeometricBase.periodicity(prob::DAEProblem)
+    (q = periodicity(equation(prob)), λ = NullPeriodicity(), μ = NullPeriodicity())
 end

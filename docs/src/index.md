@@ -21,6 +21,10 @@ For each type, there are several subtypes
 
 Each equation holds a number of functions determining the vector field, constraints, and possibly additional information like parameters, periodicity, invariants and the Hamiltonian or Lagrangian.
 
+In addition to each equation type, *GeometricEquations.jl* implements a corresponding problem type.
+Each problem holds an equation, a time span `(t₀,t₁)` to integrate over, a time step to be used in the simulation, initial conditions and optionally parameters.
+
+
 ## Index
 
 ```@index
