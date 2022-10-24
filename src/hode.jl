@@ -1,7 +1,7 @@
 
 const hode_equations = raw"""
-Defines a Hamiltonian ordinary differential initial value problem, that is
-a canonical Hamiltonian system of equations,
+A canonical Hamiltonian system of equations is special case of a
+partitioned ordinary differential equation,
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t, q(t), p(t)) , & q(t_{0}) &= q_{0} , \\
@@ -16,7 +16,7 @@ f &= - \frac{\partial H}{\partial q} ,
 \end{aligned}
 ```
 initial conditions ``(q_{0}, p_{0})`` and the dynamical variables ``(q,p)``
-and the solution ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
+taking values in ``T^{*} Q \simeq \mathbb{R}^{d} \times \mathbb{R}^{d}``.
 """
 
 const hode_functions = raw"""

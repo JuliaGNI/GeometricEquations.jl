@@ -1,6 +1,6 @@
 
 const iode_equations = raw"""
-Defines an implicit initial value problem
+An implicit ordinary differential equations is an initial value problem of the form
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t) , &

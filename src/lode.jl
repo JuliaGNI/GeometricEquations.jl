@@ -1,6 +1,7 @@
 
 const lode_equations = raw"""
-Defines an implicit initial value problem
+A Lagrangian system of equations is a special case of an implicit ordinary differential equations,
+that is an implicit initial value problem of the form
 ```math
 \begin{aligned}
 \dot{q} (t) &= v(t) , &
@@ -18,7 +19,7 @@ f &= \frac{\partial L}{\partial q} ,
 \end{aligned}
 ```
 initial conditions ``(q_{0}, p_{0})`` and the solution ``(q,p)`` taking values
-in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
+in ``T^{*} Q \simeq \mathbb{R}^{d} \times \mathbb{R}^{d}``.
 This is a special case of an implicit ordinary differential equation, that
 is defined by a Lagrangian, as well as a special case of a differential algebraic
 equation with dynamical variables ``(q,p)`` and algebraic variable ``v``, that is
