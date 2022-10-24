@@ -13,7 +13,7 @@ values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, and the m-dimensional Wiener
 """
 
 const spsde_functions = raw"""
-The functions `v`, `f1`, `f2, `B`, `G1` and `G2`, providing the drift vector fields and diffusion matrices,
+The functions `v`, `f1`, `f2`, `B`, `G1` and `G2`, providing the drift vector fields and diffusion matrices,
 all take five arguments, `(out, t, q, p, params)`.
 
 ```julia
