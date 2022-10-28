@@ -180,9 +180,9 @@ function check_initial_conditions(::IODE, ics::NamedTuple)
 end
 
 function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
-    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), ics.λ, params) || return false
+    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
