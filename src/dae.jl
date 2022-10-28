@@ -47,6 +47,7 @@ on `t`, `q` and `λ`.
 
 const dae_example = raw"""
 
+
 ### Example: Harmonic Oscillator
 
 As an example we consider the harmonic oscillator, with an additional

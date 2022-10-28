@@ -24,6 +24,9 @@ vector field may depend.
 """
 
 const ode_example = raw"""
+
+#### Example: Harmonic Oscillator
+
 As an example, let us consider the harmonic oscillator.
 The dynamical equations are given by
 ```math

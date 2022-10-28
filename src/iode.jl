@@ -84,6 +84,7 @@ The function `g` is used in projection methods that enforce ``p = ϑ(q)``.
 The functions `v̄` and `f̄` are used for initial guesses in nonlinear implicit solvers.
 """
 
+
 @doc """
 `IODE`: Implicit Ordinary Differential Equation
 
