@@ -36,6 +36,45 @@ fields ``v`` and ``f`` on `t`, `q` and `p`, and params is a `NamedTuple` of
 additional parameters.
 """
 
+const pode_example = raw"""
+
+#### Example: Harmonic Oscillator
+
+As an example, let us consider the harmonic oscillator.
+The dynamical equations are given by
+```math
+\begin{aligned}
+\dot{q} (t) &= p (t) \\
+\dot{p} (t) &= - k \, q(t) .
+\end{aligned}
+```
+
+In order to create a `PODEProblem` for the harmonic oscillator, we need to write the following code:
+```julia
+function v(v, t, q, p, params)
+    v[1] = p[1]
+end
+
+function f(f, t, q, p, params)
+    f[1] = - params.k * q[1]
+end
+
+tspan = (0.0, 1.0)
+tstep = 0.1
+q₀ = [0.5]
+p₀ = [0.0]
+
+prob = PODEProblem(v, f, tspan, tstep, q₀, p₀; parameters = (k = 0.5,))
+```
+
+The energy of the harmonic oscillator is preserved, so we can add it as an invariant, 
+```julia
+energy(t, q, p, params) = p[1]^2 / 2 + params.k * q[1]^2 / 2
+
+prob = PODEProblem(v, f, tspan, tstep, q₀, p₀; parameters = (k = 0.5,), invariants = (h=energy,))
+```
+"""
+
 
 @doc """
 `PODE`: Partitioned Ordinary Differential Equation
