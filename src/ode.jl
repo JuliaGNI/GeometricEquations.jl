@@ -11,53 +11,16 @@ with vector field ``v``, initial condition ``q_{0}`` and the solution
 const ode_functions = raw"""
 The function `v` providing the vector field must have the interface
 ```julia
-    function v(v, t, q, params)
-        v[1] = ...
-        v[2] = ...
-        ...
-    end
+function v(v, t, q, params)
+    v[1] = ...
+    v[2] = ...
+    ...
+end
 ```
 where `t` is the current time, `q` is the current solution vector, `v` is the
 vector which holds the result of evaluating the vector field ``v`` on `t` and
 `q`, and `params` is a `NamedTuple` of additional parameters on which the
 vector field may depend.
-"""
-
-const ode_example = raw"""
-
-#### Example: Harmonic Oscillator
-
-As an example, let us consider the harmonic oscillator.
-The dynamical equations are given by
-```math
-\dot{q} (t) = \begin{pmatrix}
-0 & 1 \\
--k & 0 \\
-\end{pmatrix} q(t) ,
-\qquad
-q \in \mathbb{R}^{2} .
-```
-
-In order to create an `ODEProblem` for the harmonic oscillator, we need to write the following code:
-```julia
-function v(v, t, x, params)
-    v[1] = x[2]
-    v[2] = - params.k * x[1]
-end
-
-tspan = (0.0, 1.0)
-tstep = 0.1
-q₀ = [0.5, 0.0]
-
-prob = ODEProblem(v, tspan, tstep, q₀; parameters = (k = 0.5,))
-```
-
-The energy of the harmonic oscillator is preserved, so we can add it as an invariant, 
-```julia
-energy(t, q, params) = q[2]^2 / 2 + params.k * q[1]^2 / 2
-
-prob = ODEProblem(v, tspan, tstep, q₀; parameters = (k = 0.5,), invariants = (h=energy,))
-```
 """
 
 

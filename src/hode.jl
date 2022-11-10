@@ -22,74 +22,26 @@ taking values in ``T^{*} Q \simeq \mathbb{R}^{d} \times \mathbb{R}^{d}``.
 const hode_functions = raw"""
 The functions `v`, `f` and `hamiltonian` must have the interface
 ```julia
-    function v(v, t, q, p, params)
-        v[1] = ...
-        v[2] = ...
-        ...
-    end
+function v(v, t, q, p, params)
+    v[1] = ...
+    v[2] = ...
+    ...
+end
 
-    function f(f, t, q, p, params)
-        f[1] = ...
-        f[2] = ...
-        ...
-    end
+function f(f, t, q, p, params)
+    f[1] = ...
+    f[2] = ...
+    ...
+end
 
-    function hamiltonian(t, q, p, params)
-        return ...
-    end
+function hamiltonian(t, q, p, params)
+    return ...
+end
 ```
 where `t` is the current time, `q` and `p` are the current solution vectors,
 `v` and `f` are the vectors which hold the result of evaluating the vector
 fields on `t`, `q` and `p`, and params is a `NamedTuple` of
 additional parameters.
-"""
-
-const hode_example = raw"""
-
-#### Example: Harmonic Oscillator
-
-As an example, let us consider the harmonic oscillator.
-The dynamical equations are given by
-```math
-\begin{aligned}
-\dot{q} (t) &= p (t) \\
-\dot{p} (t) &= - k \, q(t) ,
-\end{aligned}
-```
-which can also be written as 
-```math
-\begin{pmatrix}
-\dot{q} (t) \\
-\dot{p} (t) \\
-\end{pmatrix} = \begin{pmatrix}
-0 & 1 \\
--1 & 0 \\
-\end{pmatrix}
-\nabla H( q(t) , p(t) ) ,
-\qquad
-H(q,p) = \frac{p^2}{2} + k \, \frac{q^2}{2} ,
-```
-where $H$ is the Hamiltonian, i.e., the total energy of the system.
-
-In order to create a `HODEProblem` for the harmonic oscillator, we need to write the following code:
-```julia
-function v(v, t, q, p, params)
-    v[1] = p[1]
-end
-
-function f(f, t, q, p, params)
-    f[1] = - params.k * q[1]
-end
-
-h(t, q, p, params) = p[1]^2 / 2 + params.k * q[1]^2 / 2
-
-tspan = (0.0, 1.0)
-tstep = 0.1
-q₀ = [0.5]
-p₀ = [0.0]
-
-prob = HODEProblem(v, f, h, tspan, tstep, q₀, p₀; parameters = (k = 0.5,))
-```
 """
 
 

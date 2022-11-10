@@ -45,45 +45,6 @@ vector field ``v``, the projection ``u`` and the algebraic constraint ``\phi``
 on `t`, `q` and `λ`.
 """
 
-const dae_example = raw"""
-
-
-### Example: Harmonic Oscillator
-
-As an example we consider the harmonic oscillator, with an additional
-constraint that enforces energy conservation. While the system itself
-is energy conserving, most integrators do not respect this property.
-A possible way of remedying this flaw is to explicitly add energy
-conservation as an algebraic constraint. 
-
-```@example
-using GeometricIntegrators # hide
-hamiltonian(t, q, params) = q[2]^2 / 2 + params.k * q[1]^2 / 2
-
-function v(v, t, q, params)
-    v[1] = q[2]
-    v[2] = - params.k * q[1]
-end
-
-function u(u, t, q, λ, params)
-    u[1] = λ[1] * params.k * q[1]
-    u[2] = λ[1] * q[2]
-end
-
-function ϕ(ϕ, t, q, params)
-    ϕ[1] = hamiltonian(t, q, params)
-end
-
-tspan = (0.0, 1.0)
-tstep = 0.1
-q₀ = [1., 1.]
-λ₀ = [0.]
-params = (k=0.5,)
-
-dae = DAEProblem(v, u, ϕ, tspan, tstep, q₀, λ₀; parameters = params)
-```
-"""
-
 
 @doc """
 `DAE`: Differential Algebraic Equation

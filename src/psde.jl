@@ -45,32 +45,6 @@ end
 ```
 """
 
-const psde_examples = raw"""
-
-#### Example: Kubo Oscillator
-
-```julia
-function v(v, t, q, p, params)
-    v[1] = + params.λ * p[1]
-end
-
-function f(f, t, q, p, params)
-    f[1] = - params.λ * q[1]
-end
-
-function B(B, t, q, p, params)
-    B[1,1] = params.ν * p[1]
-end
-
-function G(G, t, q, p, params)
-    G[1,1] = - params.ν * q[1]
-end
-
-tspan = (0.0, 1.0); Δt = 0.01; q₀ = [0.5]; p₀ = [0.0];
-prob = PSDEProblem(v, f, B, G, tspan, Δt, q₀, p₀; parameters = (λ=2., μ=1.))
-```
-"""
-
 
 @doc """
 `PSDE`: Stratonovich Partitioned Stochastic Differential Equation

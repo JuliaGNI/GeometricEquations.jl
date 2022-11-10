@@ -33,28 +33,6 @@ end
 ```
 """
 
-const sde_examples = raw"""
-
-#### Example: Kubo Oscillator
-
-```julia
-function v(t, q, v, params)
-    v[1] = + params.λ * q[2]
-    v[2] = - params.λ * q[1]
-end
-
-function B(t, q, B, params)
-    for j in axes(B, 2)
-        B[1,j] = + params.ν * q[2]
-        B[2,j] = - params.ν * q[1]
-    end
-end
-
-tspan = (0.0, 1.0); Δt = 0.01; q₀ = [0.5, 0.0];
-prob = SDEProblem(v, B, tspan, Δt, q₀; parameters = (λ=2., μ=1.))
-```
-"""
-
 
 @doc """
 `SDE`: Stratonovich Stochastic Differential Equation
