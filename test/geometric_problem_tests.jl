@@ -389,7 +389,7 @@ end
 
 @testset "$(rpad("IDAE Problem",80))" begin
 
-    eqs  = (idae_ϑ, idae_f, pdae_u, pdae_g, pdae_ϕ)
+    eqs  = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ)
     ics  = (q=q₀, p=p₀, λ=λ₀)
     idae = IDAE(eqs...; v̄=idae_v, f̄=idae_f)
     prob = GeometricProblem(idae, (t₀,t₁), Δt, ics)
@@ -417,7 +417,7 @@ end
     # @test nconstraints(dae) == 1
 
 
-    eqs  = (idae_ϑ, idae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ϕ)
+    eqs  = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ, idae_u, idae_g, idae_ψ)
     ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     idae = IDAE(eqs...)
     prob = GeometricProblem(idae, (t₀,t₁), Δt, ics)
@@ -441,7 +441,7 @@ end
 
 @testset "$(rpad("LDAE Problem",80))" begin
 
-    eqs  = (idae_ϑ, idae_f, pdae_u, pdae_g, pdae_ϕ, ldae_ω, ldae_l)
+    eqs  = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ, ldae_ω, ldae_l)
     ics  = (q=q₀, p=p₀, λ=λ₀)
     ldae = LDAE(eqs...)
     prob = GeometricProblem(ldae, (t₀,t₁), Δt, ics)
@@ -469,7 +469,7 @@ end
     # @test nconstraints(dae) == 1
 
 
-    eqs  = (idae_ϑ, idae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ϕ, ldae_ω, ldae_l)
+    eqs  = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ, idae_u, idae_g, idae_ψ, ldae_ω, ldae_l)
     ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     ldae = LDAE(eqs...)
     prob = GeometricProblem(ldae, (t₀,t₁), Δt, ics)

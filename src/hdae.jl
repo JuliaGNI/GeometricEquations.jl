@@ -232,7 +232,7 @@ function check_methods(equ::HDAE, tspan, ics::NamedTuple, params)
     applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
-    # applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
     equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false

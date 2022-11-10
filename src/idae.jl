@@ -233,14 +233,14 @@ end
 function check_methods(equ::IDAE, tspan, ics::NamedTuple, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, params) || return false
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    # equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
     # TODO add missing methods
     return true
 end
@@ -257,12 +257,12 @@ end
 
 _get_ϑ(equ::IDAE, params) = (ϑ, t, q, v)       -> equ.ϑ(ϑ, t, q, v, params)
 _get_f(equ::IDAE, params) = (f, t, q, v)       -> equ.f(f, t, q, v, params)
-_get_u(equ::IDAE, params) = (u, t, q, p, λ)    -> equ.u(u, t, q, p, λ, params)
-_get_g(equ::IDAE, params) = (g, t, q, p, λ)    -> equ.g(g, t, q, p, λ, params)
-_get_ϕ(equ::IDAE, params) = (ϕ, t, q, p)       -> equ.ϕ(ϕ, t, q, p, params)
-_get_ū(equ::IDAE, params) = (u, t, q, p, λ)    -> equ.ū(u, t, q, p, λ, params)
-_get_ḡ(equ::IDAE, params) = (g, t, q, p, λ)    -> equ.ḡ(g, t, q, p, λ, params)
-_get_ψ(equ::IDAE, params) = (ψ, t, q, p, v, f) -> equ.ψ(ψ, t, q, p, v, f, params)
+_get_u(equ::IDAE, params) = (u, t, q, v, p, λ) -> equ.u(u, t, q, v, p, λ, params)
+_get_g(equ::IDAE, params) = (g, t, q, v, p, λ) -> equ.g(g, t, q, v, p, λ, params)
+_get_ϕ(equ::IDAE, params) = (ϕ, t, q, v, p)    -> equ.ϕ(ϕ, t, q, v, p, params)
+_get_ū(equ::IDAE, params) = (u, t, q, v, p, λ)    -> equ.ū(u, t, q, v, p, λ, params)
+_get_ḡ(equ::IDAE, params) = (g, t, q, v, p, λ)    -> equ.ḡ(g, t, q, v, p, λ, params)
+_get_ψ(equ::IDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
 _get_v̄(equ::IDAE, params) = (v, t, q)          -> equ.v̄(v, t, q, params)
 _get_f̄(equ::IDAE, params) = (f, t, q, v)       -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IDAE, inv, params) = (t, q, v) -> inv(t, q, v, params)

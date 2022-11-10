@@ -151,11 +151,11 @@ function pdae_ϕ(ϕ, t, q, p, params)
     ϕ[1] = p[1] - q[1]
 end
 
-function pdae_ψ(ψ, t, q, p, λ, μ, params)
+function pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
     ψ[1] = μ[1] - λ[1]
 end
 
-function pdae_h(t, q, p)
+function pdae_h(t, q, p, params)
     p[1]^2/2 + q[1]^2/2
 end
 
@@ -168,6 +168,11 @@ idae_v = _idae_default_v̄
 ldae_l = lode_l
 ldae_ω = lode_ω
 ldae_v = _ldae_default_v̄
+
+idae_u(u, t, q, v, p, λ, params) = pdae_u(u, t, q, p, λ, params)
+idae_g(g, t, q, v, p, λ, params) = pdae_g(g, t, q, p, λ, params)
+idae_ϕ(ϕ, t, q, v, p, params) = pdae_ϕ(ϕ, t, q, p, params)
+idae_ψ(ψ, t, q, v, p, q̇, ṗ, params) = pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
 
 
 function sde_v(v, t, q, params)
