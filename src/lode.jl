@@ -139,8 +139,8 @@ $(lode_equations)
 ### Constructors
 
 ```julia
-IODE(ϑ, f, g, ω, l, v̄, f̄, invariants, parameters, periodicity)
-IODE(ϑ, f, g, ω, l; v̄ = _lode_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+LODE(ϑ, f, g, ω, l, v̄, f̄, invariants, parameters, periodicity)
+LODE(ϑ, f, g, ω, l; v̄ = _lode_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
 where 
@@ -189,6 +189,7 @@ struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
     end
 end
 
+_lode_default_g(g, t, q, v, λ, params) = nothing
 _lode_default_v̄(v, t, q, params) = nothing
 
 LODE(ϑ, f, g, ω, l; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_lode_default_v̄, f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameters, periodicity)
@@ -211,13 +212,13 @@ function check_initial_conditions(::LODE, ics::NamedTuple)
 end
 
 function check_methods(equ::LODE, tspan, ics, params)
-    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, zero(ics.q), ics.λ, params) || return false
+    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
     # TODO add missing methods
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.lagrangian, tspan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
 end
 
@@ -258,6 +259,8 @@ $(lode_equations)
 ### Constructors
 
 ```julia
+LODEProblem(ϑ, f, ω, l, tspan, tstep, ics; kwargs...)
+LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
 LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
 LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
 ```
@@ -273,9 +276,6 @@ In addition to the standard keyword arguments for [`GeometricProblem`](@ref Geom
 a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _lode_default_v̄` and `f̄ = f`.
 
-The function `g` should really be optional as it is not required for all but only for most
-integrators, but for the time being it is required.
-
 ### Function Definitions
 
 $(lode_functions)
@@ -283,18 +283,28 @@ $(lode_functions)
 """
 const LODEProblem = GeometricProblem{LODE}
 
-function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics::NamedTuple;
+function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple;
                      invariants = NullInvariants(), parameters = NullParameters(),
                      periodicity = NullPeriodicity(), v̄ = _lode_default_v̄, f̄ = f)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State,
+function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple; kwargs...)
+    LODEProblem(ϑ, f, _lode_default_g, ω, l, tspan, tstep, ics; kwargs...)
+end
+
+function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, q₀::State, p₀::State,
                      λ₀::State = zero(q₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
 end
+
+function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, q₀::State, p₀::State, λ₀::State = zero(q₀);
+    kwargs...)
+    LODEProblem(ϑ, f, _lode_default_g, ω, l, tspan, tstep, q₀, p₀, λ₀; kwargs...)
+end
+
 
 function GeometricBase.periodicity(prob::LODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())

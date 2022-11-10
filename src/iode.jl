@@ -157,6 +157,7 @@ struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
     end
 end
 
+_iode_default_g(g, t, q, v, λ, params) = nothing
 _iode_default_v̄(v, t, q, params) = nothing
 
 function IODE(ϑ, f, g; invariants = NullInvariants(), parameters = NullParameters(),
@@ -223,6 +224,8 @@ $(iode_equations)
 ### Constructors
 
 ```julia
+IODEProblem(ϑ, f, tspan, tstep, ics; kwargs...)
+IODEProblem(ϑ, f, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
 IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
 IODEProblem(ϑ, f, g, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
 ```
@@ -239,9 +242,6 @@ In addition to the standard keyword arguments for [`GeometricProblem`](@ref Geom
 an `IODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _iode_default_v̄` and `f̄ = f`.
 
-The function `g` should really be optional as it is not required for all but only for most
-integrators, but for the time being it is required.
-
 ### Function Definitions
 
 $(iode_functions)
@@ -256,10 +256,19 @@ function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple; invariants = NullI
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
 
+function IODEProblem(ϑ, f, tspan, tstep, ics::NamedTuple; kwargs...)
+    IODEProblem(ϑ, f, _iode_default_g, tspan, tstep, ics; kwargs...)
+end
+
 function IODEProblem(ϑ, f, g, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀);
                      kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
+end
+
+function IODEProblem(ϑ, f, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀);
+    kwargs...)
+    IODEProblem(ϑ, f, _iode_default_g, tspan, tstep, q₀, p₀, λ₀; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::IODEProblem)
