@@ -5,26 +5,38 @@ A partitioned differential algebraic equation has the form
 \begin{aligned}
 \dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
 \dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) , & p(t_{0}) &= p_{0} , \\
-0 &= \phi (t, q(t), p(t), \lambda(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
+0 &= \phi (t, q(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
 \end{aligned}
 ```
 with vector fields ``v`` and ``f``, projection ``u`` and ``g``,
-algebraic constraint ``\phi=0``,
-conditions ``(q_{0}, p_{0})`` and ``\lambda_{0}``, the dynamical variables
-``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
-the algebraic variable ``\lambda`` taking values in ``\mathbb{R}^{m}``.
+algebraic constraint ``\phi=0``, initial conditions ``(q_{0}, p_{0})``
+and ``\lambda_{0}``, the dynamical variables ``(q,p)`` taking values
+in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and the algebraic variable
+``\lambda`` taking values in ``\mathbb{R}^{m}``.
+
+Some integrators also enforce the secondary constraint ``\psi``, that is the time
+derivative of the algebraic constraint ``\phi``.
+In this case, the system of equations is modified as follows
+```math
+\begin{aligned}
+\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) + \bar{u} (t, q(t), p(t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
+\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) + \bar{g} (t, q(t), p(t), \gamma(t)) , & p(t_{0}) &= p_{0} , \\
+0 &= \phi (t, q(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} , \\
+0 &= \psi (t, q(t), p(t), \dot{q} (t), \dot{p} (t)) , & \gamma(t_{0}) &= \gamma_{0} ,
+\end{aligned}
+```
+with the second algebraic variable ``\gamma`` also taking values in ``\mathbb{R}^{m}``.
 """
 
 const pdae_constructors = raw"""
 The functions `v` and `f` compute the vector field, `u` and `g` compute the projections,
 and `ϕ` provides the algebraic constraint.
-The functions `ψ` and `ū` are optional and provide the secondary constraint, that is the time
-derivative of the algebraic constraint, and the corresponding projection.
+The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint and the
+corresponding projection.
 """
 
 const pdae_functions = raw"""
 The functions `v`, `f`, `u`, `g` and `ϕ` must have the interface
-
 ```julia
 function v(v, t, q, p, params)
     v[1] = ...
@@ -58,6 +70,26 @@ where `t` is the current time, `q`, `p` and `λ` are the current solution vector
 `v`, `f`, `u` and `g` are the vectors which hold the result of evaluating the
 vector fields ``v`` and ``f``, the projections ``u`` and ``g``, and `ϕ` holds the
 algebraic constraint ``\phi``, evaluated on `t`, `q`, `p` and `λ`.
+
+Some integrators also enforce the secondary constraint ``\psi`` and require
+the following additional functions
+```
+function ū(u, t, q, p, γ, params)
+    u[1] = ...
+    u[2] = ...
+    ...
+end
+
+function ḡ(g, t, q, p, γ, params)
+    g[1] = ...
+    g[2] = ...
+    ...
+end
+
+function ψ(ψ, t, q, p, v, f, params)
+    ψ[1] = ...
+end
+```
 """
 
 
@@ -118,6 +150,10 @@ The `PDAE` is created by
 
 ```julia
 equ = PDAE(v, f, u, g, ϕ)
+```
+or
+```julia
+equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ)
 ```
 """
 struct PDAE{vType <: Callable, fType <: Callable,
@@ -273,8 +309,13 @@ tstep = 0.1
 q₀ = [1., 1.]
 p₀ = [1., 0.]
 λ₀ = [0.]
+γ₀ = [0.]
 
 prob = PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀, p₀, λ₀)
+```
+or
+```julia
+prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀, p₀, λ₀, γ₀)
 ```
 """
 const PDAEProblem = GeometricProblem{PDAE}

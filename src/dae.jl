@@ -11,6 +11,18 @@ with vector field ``v``, projection ``u``, algebraic constraint ``\phi=0``,
 initial conditions ``q_{0}`` and ``\lambda_{0}``, the dynamical variable ``q``
 taking values in ``\mathbb{R}^{d}`` and the algebraic variable ``\lambda``
 taking values in ``\mathbb{R}^{m}``.
+
+Some integrators also enforce the secondary constraint ``\psi``, that is the time
+derivative of the algebraic constraint ``\phi``.
+In this case, the system of equations is modified as follows
+```math
+\begin{aligned}
+\dot{q} (t) &= v(t, q(t)) + u(t, q(t), \lambda(t)) + \bar{u} (t, q(t), \dot{q} (t), \dot{p} (t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
+0 &= \phi (t, q(t)) , & \lambda(t_{0}) &= \lambda_{0} , \\
+0 &= \psi (t, q(t), \dot{q} (t)) , & \gamma(t_{0}) &= \gamma_{0} ,
+\end{aligned}
+```
+with the second algebraic variable ``\gamma`` also taking values in ``\mathbb{R}^{m}``.
 """
 
 const dae_constructors = raw"""
@@ -43,6 +55,20 @@ where `t` is the current time, `q` and `λ` are the current solution vectors,
 and `v`, `u` and `ϕ` are the vectors which hold the result of evaluating the
 vector field ``v``, the projection ``u`` and the algebraic constraint ``\phi``
 on `t`, `q` and `λ`.
+
+Some integrators also enforce the secondary constraint ``\psi`` and require
+the following additional functions
+```
+function ū(u, t, q, γ, params)
+    u[1] = ...
+    u[2] = ...
+    ...
+end
+
+function ψ(ψ, t, q, v, params)
+    ψ[1] = ...
+end
+```
 """
 
 
@@ -96,7 +122,10 @@ The `DAE` is created by
 ```julia
 equ = DAE(v, u, ϕ)
 ```
-
+or
+```julia
+equ = DAE(v, u, ϕ, ū, ψ)
+```
 """
 struct DAE{vType <: Callable,
            uType <: Callable, ϕType <: Callable,
@@ -232,8 +261,13 @@ tspan = (0.0, 1.0)
 tstep = 0.1
 q₀ = [1., 1.]
 λ₀ = [0.]
+γ₀ = [0.]
 
 prob = DAEProblem(v, u, ϕ, tspan, tstep, q₀, λ₀)
+```
+or
+```julia
+prob = DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀, λ₀, γ₀)
 ```
 """
 const DAEProblem = GeometricProblem{DAE}

@@ -25,16 +25,16 @@ is defined by a Lagrangian, as well as a special case of a differential algebrai
 equation with dynamical variables ``(q,p)`` and algebraic variable ``v``, that is
 determined such that the constraint ``p(t) = ϑ(t, q(t), v(t))`` is satisfied.
 
-Most integrators perform a projection step in order to enforce this constraint. To this end,
+Many integrators perform a projection step in order to enforce this constraint. To this end,
 the system is extended to
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t) + λ(t) , &
+\dot{q} (t) &= v(t) + \lambda(t) , &
 q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), λ(t)) , &
+\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), \lambda(t)) , &
 p(t_{0}) &= p_{0} , \\
 p(t) &= ϑ(t, q(t), v(t)) , &
-λ(t_{0}) &= λ_{0}
+\lambda(t_{0}) &= \lambda_{0}
 \end{aligned}
 ```
 where the vector field defining the projection step is usually given as

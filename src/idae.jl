@@ -3,17 +3,31 @@ const idae_equations = raw"""
 An implicit differential algebraic initial value problem takes the form
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t) + u(t, q(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), p(t), \lambda(t)) , & p(t_{0}) &= p_{0} , \\
+\dot{q} (t) &= v(t) + u(t, q(t), v(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
+\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), p(t), \lambda(t)) , & p(t_{0}) &= p_{0} , \\
 p(t) &= ϑ(t, q(t), v(t)) , && \\
-0 &= \phi (t, q(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
+0 &= \phi (t, q(t), v(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
 \end{aligned}
 ```
 with force field ``f``, the momentum defined by ``ϑ``, projections ``u`` and ``g``,
-algebraic constraint ``\phi(t,q,p)=0``, the dynamical variables ``(q,p)`` taking
+algebraic constraint ``\phi(t,q,v,p)=0``, the dynamical variables ``(q,p)`` taking
 values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``, the algebraic variable ``\lambda``
 taking values in ``\mathbb{R}^{m}``, and initial conditions ``(q_{0}, p_{0})`` and
-``\lambda_{0}``,
+``\lambda_{0}``.
+
+Some integrators also enforce the secondary constraint ``\psi``, that is the time
+derivative of the algebraic constraint ``\phi``.
+In this case, the system of equations is modified as follows
+```math
+\begin{aligned}
+\dot{q} (t) &= v(t) + u(t, q(t), v(t), p(t), \lambda(t)) + \bar{u} (t, q(t), v(t), p(t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
+\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), p(t), \lambda(t)) + \bar{g} (t, q(t), v(t), p(t), \gamma(t)) , & p(t_{0}) &= p_{0} , \\
+p(t) &= ϑ(t, q(t), v(t)) , && \\
+0 &= \phi (t, q(t), v(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
+0 &= \psi (t, q(t), v(t), p(t), \dot{q} (t), \dot{p} (t)) , & \gamma(t_{0}) &= \gamma_{0} ,
+\end{aligned}
+```
+with the second algebraic variable ``\gamma`` also taking values in ``\mathbb{R}^{m}``.
 """
 
 const idae_constructors = raw"""
@@ -24,7 +38,69 @@ the time derivative of the algebraic constraint, and the corresponding projectio
 """
 
 const idae_functions = raw"""
+The functions `ϑ` and `f` must have the interface
+```julia
+function ϑ(p, t, q, v)
+    p[1] = ...
+    p[2] = ...
+    ...
+end
 
+function f(f, t, q, v)
+    f[1] = ...
+    f[2] = ...
+    ...
+end
+```
+where `t` is the current time, `q` is the current solution vector, `v` is the
+current velocity and `f` and `p` are the vectors which hold the result of
+evaluating the functions ``f`` and ``ϑ`` on `t`, `q` and `v`.
+The funtions `g`, `v̄` and `f̄` are specified by
+```julia
+function u(u, t, q, v, p, λ)
+    u[1] = ...
+    u[2] = ...
+    ...
+end
+
+function g(g, t, q, v, p, λ)
+    g[1] = ...
+    g[2] = ...
+    ...
+end
+
+function v̄(v, t, q)
+    v[1] = ...
+    v[2] = ...
+    ...
+end
+
+function f̄(f, t, q, v)
+    f[1] = ...
+    f[2] = ...
+    ...
+end
+```
+
+Some integrators also enforce the secondary constraint ``\psi`` and require
+the following additional functions
+```
+function ū(u, t, q, v, p, γ, params)
+    u[1] = ...
+    u[2] = ...
+    ...
+end
+
+function ḡ(g, t, q, v, p, γ, params)
+    g[1] = ...
+    g[2] = ...
+    ...
+end
+
+function ψ(ψ, t, q, v, p, q̇, ṗ, params)
+    ψ[1] = ...
+end
+```
 """
 
 

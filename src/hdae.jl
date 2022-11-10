@@ -4,8 +4,8 @@ A Hamiltonian differential algebraic is an initial value problem, that is
 a canonical Hamiltonian system of equations subject to Dirac constraints,
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) + \bar{g}(t, q(t), p(t), \lambda(t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) + \bar{f}(t, q(t), p(t), \lambda(t), \gamma(t)) , & p(t_{0}) &= p_{0} , \\
+\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) + \bar{u} (t, q(t), p(t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
+\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) + \bar{g} (t, q(t), p(t), \gamma(t)) , & p(t_{0}) &= p_{0} , \\
 0 &= \phi (t, q(t), p(t)) , \\
 0 &= \psi (t, q(t), p(t), \dot{q}(t), \dot{p}(t)) ,
 \end{aligned}
@@ -61,11 +61,31 @@ function h(t, q, p, params)
     ...
 end
 ```
-where `t` is the current time, `q`, `p` and `λ` are the current solution vectors,
+where `t` is the current time, `q`, `p`, `λ` and `γ` are the current solution vectors,
 `v`, `f`, `u` and `g` are the vectors which hold the result of evaluating the
-vector fields ``v`` and ``f``, the projections ``u`` and ``g``, `ϕ` holds the
-algebraic constraint ``\phi``, and `h` returns the Hamiltonian of the system,
+vector fields ``v`` and ``f``, the projections on the primary constraint ``u`` and ``g``, 
+`ϕ` holds the algebraic constraint ``\phi``, and `h` returns the Hamiltonian of the system,
 all evaluated on `t`, `q`, `p` and `λ`.
+
+Some integrators also enforce the secondary constraint ``\psi`` and require
+the following additional functions
+```
+function ū(u, t, q, p, γ, params)
+    u[1] = ...
+    u[2] = ...
+    ...
+end
+
+function ḡ(g, t, q, p, γ, params)
+    g[1] = ...
+    g[2] = ...
+    ...
+end
+
+function ψ(ψ, t, q, p, v, f, params)
+    ψ[1] = ...
+end
+```
 """
 
 
@@ -128,6 +148,10 @@ The `HDAE` is created by
 
 ```julia
 equ = HDAE(v, f, u, g, ϕ, h)
+```
+or
+```julia
+equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h)
 ```
 """
 struct HDAE{vType <: Callable, fType <: Callable,
@@ -274,8 +298,8 @@ $(hdae_constructors)
 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
-`ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
-The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed directly,
+`ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `γ`.
+The initial conditions `q₀`, `p₀`, `λ₀` and `γ₀` can also be prescribed directly,
 with `State` an `AbstractArray{<:Number}`.
 
 In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
@@ -294,8 +318,13 @@ tstep = 0.1
 q₀ = [1., 1.]
 p₀ = [1., 0.]
 λ₀ = [0.]
+γ₀ = [0.]
 
 prob = HDAEProblem(v, f, u, g, ϕ, h, tspan, tstep, q₀, p₀, λ₀)
+```
+or
+```julia
+prob = HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀, p₀, λ₀, γ₀)
 ```
 """
 const HDAEProblem = GeometricProblem{HDAE}
