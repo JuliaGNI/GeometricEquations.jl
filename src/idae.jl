@@ -23,7 +23,7 @@ In this case, the system of equations is modified as follows
 \dot{q} (t) &= v(t) + u(t, q(t), v(t), p(t), \lambda(t)) + \bar{u} (t, q(t), v(t), p(t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
 \dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), p(t), \lambda(t)) + \bar{g} (t, q(t), v(t), p(t), \gamma(t)) , & p(t_{0}) &= p_{0} , \\
 p(t) &= ϑ(t, q(t), v(t)) , && \\
-0 &= \phi (t, q(t), v(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
+0 &= \phi (t, q(t), v(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} , \\
 0 &= \psi (t, q(t), v(t), p(t), \dot{q} (t), \dot{p} (t)) , & \gamma(t_{0}) &= \gamma_{0} ,
 \end{aligned}
 ```
