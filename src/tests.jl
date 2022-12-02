@@ -50,8 +50,8 @@ module HarmonicOscillator
 
     using Parameters
 
-    export odeproblem, iodeproblem, podeproblem, hodeproblem, sodeproblem,
-           daeproblem, idaeproblem, pdaeproblem, hdaeproblem
+    export odeproblem, podeproblem, hodeproblem, iodeproblem, lodeproblem, sodeproblem,
+           daeproblem, pdaeproblem, hdaeproblem, idaeproblem, ldaeproblem
 
     export hamiltonian, lagrangian
 
@@ -74,6 +74,14 @@ module HarmonicOscillator
         p[1] = ϑ₁(0,q)
         p[2] = ϑ₂(0,q)
         return p
+    end
+
+    function oscillator_ω!(ω, t, q, params)
+        ω[1,1] = 0
+        ω[1,2] = -1
+        ω[2,1] = +1
+        ω[2,2] = 0
+        nothing
     end
 
     function hamiltonian(t, q, params)
@@ -216,6 +224,15 @@ module HarmonicOscillator
              v̄ = oscillator_iode_v)
     end
 
+    function lodeproblem(q₀=q₀, p₀=ϑ(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        # @assert size(q₀,1) == size(p₀,1) == 2
+        LODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
+             oscillator_iode_g, oscillator_ω!, lagrangian,
+             tspan, tstep, q₀, p₀;
+             invariants = (h=hamiltonian,), parameters = parameters,
+             v̄ = oscillator_iode_v)
+    end
+
 
     function oscillator_dae_v(v, t, z, params)
         @unpack k = params
@@ -295,6 +312,13 @@ module HarmonicOscillator
         # @assert size(q₀,1) == size(p₀,1) == size(λ₀,1) == 2
         IDAEProblem(oscillator_iode_ϑ, oscillator_iode_f,
                     oscillator_idae_u, oscillator_idae_g, oscillator_idae_ϕ,
+                    tspan, tstep, q₀, p₀, λ₀; v̄ = oscillator_iode_v, invariants = (h=hamiltonian,), parameters = parameters)
+    end
+
+    function ldaeproblem(q₀=q₀, p₀=ϑ(q₀), λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        # @assert size(q₀,1) == size(p₀,1) == size(λ₀,1) == 2
+        LDAEProblem(oscillator_iode_ϑ, oscillator_iode_f,
+                    oscillator_idae_u, oscillator_idae_g, oscillator_idae_ϕ, oscillator_ω!, lagrangian,
                     tspan, tstep, q₀, p₀, λ₀; v̄ = oscillator_iode_v, invariants = (h=hamiltonian,), parameters = parameters)
     end
 
