@@ -154,11 +154,11 @@ Base.similar(equ::SPDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=init
 @inline GeometricBase.periodicity(equation::SPDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
 @inline initial_conditions(equation::SPDAE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀, equation.μ₀)
 
-function functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NullParameters}
+function GeometricBase.functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NullParameters}
     NamedTuple{(:v, :f, :ϕ, :ψ)}((equation.v, equation.f, equation.ϕ, equation.ψ))
 end
 
-function functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NamedTuple}
+function GeometricBase.functions(equation::SPDAE{DT,TT,AT,VT,FT,ϕT,ψT,IT,PT}) where {DT, TT, AT, VT, FT, ϕT, ψT, IT, PT <: NamedTuple}
     vₚ = (v, t, q, p)   -> equation.v(v, t, q, p, equation.parameters)
     fₚ = (f, t, q, p)   -> equation.f(f, t, q, p, equation.parameters)
     ϕₚ = (ϕ, t, q, p)   -> equation.ϕ(ϕ, t, q, p, equation.parameters)
