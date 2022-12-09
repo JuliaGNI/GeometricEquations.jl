@@ -208,12 +208,15 @@ _get_f̄(equ::IODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IODE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
 _functions(equ::IODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, v̄ = equ.v̄, f̄ = equ.f̄)
+
 function _functions(equ::IODE, params::OptionalParameters)
-    (ϑ = _get_ϑ(equ, params),
-     f = _get_f(equ, params),
-     g = _get_g(equ, params),
-     v̄ = _get_v̄(equ, params),
-     f̄ = _get_f̄(equ, params))
+    (
+        ϑ = _get_ϑ(equ, params),
+        f = _get_f(equ, params),
+        g = _get_g(equ, params),
+        v̄ = _get_v̄(equ, params),
+        f̄ = _get_f̄(equ, params)
+    )
 end
 
 @doc """

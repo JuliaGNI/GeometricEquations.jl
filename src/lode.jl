@@ -242,13 +242,16 @@ _get_l(equ::LODE, params) = (t, q, v)    -> equ.lagrangian(t, q, v, params)
 _get_invariant(::LODE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
 _functions(equ::LODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, ω = equ.ω, v̄ = equ.v̄, f̄ = equ.f̄, l = equ.lagrangian)
-_functions(equ::LODE, params::OptionalParameters) = (ϑ = _get_ϑ(equ, params),
-                                                     f = _get_f(equ, params),
-                                                     g = _get_g(equ, params),
-                                                     ω = _get_ω(equ, params),
-                                                     v̄ = _get_v̄(equ, params),
-                                                     f̄ = _get_f̄(equ, params),
-                                                     l = _get_l(equ, params))
+
+_functions(equ::LODE, params::OptionalParameters) = (
+        ϑ = _get_ϑ(equ, params),
+        f = _get_f(equ, params),
+        g = _get_g(equ, params),
+        ω = _get_ω(equ, params),
+        v̄ = _get_v̄(equ, params),
+        f̄ = _get_f̄(equ, params),
+        l = _get_l(equ, params)
+    )
 
 
 @doc """

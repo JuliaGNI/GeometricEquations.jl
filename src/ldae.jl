@@ -303,9 +303,32 @@ end
 
 function _functions(equ::LDAE, params::OptionalParameters)
     if hassecondary(equ)
-        (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), ω = _get_ω(equ, params), l = _get_l(equ, params))
+        (
+            ϑ = _get_ϑ(equ, params), 
+            f = _get_f(equ, params),
+            u = _get_u(equ, params),
+            g = _get_g(equ, params),
+            ϕ = _get_ϕ(equ, params),
+            ū = _get_ū(equ, params),
+            ḡ = _get_ḡ(equ, params),
+            ψ = _get_ψ(equ, params),
+            v̄ = _get_v̄(equ, params),
+            f̄ = _get_f̄(equ, params),
+            ω = _get_ω(equ, params),
+            l = _get_l(equ, params)
+        )
     else
-        (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params), ω = _get_ω(equ, params), l = _get_l(equ, params))
+        (
+            ϑ = _get_ϑ(equ, params),
+            f = _get_f(equ, params),
+            u = _get_u(equ, params),
+            g = _get_g(equ, params),
+            ϕ = _get_ϕ(equ, params),
+            v̄ = _get_v̄(equ, params),
+            f̄ = _get_f̄(equ, params),
+            ω = _get_ω(equ, params),
+            l = _get_l(equ, params)
+        )
     end
 end
 
@@ -389,184 +412,3 @@ function GeometricBase.periodicity(prob::LDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
      μ = NullPeriodicity())
 end
-
-
-
-
-# struct LDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-#             ϑType <: Function, fType <: Function,
-#             uType <: Function, gType <: Function, ϕType <: Function,
-#             ūType <: OptionalFunction, ḡType <: OptionalFunction, ψType <: OptionalFunction,
-#             v̄Type <: Function, f̄Type <: Function,
-            
-#             invType <: OptionalInvariants,
-#             parType <: OptionalParameters,
-#             perType <: OptionalPeriodicity} <: AbstractEquationPDAE
-
-#     d::Int
-#     m::Int
-
-#     ϑ::ϑType
-#     f::fType
-#     u::uType
-#     g::gType
-#     ϕ::ϕType
-#     ū::ūType
-#     ḡ::ḡType
-#     ψ::ψType
-#     ω::ωType
-#     v̄::v̄Type
-#     f̄::f̄Type
-
-#     t₀::tType
-#     q₀::Vector{arrayType}
-#     p₀::Vector{arrayType}
-#     λ₀::Vector{arrayType}
-#     μ₀::Vector{arrayType}
-
-#     ω::ωType
-#     lagrangian::lagType
-#     invariants::invType
-#     parameters::parType
-#     periodicity::perType
-
-#     function LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄,
-#                   t₀::tType,
-#                   q₀::Vector{arrayType}, p₀::Vector{arrayType},
-#                   λ₀::Vector{arrayType}, μ₀::Vector{arrayType},
-#                   lagrangian, invariants, parameters, periodicity) where {
-#                         dType <: Number, tType <: Real, arrayType <: AbstractArray{dType}}
-
-#         d = length(q₀[begin])
-#         m = length(λ₀[begin])
-
-#         @assert 2d ≥ m
-
-#         @assert length(q₀) == length(p₀) == length(λ₀) == length(μ₀)
-
-#         @assert all(length(q) == d for q in q₀)
-#         @assert all(length(p) == d for p in p₀)
-#         @assert all(length(λ) == m for λ in λ₀)
-#         @assert all(length(μ) == m for μ in μ₀)
-
-#         @assert all([ndims(q) == ndims(p) == ndims(λ) == ndims(μ) for (q,p,λ,μ) in zip(q₀,p₀,λ₀,μ₀)])
-        
-#         new{dType, tType, arrayType,
-#             typeof(ϑ), typeof(f),
-#             typeof(u), typeof(g), typeof(ϕ),
-#             typeof(ū), typeof(ḡ), typeof(ψ),
-#             typeof(ω), typeof(v̄), typeof(f̄),
-#             typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-#                 d, m, ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, lagrangian, invariants, parameters, periodicity)
-#     end
-# end
-
-# _LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, lagrangian, ω, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=(parameters === nothing ? (t,q,v)->nothing : (t,q,v,params)->nothing), f̄=f) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, t₀, q₀, p₀, λ₀, μ₀, lagrangian, invariants, parameters, periodicity)
-
-# LDAE(ϑ, f, u, g, ϕ, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _LDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, l, ω, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-# LDAE(ϑ, f, u, g, ϕ, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = LDAE(ϑ, f, u, g, ϕ, l, ω, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-# LDAE(ϑ, f, u, g, ϕ, l, ω, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = LDAE(ϑ, f, u, g, ϕ, l, ω, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-# LDAE(ϑ, f, u, g, ϕ, l, ω, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = LDAE(ϑ, f, u, g, ϕ, l, ω, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-
-# LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-# LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-# LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-# LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, l, ω, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-
-# const LDAEpsiType{psiT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} = LDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on secondary constraint type parameter
-# const LDAEinvType{invT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,parT,perT} = LDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on invariants type parameter
-# const LDAEparType{parT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,perT} = LDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on parameters type parameter
-# const LDAEperType{perT,DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT} = LDAE{DT,TT,AT,PT,FT,UT,GT,ΦT,ŪT,ḠT,psiT,ΩT,V̄T,F̄T,lagT,invT,parT,perT} # type alias for dispatch on periodicity type parameter
-
-# Base.hash(dae::LDAE, h::UInt) = hash(dae.d, hash(dae.m,
-#           hash(dae.ϑ, hash(dae.f, 
-#           hash(dae.u, hash(dae.g, hash(dae.ϕ, 
-#           hash(dae.ū, hash(dae.ḡ, hash(dae.ψ,
-#           hash(dae.ω, hash(dae.v̄, hash(dae.f̄,
-#           hash(dae.t₀, hash(dae.q₀, hash(dae.p₀, hash(dae.λ₀, hash(dae.μ₀,
-#           hash(dae.invariants, hash(dae.parameters, hash(dae.periodicity, h)))))))))))))))))))))
-
-# Base.:(==)(dae1::LDAE, dae2::LDAE) = (
-#                                 dae1.d == dae2.d
-#                              && dae1.m == dae2.m
-#                              && dae1.ϑ == dae2.ϑ
-#                              && dae1.f == dae2.f
-#                              && dae1.u == dae2.u
-#                              && dae1.g == dae2.g
-#                              && dae1.ϕ == dae2.ϕ
-#                              && dae1.ū == dae2.ū
-#                              && dae1.ḡ == dae2.ḡ
-#                              && dae1.ψ == dae2.ψ
-#                              && dae1.ω == dae2.ω
-#                              && dae1.v̄ == dae2.v̄
-#                              && dae1.f̄ == dae2.f̄
-#                              && dae1.t₀ == dae2.t₀
-#                              && dae1.q₀ == dae2.q₀
-#                              && dae1.p₀ == dae2.p₀
-#                              && dae1.λ₀ == dae2.λ₀
-#                              && dae1.μ₀ == dae2.μ₀
-#                              && dae1.lagrangian == dae2.lagrangian
-#                              && dae1.invariants  == dae2.invariants
-#                              && dae1.parameters  == dae2.parameters
-#                              && dae1.periodicity == dae2.periodicity)
-
-# function Base.similar(equ::LDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
-#     @assert all([length(q) == ndims(equ) for q in q₀])
-#     @assert all([length(p) == ndims(equ) for p in p₀])
-#     @assert all([length(λ) == ndims(equ) for λ in λ₀])
-#     @assert all([length(μ) == ndims(equ) for μ in μ₀])
-#     _LDAE(equ.ϑ, equ.f, equ.u, equ.g, equ.ϕ, equ.ū, equ.ḡ, equ.ψ, equ.lagrangian, equ.ω, t₀, q₀, p₀, λ₀, μ₀;
-#          v̄=equ.v̄, f̄=equ.f̄, invariants=equ.invariants, parameters=parameters, periodicity=equ.periodicity)
-# end
-
-# Base.similar(equ::LDAE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-# Base.similar(equ::LDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-
-# hassecondary(::LDAEpsiType{<:Nothing}) = false
-# hassecondary(::LDAEpsiType{<:Function}) = true
-
-# hasinvariants(::LDAEinvType{<:NullInvariants}) = false
-# hasinvariants(::LDAEinvType{<:NamedTuple}) = true
-
-# hasparameters(::LDAEparType{<:NullParameters}) = false
-# hasparameters(::LDAEparType{<:NamedTuple}) = true
-
-# hasperiodicity(::LDAEperType{<:Nothing}) = false
-# hasperiodicity(::LDAEperType{<:AbstractArray}) = true
-
-# @inline Base.axes(equation::LDAE) = axes(equation.q₀[begin])
-# @inline Base.ndims(equation::LDAE) = equation.d
-# @inline GeometricBase.nsamples(equ::LDAE) = length(eachindex(equ.q₀))
-# @inline GeometricBase.nconstraints(equation::LDAE) = equation.m
-
-# @inline GeometricBase.periodicity(equation::LDAE) = hasperiodicity(equation) ? equation.periodicity : zero(equation.q₀[begin])
-# @inline initial_conditions(equation::LDAE) = (equation.t₀, equation.q₀, equation.p₀, equation.λ₀, equation.μ₀)
-
-# _get_ϑ(equ::LDAE) = hasparameters(equ) ? (t,q,v,ϑ)     -> equ.ϑ(t, q, v, ϑ, equ.parameters) : equ.ϑ
-# _get_f(equ::LDAE) = hasparameters(equ) ? (t,q,v,f)     -> equ.f(t, q, v, f, equ.parameters) : equ.f
-# _get_u(equ::LDAE) = hasparameters(equ) ? (t,q,v,u)     -> equ.u(t, q, v, u, equ.parameters) : equ.u
-# _get_g(equ::LDAE) = hasparameters(equ) ? (t,q,v,g)     -> equ.g(t, q, v, g, equ.parameters) : equ.g
-# _get_ϕ(equ::LDAE) = hasparameters(equ) ? (t,q,v,ϕ)     -> equ.ϕ(t, q, v, ϕ, equ.parameters) : equ.ϕ
-# _get_ū(equ::LDAE) = hasparameters(equ) ? (t,q,λ,ū)     -> equ.ū(t, q, λ, ū, equ.parameters) : equ.ū
-# _get_ḡ(equ::LDAE) = hasparameters(equ) ? (t,q,λ,ḡ)     -> equ.ḡ(t, q, λ, ḡ, equ.parameters) : equ.ḡ
-# _get_ψ(equ::LDAE) = hasparameters(equ) ? (t,q,p,v,f,ψ) -> equ.ψ(t, q, p, v, f, ψ, equ.parameters) : equ.ψ
-# _get_ω(equ::LDAE) = hasparameters(equ) ? (t,q,v,ω)     -> equ.ω(t, q, v, ω, equ.parameters) : equ.ω
-# _get_v̄(equ::LDAE) = hasparameters(equ) ? (t,q,v)       -> equ.v̄(t, q, v, equ.parameters) : equ.v̄
-# _get_f̄(equ::LDAE) = hasparameters(equ) ? (t,q,v,f)     -> equ.f̄(t, q, v, f, equ.parameters) : equ.f̄
-# _get_l(equ::LDAE) = hasparameters(equ) ? (t,q,v)       -> equ.lagrangian(t, q, v, equ.parameters) : equ.lagrangian
-
-
-# function functions(equ::LDAE)
-#     names = (:ϑ, :f, :u, :g, :ϕ)
-#     equs  = (_get_ϑ(equ), _get_f(equ), _get_u(equ), _get_g(equ), _get_ϕ(equ))
-
-#     if hassecondary(equ)
-#         names = (names..., :ū, :ḡ, :ψ)
-#         equs  = (equs..., _get_ū(equ), _get_ḡ(equ), _get_ψ(equ))
-#     end
-
-#     names = (names..., :l, :ω, :v̄, :f̄)
-#     equs  = (equs..., _get_l(equ), _get_ω(equ), _get_v̄(equ), _get_f̄(equ))
-
-#     NamedTuple{names}(equs)
-# end

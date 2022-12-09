@@ -170,10 +170,10 @@ _get_invariant(::SPSDE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::SPSDE) = (v = equ.v, f1 = equ.f1, f2 = equ.f2, B = equ.B, G1 = equ.G1, G2 = equ.G2)
 _functions(equ::SPSDE, params::OptionalParameters) = (
-        v = _get_v(equ, params),
+        v  = _get_v(equ, params),
         f1 = _get_f1(equ, params),
         f2 = _get_f2(equ, params),
-        B = _get_B(equ, params),
+        B  = _get_B(equ, params),
         G1 = _get_G1(equ, params),
         G2 = _get_G2(equ, params)
     )

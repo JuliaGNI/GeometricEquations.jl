@@ -218,9 +218,21 @@ end
 
 function _functions(equ::DAE, params::OptionalParameters)
     if hassecondary(equ)
-        (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params))
+        (
+            v = _get_v(equ, params),
+            u = _get_u(equ, params),
+            ϕ = _get_ϕ(equ, params),
+            ū = _get_ū(equ, params),
+            ψ = _get_ψ(equ, params),
+            v̄ = _get_v̄(equ, params)
+        )
     else
-        (v = _get_v(equ, params), u = _get_u(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params))
+        (
+            v = _get_v(equ, params),
+            u = _get_u(equ, params),
+            ϕ = _get_ϕ(equ, params),
+            v̄ = _get_v̄(equ, params)
+        )
     end
 end
 

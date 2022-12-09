@@ -277,9 +277,28 @@ end
 
 function _functions(equ::IDAE, params::OptionalParameters)
     if hassecondary(equ)
-        (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), ū = _get_ū(equ, params), ḡ = _get_ḡ(equ, params), ψ = _get_ψ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+        (
+            ϑ = _get_ϑ(equ, params),
+            f = _get_f(equ, params),
+            u = _get_u(equ, params),
+            g = _get_g(equ, params),
+            ϕ = _get_ϕ(equ, params),
+            ū = _get_ū(equ, params),
+            ḡ = _get_ḡ(equ, params),
+            ψ = _get_ψ(equ, params),
+            v̄ = _get_v̄(equ, params),
+            f̄ = _get_f̄(equ, params)
+        )
     else
-        (ϑ = _get_ϑ(equ, params), f = _get_f(equ, params), u = _get_u(equ, params), g = _get_g(equ, params), ϕ = _get_ϕ(equ, params), v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+        (
+            ϑ = _get_ϑ(equ, params),
+            f = _get_f(equ, params),
+            u = _get_u(equ, params),
+            g = _get_g(equ, params),
+            ϕ = _get_ϕ(equ, params),
+            v̄ = _get_v̄(equ, params),
+            f̄ = _get_f̄(equ, params)
+        )
     end
 end
 
