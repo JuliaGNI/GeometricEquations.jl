@@ -84,13 +84,18 @@ with other values than zero is currently missing but can be added if demand aris
 """
 struct GeometricProblem{superType <: GeometricEquation, dType <: Number, tType <: Real,
                         arrayType <: AbstractArray{dType},
-                        equType <: GeometricEquation, icsType <: NamedTuple,
+                        equType <: GeometricEquation,
+                        icsType <: NamedTuple,
+                        functionsType <: NamedTuple,
+                        solutionsType <: NamedTuple,
                         paramsType <: OptionalParameters} <:
        AbstractProblem{dType, tType, arrayType}
     equation::equType
     tspan::Tuple{tType, tType}
     tstep::tType
     ics::icsType
+    functions::functionsType
+    solutions::solutionsType
     parameters::paramsType
 
     function GeometricProblem(equ, tspan, tstep, ics, parameters)
@@ -105,8 +110,11 @@ struct GeometricProblem{superType <: GeometricEquation, dType <: Number, tType <
         dType = datatype(equ, ics)
         arrayType = arrtype(equ, ics)
 
-        new{superType, dType, tType, arrayType, typeof(equ), typeof(ics), typeof(parameters)
-            }(equ, _tspan, _tstep, ics, parameters)
+        funcs = functions(equ, parameters)
+        sols = solutions(equ, parameters)
+
+        new{superType, dType, tType, arrayType, typeof(equ), typeof(ics), typeof(funcs), typeof(sols), typeof(parameters)
+            }(equ, _tspan, _tstep, ics, funcs, sols, parameters)
     end
 end
 
@@ -128,29 +136,23 @@ end
 #                              && prob1.ics        == prob2.ics
 #                              && prob1.parameters == prob2.parameters)
 
-GeometricBase.datatype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
-GeometricBase.timetype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
-GeometricBase.arrtype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = AT
-GeometricBase.equtype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = ST
+@inline GeometricBase.datatype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
+@inline GeometricBase.timetype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
+@inline GeometricBase.arrtype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = AT
+@inline GeometricBase.equtype(::GeometricProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = ST
 
 @inline GeometricBase.equation(prob::GeometricProblem) = prob.equation
 @inline GeometricBase.tspan(prob::GeometricProblem) = prob.tspan
 @inline GeometricBase.tstep(prob::GeometricProblem) = prob.tstep
 
 @inline GeometricBase.timestep(prob::GeometricProblem) = tstep(prob)
+@inline GeometricBase.functions(prob::GeometricProblem) = prob.functions
+@inline GeometricBase.solutions(prob::GeometricProblem) = prob.solutions
 @inline GeometricBase.parameters(prob::GeometricProblem) = prob.parameters
 @inline GeometricBase.nsamples(::GeometricProblem) = 1
 
 @inline function GeometricBase.ntime(prob::GeometricProblem)
     Int(abs(div(tend(prob) - tbegin(prob), tstep(prob), RoundUp)))
-end
-
-@inline function GeometricBase.functions(prob::GeometricProblem)
-    functions(equation(prob), parameters(prob))
-end
-
-@inline function GeometricBase.solutions(prob::GeometricProblem)
-    solutions(equation(prob), parameters(prob))
 end
 
 @inline function GeometricBase.invariants(prob::GeometricProblem)
