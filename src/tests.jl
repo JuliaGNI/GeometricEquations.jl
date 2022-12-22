@@ -193,7 +193,7 @@ module HarmonicOscillator
     end
 
     function oscillator_iode_ϑ(p, t, q, v, params)
-        oscillator_iode_ϑ(t, q, p, params)
+        oscillator_iode_ϑ(q, t, p, params)
     end
 
     function oscillator_iode_f(f, t, q, v, params)
