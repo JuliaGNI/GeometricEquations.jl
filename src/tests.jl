@@ -99,6 +99,16 @@ module HarmonicOscillator
     end
 
 
+    function reference(t, q₀, params = default_parameters)
+        A = sqrt(q₀[2]^2 / params.k + q₀[1]^2)
+        ϕ = asin(q₀[1] / A)
+        q = A * sin(params.ω * t + ϕ)
+        p = A * cos(params.ω * t + ϕ) * params.ω
+
+        [q, p]
+    end
+
+
     const q₀ = [0.5, 0.0]
     const z₀ = [0.5, 0.0, 0.5]
     const p₀ = ϑ(q₀)
@@ -106,10 +116,10 @@ module HarmonicOscillator
     const A = sqrt(q₀[2]^2 / k + q₀[1]^2)
     const ϕ = asin(q₀[1] / A)
 
-    const reference_solution_q = A * sin(ω * tend + ϕ)
-    const reference_solution_p = ω * A * cos(ω * tend + ϕ)
+    const reference_solution = reference(tend, q₀)
+    const reference_solution_q = reference_solution[1]
+    const reference_solution_p = reference_solution[2]
 
-    const reference_solution = [reference_solution_q, reference_solution_p]
     
 
     function oscillator_ode_v(v, t, x, params)
