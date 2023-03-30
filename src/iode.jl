@@ -277,3 +277,5 @@ end
 function GeometricBase.periodicity(prob::IODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 end
+
+@inline GeometricBase.nconstraints(prob::IODEProblem) = ndims(prob)

@@ -364,3 +364,5 @@ end
 function GeometricBase.periodicity(prob::PDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 end
+
+@inline GeometricBase.nconstraints(prob::PDAEProblem) = length(initial_conditions(prob).λ)

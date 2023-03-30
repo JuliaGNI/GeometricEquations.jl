@@ -312,3 +312,5 @@ end
 function GeometricBase.periodicity(prob::LODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 end
+
+@inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
