@@ -95,6 +95,11 @@ module HarmonicOscillator
     end
 
     function lagrangian(t, q, v, params)
+        @unpack k = params
+        v[1]^2 / 2 - k * q[1]^2 / 2
+    end
+
+    function degenerate_lagrangian(t, q, v, params)
         ϑ₁(t,q) * v[1] + ϑ₂(t,q) * v[2] - hamiltonian(t, q, params)
     end
 
@@ -109,17 +114,17 @@ module HarmonicOscillator
     end
 
 
-    const q₀ = [0.5, 0.0]
-    const z₀ = [0.5, 0.0, 0.5]
-    const p₀ = ϑ(q₀)
+    const t₀ = 0.0
+    const x₀ = [0.5, 0.0]
+    const q₀ = [0.5]
+    const p₀ = [0.0]
 
-    const A = sqrt(q₀[2]^2 / k + q₀[1]^2)
-    const ϕ = asin(q₀[1] / A)
+    const A = sqrt(x₀[2]^2 / k + x₀[1]^2)
+    const ϕ = asin(x₀[1] / A)
 
-    const reference_solution = reference(tend, q₀)
+    const reference_solution = reference(tend, x₀)
     const reference_solution_q = reference_solution[1]
     const reference_solution_p = reference_solution[2]
-
     
 
     function oscillator_ode_v(v, t, x, params)
@@ -129,9 +134,9 @@ module HarmonicOscillator
         nothing
     end
 
-    function odeproblem(x₀=q₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(x₀,1) == 2
-        # ODE(oscillator_ode_v, x₀; invariants=(h=hamiltonian,), parameters=params)
+    function odeproblem(x₀=x₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(x₀) == 2
+        # ODE(oscillator_ode_v; invariants=(h=hamiltonian,), parameters=params)
         ODEProblem(oscillator_ode_v, tspan, tstep, x₀; invariants = (h=hamiltonian,), parameters = parameters)
     end
 
@@ -147,16 +152,16 @@ module HarmonicOscillator
         nothing
     end
 
-    function podeproblem(q₀=[q₀[1]], p₀=[p₀[1]]; parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert length(q₀) == length(p₀)
+    function podeproblem(q₀=q₀, p₀=p₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == 1
         # @assert all([length(q) == length(p) == 1 for (q,p) in zip(q₀,p₀)])
         # @assert size(q₀,1) == size(p₀,1) == 1
         PODEProblem(oscillator_pode_v, oscillator_pode_f, tspan, tstep, q₀, p₀; invariants = (h=hamiltonian,), parameters = parameters)
     end
 
 
-    function hodeproblem(q₀=[q₀[1]], p₀=[p₀[1]]; parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert length(q₀) == length(p₀)
+    function hodeproblem(q₀=q₀, p₀=p₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀)
         # @assert all([length(q) == length(p) == 1 for (q,p) in zip(q₀,p₀)])
         # @assert size(q₀,1) == size(p₀,1) == 1
         HODEProblem(oscillator_pode_v, oscillator_pode_f, hamiltonian, tspan, tstep, q₀, p₀; parameters = parameters)
@@ -196,119 +201,165 @@ module HarmonicOscillator
     end
 
 
-    function oscillator_iode_ϑ(p, t, q, params)
+    function oscillator_iode_ϑ(p, t, q, v, params)
+        p[1] = v[1]
+        nothing
+    end
+
+    function oscillator_iode_f(f, t, q, v, params)
+        @unpack k = params
+        f[1] = -k*q[1]
+        nothing
+    end
+
+    function oscillator_iode_g(g, t, q, v, λ, params)
+        g[1] = λ[1]
+        nothing
+    end
+
+    function oscillator_iode_v(v, t, q, params)
+        v[1] = 0#p[1]
+        nothing
+    end
+
+    function iodeproblem(q₀=q₀, p₀=p₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == 1
+        IODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
+             oscillator_iode_g, tspan, tstep, q₀, p₀;
+             invariants = (h=hamiltonian,), parameters = parameters)#,
+            #  v̄ = oscillator_iode_v)
+    end
+
+    function lodeproblem(q₀=q₀, p₀=p₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == 1
+        LODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
+             oscillator_iode_g, oscillator_ω!, lagrangian,
+             tspan, tstep, q₀, p₀;
+             invariants = (h=hamiltonian,), parameters = parameters)#,
+            #  v̄ = oscillator_iode_v)
+    end
+
+
+    function degenerate_oscillator_iode_ϑ(p, t, q, v, params)
         p[1] = q[2]
         p[2] = 0
         nothing
     end
 
-    function oscillator_iode_ϑ(p, t, q, v, params)
-        oscillator_iode_ϑ(q, t, p, params)
-    end
-
-    function oscillator_iode_f(f, t, q, v, params)
+    function degenerate_oscillator_iode_f(f, t, q, v, params)
         @unpack k = params
         f[1] = -k*q[1]
         f[2] = v[1] - q[2]
         nothing
     end
 
-    function oscillator_iode_g(g, t, q, v, λ, params)
+    function degenerate_oscillator_iode_g(g, t, q, v, λ, params)
         g[1] = 0
         g[2] = λ[1]
         nothing
     end
 
-    function oscillator_iode_v(v, t, q, params)
+    function degenerate_oscillator_iode_v(v, t, q, params)
         @unpack k = params
         v[1] = q[2]
         v[2] = -k*q[1]
         nothing
     end
 
-    function iodeproblem(q₀=q₀, p₀=ϑ(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(q₀,1) == size(p₀,1) == 2
-        IODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
-             oscillator_iode_g, tspan, tstep, q₀, p₀;
+    function degenerate_iodeproblem(q₀=x₀, p₀=ϑ(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == 2
+        IODEProblem(degenerate_oscillator_iode_ϑ, degenerate_oscillator_iode_f,
+        degenerate_oscillator_iode_g, tspan, tstep, q₀, p₀;
              invariants = (h=hamiltonian,), parameters = parameters,
-             v̄ = oscillator_iode_v)
+             v̄ = degenerate_oscillator_iode_v)
     end
 
-    function lodeproblem(q₀=q₀, p₀=ϑ(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(q₀,1) == size(p₀,1) == 2
-        LODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
-             oscillator_iode_g, oscillator_ω!, lagrangian,
+    function degenerate_lodeproblem(q₀=x₀, p₀=ϑ(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == 2
+        LODEProblem(degenerate_oscillator_iode_ϑ, degenerate_oscillator_iode_f,
+             degenerate_oscillator_iode_g, oscillator_ω!, lagrangian,
              tspan, tstep, q₀, p₀;
              invariants = (h=hamiltonian,), parameters = parameters,
-             v̄ = oscillator_iode_v)
+             v̄ = degenerate_oscillator_iode_v)
     end
 
 
-    function oscillator_dae_v(v, t, z, params)
+    function oscillator_dae_u(u, t, x, λ, params)
         @unpack k = params
-        v[1] = z[2]
-        v[2] = -k*z[1]
-        v[3] = z[2] - k*z[1]
-        nothing
+        u[1] = k * x[1] * λ[1]
+        u[2] = x[2] * λ[1]
     end
 
-    function oscillator_dae_u(u, t, z, λ, params)
-        u[1] = -λ[1]
-        u[2] = -λ[1]
-        u[3] = +λ[1]
+    function oscillator_dae_ϕ(ϕ, t, x, params)
+        ϕ[1] = hamiltonian(t, x, params) - hamiltonian(t₀, x₀, params)
     end
 
-    function oscillator_dae_ϕ(ϕ, t, z, params)
-        ϕ[1] = z[3] - z[1] - z[2]
-    end
-
-    function daeproblem(z₀=z₀, λ₀=[zero(eltype(z₀))]; parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(z₀,1) == 3
-        # @assert size(λ₀,1) == 1
-        # @assert all([length(z) == 3 for z in z₀])
-        # @assert all([length(λ) == 1 for λ in λ₀])
-        # DAE(oscillator_dae_v, oscillator_dae_u, oscillator_dae_ϕ,
-        #     z₀, λ₀; invariants=(h=hamiltonian,), parameters=params, v̄=oscillator_ode_v)
-        DAEProblem(oscillator_ode_v, oscillator_dae_u, oscillator_dae_ϕ, tspan, tstep, z₀, λ₀;
+    function daeproblem(x₀=x₀, λ₀=[zero(eltype(x₀))]; parameters = default_parameters, tspan = tspan, tstep = Δt)
+        DAEProblem(oscillator_ode_v, oscillator_dae_u, oscillator_dae_ϕ, tspan, tstep, x₀, λ₀;
                     v̄ = oscillator_ode_v, invariants = (h=hamiltonian,), parameters = parameters)
     end
 
 
+    function oscillator_pdae_v(v, t, q, p, params)
+        @unpack k = params
+        v[1] = p[1]
+        nothing
+    end
+
+    function oscillator_pdae_f(f, t, q, p, params)
+        @unpack k = params
+        f[1] = -k*q[1]
+        nothing
+    end
+
     function oscillator_pdae_u(u, t, q, p, λ, params)
-        u[1] = λ[1]
-        u[2] = λ[2]
+        @unpack k = params
+        u[1] = k * q[1] * λ[1]
         nothing
     end
 
     function oscillator_pdae_g(g, t, q, p, λ, params)
-        g[1] = 0
-        g[2] = λ[1]
+        g[1] = p[1] * λ[1]
         nothing
     end
 
     function oscillator_pdae_ū(u, t, q, p, λ, params)
-        u[1] = λ[1]
-        u[2] = λ[2]
+        @unpack k = params
+        u[1] = k * q[1] * λ[1]
         nothing
     end
 
     function oscillator_pdae_ḡ(g, t, q, p, λ, params)
-        g[1] = 0
-        g[2] = λ[1]
+        g[1] = p[1] * λ[1]
         nothing
     end
 
     function oscillator_pdae_ϕ(ϕ, t, q, p, params)
-        ϕ[1] = p[1] - q[2]
-        ϕ[2] = p[2]
+        ϕ[1] = hamitlonian(t, q, p, params)
         nothing
     end
 
     function oscillator_pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
-        ψ[1] = f[1] - q̇[2]
-        ψ[2] = f[2]
+        @unpack k = params
+        ψ[1] = p[1] * ṗ[1] + k * q[1] * q̇[1]
         nothing
     end
+
+    function pdaeproblem(q₀=q₀, p₀=p₀, λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == 1
+        PDAEProblem(oscillator_pdae_v, oscillator_pdae_f,
+                    oscillator_pdae_u, oscillator_pdae_g, oscillator_pdae_ϕ,
+                    tspan, tstep, q₀, p₀, λ₀; invariants=(h=hamiltonian,), parameters = parameters)
+    end
+
+    function hdaeproblem(q₀=q₀, p₀=p₀, λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == 1
+        HDAEProblem(oscillator_pdae_v, oscillator_pdae_f, 
+                    oscillator_pdae_u, oscillator_pdae_g, oscillator_pdae_ϕ,
+                    oscillator_pdae_ū, oscillator_pdae_ḡ, oscillator_pdae_ψ,
+                    hamiltonian, tspan, tstep, q₀, p₀, λ₀; parameters = parameters)
+    end
+
 
     oscillator_idae_u(u, t, q, v, p, λ, params) = oscillator_pdae_u(u, t, q, p, λ, params)
     oscillator_idae_g(g, t, q, v, p, λ, params) = oscillator_pdae_g(g, t, q, p, λ, params)
@@ -318,47 +369,18 @@ module HarmonicOscillator
     oscillator_idae_ψ(ψ, t, q, v, p, q̇, ṗ, params) = oscillator_pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
 
 
-    function idaeproblem(q₀=q₀, p₀=ϑ(q₀), λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(q₀,1) == size(p₀,1) == size(λ₀,1) == 2
+    function idaeproblem(q₀=q₀, p₀=p₀, λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == length(λ₀) == 1
         IDAEProblem(oscillator_iode_ϑ, oscillator_iode_f,
                     oscillator_idae_u, oscillator_idae_g, oscillator_idae_ϕ,
                     tspan, tstep, q₀, p₀, λ₀; v̄ = oscillator_iode_v, invariants = (h=hamiltonian,), parameters = parameters)
     end
 
-    function ldaeproblem(q₀=q₀, p₀=ϑ(q₀), λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(q₀,1) == size(p₀,1) == size(λ₀,1) == 2
+    function ldaeproblem(q₀=q₀, p₀=p₀, λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
+        @assert length(q₀) == length(p₀) == length(λ₀) == 1
         LDAEProblem(oscillator_iode_ϑ, oscillator_iode_f,
                     oscillator_idae_u, oscillator_idae_g, oscillator_idae_ϕ, oscillator_ω!, lagrangian,
                     tspan, tstep, q₀, p₀, λ₀; v̄ = oscillator_iode_v, invariants = (h=hamiltonian,), parameters = parameters)
-    end
-
-    function oscillator_pdae_v(v, t, q, p, params)
-        @unpack k = params
-        v[1] = q[2]
-        v[2] = -k*q[1]
-        nothing
-    end
-
-    function oscillator_pdae_f(f, t, q, p, params)
-        @unpack k = params
-        f[1] = -k*q[1]
-        f[2] = p[1] - q[2]
-        nothing
-    end
-
-    function pdaeproblem(q₀=q₀, p₀=ϑ(q₀), λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(q₀,1) == size(p₀,1) == 2
-        PDAEProblem(oscillator_pdae_v, oscillator_pdae_f,
-                    oscillator_pdae_u, oscillator_pdae_g, oscillator_pdae_ϕ,
-                    tspan, tstep, q₀, p₀, λ₀; invariants=(h=hamiltonian,), parameters = parameters)
-    end
-
-    function hdaeproblem(q₀=q₀, p₀=ϑ(q₀), λ₀=zero(q₀); parameters = default_parameters, tspan = tspan, tstep = Δt)
-        # @assert size(q₀,1) == size(p₀,1) == 2
-        HDAEProblem(oscillator_pdae_v, oscillator_pdae_f, 
-                    oscillator_pdae_u, oscillator_pdae_g, oscillator_pdae_ϕ,
-                    oscillator_pdae_ū, oscillator_pdae_ḡ, oscillator_pdae_ψ,
-                    hamiltonian, tspan, tstep, q₀, p₀, λ₀; parameters = parameters)
     end
 
 end
