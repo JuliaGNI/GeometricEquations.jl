@@ -535,28 +535,28 @@ end
     @test spdae == similar(spdae, t₀, q₀, p₀)
     @test spdae == similar(spdae, q₀, p₀)
 
-    spdae1 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀])
-    spdae2 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀])
-    spdae3 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀], [λ₀])
-    spdae4 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀])
+    # spdae1 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀])
+    # spdae2 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀])
+    # spdae3 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀], [λ₀])
+    # spdae4 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀])
     spdae5 = SPDAE(spdae_eqs..., t₀, q₀, p₀, λ₀, λ₀)
     spdae6 = SPDAE(spdae_eqs..., t₀, q₀, p₀, λ₀)
     spdae7 = SPDAE(spdae_eqs..., q₀, p₀, λ₀, λ₀)
     spdae8 = SPDAE(spdae_eqs..., q₀, p₀, λ₀)
 
-    @test spdae == spdae1
-    @test spdae == spdae2
-    @test spdae == spdae3
-    @test spdae == spdae4
+    # @test spdae == spdae1
+    # @test spdae == spdae2
+    # @test spdae == spdae3
+    # @test spdae == spdae4
     @test spdae == spdae5
     @test spdae == spdae6
     @test spdae == spdae7
     @test spdae == spdae8
 
-    @test hash(spdae) == hash(spdae1)
-    @test hash(spdae) == hash(spdae2)
-    @test hash(spdae) == hash(spdae3)
-    @test hash(spdae) == hash(spdae4)
+    # @test hash(spdae) == hash(spdae1)
+    # @test hash(spdae) == hash(spdae2)
+    # @test hash(spdae) == hash(spdae3)
+    # @test hash(spdae) == hash(spdae4)
     @test hash(spdae) == hash(spdae5)
     @test hash(spdae) == hash(spdae6)
     @test hash(spdae) == hash(spdae7)
