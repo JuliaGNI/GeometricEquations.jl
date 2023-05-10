@@ -121,6 +121,37 @@ end
     @test prob3 == prob
     @test prob4 == prob
     
+
+    prob1 = SubstepProblem(prob, one(timestep(prob))/2, 1)
+    prob2 = SubstepProblem(prob, one(timestep(prob)), 2)
+    prob3 = SubstepProblem(prob, one(timestep(prob))/2, 1)
+    
+    @test solutions(prob).q[1] == solutions(prob1).q
+    @test solutions(prob).q[2] == solutions(prob2).q
+    @test solutions(prob).q[1] == solutions(prob3).q
+
+    @test problem(prob1) == prob
+    @test problem(prob2) == prob
+    @test problem(prob3) == prob
+
+    @test timestep(prob1) == timestep(prob)/2
+    @test timestep(prob2) == timestep(prob)
+    @test timestep(prob3) == timestep(prob)/2
+
+    @test datatype(prob1) == datatype(prob)
+    @test timetype(prob1) == timetype(prob)
+    @test arrtype(prob1) == arrtype(prob)
+    @test equtype(prob1) == equtype(prob)
+    
+    @test ntime(prob1) == ntime(prob)
+    @test tspan(prob1) == tspan(prob)
+    @test tstep(prob1) == tstep(prob)
+
+    @test equation(prob1) == equation(prob)
+    @test invariants(prob1) == invariants(prob)
+    @test parameters(prob1) == parameters(prob)
+    @test nsamples(prob1) == nsamples(prob)
+
 end
 
 

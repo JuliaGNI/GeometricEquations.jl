@@ -7,7 +7,7 @@ module GeometricEquations
     import GeometricBase: datatype, timetype, arrtype, equtype
     import GeometricBase: tspan, tstep, tbegin, tend, timestep
     import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity
-    import GeometricBase: nsamples, nconstraints
+    import GeometricBase: ntime, nsamples, nconstraints
 
     export NullInvariants, NullParameters, NullPeriodicity
 
@@ -38,7 +38,8 @@ module GeometricEquations
     export DAEProblem,  IDAEProblem, PDAEProblem,
            HDAEProblem, LDAEProblem, SPDAEProblem
     export SDEProblem,  PSDEProblem, SPSDEProblem
-
+    export SubstepProblem
+           
     export ODEEnsemble,  IODEEnsemble, PODEEnsemble,
            HODEEnsemble, LODEEnsemble, SODEEnsemble
     export DAEEnsemble,  IDAEEnsemble, PDAEEnsemble,
@@ -47,10 +48,10 @@ module GeometricEquations
 
     export datatype, timetype, arrtype, equtype
     export tspan, tstep, tbegin, tend, timestep
-    export equation, equations, functions, solutions
+    export problem, equation, equations, functions, solutions
     export invariants, parameters, periodicity
     export initial_conditions
-    export nsamples, nconstraints
+    export ntime, nsamples, nconstraints
 
     export hassolution, hasvectorfield, hasprimary, hassecondary,
            hasinvariants, hasparameters, hasperiodicity,
@@ -82,12 +83,14 @@ module GeometricEquations
     include("psde.jl")
     include("spsde.jl")
 
+    include("substep_problem.jl")
+
     include("conversion.jl")
 
     
     # Union types for problems of similar kind
 
-    const AbstractProblemODE = Union{ODEProblem, SODEProblem}
+    const AbstractProblemODE = Union{ODEProblem, SODEProblem, SubstepProblem}
     const AbstractProblemDAE = Union{DAEProblem}
     const AbstractProblemSDE = Union{SDEProblem}
     const AbstractProblemPODE = Union{PODEProblem, HODEProblem, IODEProblem, LODEProblem}
