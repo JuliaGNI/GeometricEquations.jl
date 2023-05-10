@@ -3,10 +3,12 @@ module GeometricEquations
     using GeometricBase
 
     import Base: Callable
+
     import GeometricBase: datatype, timetype, arrtype, equtype
     import GeometricBase: tspan, tstep, tbegin, tend, timestep
     import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity
-           
+    import GeometricBase: nsamples, nconstraints
+
     export NullInvariants, NullParameters, NullPeriodicity
 
     export OptionalAbstractArray, OptionalArray,
@@ -43,10 +45,12 @@ module GeometricEquations
            HDAEEnsemble, LDAEEnsemble, SPDAEEnsemble
     export SDEEnsemble,  PSDEEnsemble, SPSDEEnsemble
 
-    export nsamples, nconstraints
+    export datatype, timetype, arrtype, equtype
+    export tspan, tstep, tbegin, tend, timestep
     export equation, equations, functions, solutions
     export invariants, parameters, periodicity
     export initial_conditions
+    export nsamples, nconstraints
 
     export hassolution, hasvectorfield, hasprimary, hassecondary,
            hasinvariants, hasparameters, hasperiodicity,
