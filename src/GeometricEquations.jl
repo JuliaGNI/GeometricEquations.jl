@@ -59,6 +59,7 @@ module GeometricEquations
     
     include("utils.jl")
 
+    include("abstract_problem.jl")
     include("geometric_equation.jl")
     include("geometric_problem.jl")
 
