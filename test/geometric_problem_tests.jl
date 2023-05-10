@@ -1,4 +1,3 @@
-using GeometricBase
 using GeometricEquations
 using Test
 
