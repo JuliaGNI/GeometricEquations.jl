@@ -35,6 +35,10 @@ end
 problem(ssp::SubstepProblem) = ssp.problem
 coefficient(ssp::SubstepProblem) = ssp.coefficient
 
+@inline Base.parent(ssp::SubstepProblem) = problem(ssp)
+
+@inline initial_conditions(ssp::SubstepProblem) = initial_conditions(problem(ssp))
+
 @inline GeometricBase.functions(ssp::SubstepProblem) = ssp.functions
 @inline GeometricBase.solutions(ssp::SubstepProblem) = ssp.solutions
 @inline GeometricBase.timestep(ssp::SubstepProblem) = coefficient(ssp) * timestep(problem(ssp))
