@@ -1,5 +1,5 @@
 
-struct SubstepProblem{
+struct SubstepProblem{DT, TT,
         superType <: GeometricProblem, 
         functionsType <: NamedTuple,
         solutionsType <: NamedTuple,
@@ -28,7 +28,7 @@ struct SubstepProblem{
         end
         sol_tuple = NamedTuple{keys}(sols)
 
-        new{typeof(problem), typeof(fnc_tuple), typeof(sol_tuple), typeof(c)}(problem, fnc_tuple, sol_tuple, c, i)
+        new{datatype(problem), timetype(problem), typeof(problem), typeof(fnc_tuple), typeof(sol_tuple), typeof(c)}(problem, fnc_tuple, sol_tuple, c, i)
     end
 end
 
