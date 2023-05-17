@@ -48,6 +48,7 @@ coefficient(ssp::SubstepProblem) = ssp.coefficient
 @inline GeometricBase.arrtype(ssp::SubstepProblem) = arrtype(problem(ssp))
 @inline GeometricBase.equtype(ssp::SubstepProblem) = equtype(problem(ssp))
 
+@inline GeometricBase.ndims(ssp::SubstepProblem) = ndims(problem(ssp))
 @inline GeometricBase.ntime(ssp::SubstepProblem) = ntime(problem(ssp))
 @inline GeometricBase.tspan(ssp::SubstepProblem) = tspan(problem(ssp))
 @inline GeometricBase.tstep(ssp::SubstepProblem) = tstep(problem(ssp))
