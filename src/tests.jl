@@ -51,7 +51,8 @@ module HarmonicOscillator
     using Parameters
 
     export odeproblem, podeproblem, hodeproblem, iodeproblem, lodeproblem, sodeproblem,
-           daeproblem, pdaeproblem, hdaeproblem, idaeproblem, ldaeproblem
+           daeproblem, pdaeproblem, hdaeproblem, idaeproblem, ldaeproblem,
+           degenerate_iodeproblem, degenerate_lodeproblem
 
     export hamiltonian, lagrangian
 
@@ -115,12 +116,12 @@ module HarmonicOscillator
 
 
     const t₀ = 0.0
-    const x₀ = [0.5, 0.0]
     const q₀ = [0.5]
     const p₀ = [0.0]
+    const x₀ = vcat(q₀, p₀)
 
-    const A = sqrt(x₀[2]^2 / k + x₀[1]^2)
-    const ϕ = asin(x₀[1] / A)
+    const A = sqrt(p₀[1]^2 / k + q₀[1]^2)
+    const ϕ = asin(q₀[1] / A)
 
     const reference_solution = reference(tend, x₀)
     const reference_solution_q = reference_solution[1]
@@ -130,13 +131,12 @@ module HarmonicOscillator
     function oscillator_ode_v(v, t, x, params)
         @unpack k = params
         v[1] = x[2]
-        v[2] = -k*x[1]
+        v[2] = -k * x[1]
         nothing
     end
 
     function odeproblem(x₀=x₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
         @assert length(x₀) == 2
-        # ODE(oscillator_ode_v; invariants=(h=hamiltonian,), parameters=params)
         ODEProblem(oscillator_ode_v, tspan, tstep, x₀; invariants = (h=hamiltonian,), parameters = parameters)
     end
 
@@ -148,7 +148,7 @@ module HarmonicOscillator
 
     function oscillator_pode_f(f, t, q, p, params)
         @unpack k = params
-        f[1] = -k*q[1]
+        f[1] = -k * q[1]
         nothing
     end
 
@@ -161,7 +161,7 @@ module HarmonicOscillator
 
 
     function hodeproblem(q₀=q₀, p₀=p₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
-        @assert length(q₀) == length(p₀)
+        @assert length(q₀) == length(p₀) == 1
         # @assert all([length(q) == length(p) == 1 for (q,p) in zip(q₀,p₀)])
         # @assert size(q₀,1) == size(p₀,1) == 1
         HODEProblem(oscillator_pode_v, oscillator_pode_f, hamiltonian, tspan, tstep, q₀, p₀; parameters = parameters)
@@ -177,7 +177,7 @@ module HarmonicOscillator
     function oscillator_sode_v_2(v, t, q, params)
         @unpack k = params
         v[1] = 0
-        v[2] = -k*q[1]
+        v[2] = -k * q[1]
         nothing
     end
 
@@ -194,7 +194,7 @@ module HarmonicOscillator
         nothing
     end
 
-    function sodeproblem(q₀=q₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
+    function sodeproblem(q₀=x₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
         SODEProblem((oscillator_sode_v_1, oscillator_sode_v_2),
                     (oscillator_sode_q_1, oscillator_sode_q_2),
                     tspan, tstep, q₀; parameters = parameters)
@@ -208,7 +208,7 @@ module HarmonicOscillator
 
     function oscillator_iode_f(f, t, q, v, params)
         @unpack k = params
-        f[1] = -k*q[1]
+        f[1] = -k * q[1]
         nothing
     end
 
@@ -226,8 +226,7 @@ module HarmonicOscillator
         @assert length(q₀) == length(p₀) == 1
         IODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
              oscillator_iode_g, tspan, tstep, q₀, p₀;
-             invariants = (h=hamiltonian,), parameters = parameters)#,
-            #  v̄ = oscillator_iode_v)
+             invariants = (h=hamiltonian,), parameters = parameters)
     end
 
     function lodeproblem(q₀=q₀, p₀=p₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
@@ -235,8 +234,7 @@ module HarmonicOscillator
         LODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
              oscillator_iode_g, oscillator_ω!, lagrangian,
              tspan, tstep, q₀, p₀;
-             invariants = (h=hamiltonian,), parameters = parameters)#,
-            #  v̄ = oscillator_iode_v)
+             invariants = (h=hamiltonian,), parameters = parameters)
     end
 
 
@@ -248,7 +246,7 @@ module HarmonicOscillator
 
     function degenerate_oscillator_iode_f(f, t, q, v, params)
         @unpack k = params
-        f[1] = -k*q[1]
+        f[1] = -k * q[1]
         f[2] = v[1] - q[2]
         nothing
     end
@@ -262,7 +260,7 @@ module HarmonicOscillator
     function degenerate_oscillator_iode_v(v, t, q, params)
         @unpack k = params
         v[1] = q[2]
-        v[2] = -k*q[1]
+        v[2] = -k * q[1]
         nothing
     end
 
@@ -308,7 +306,7 @@ module HarmonicOscillator
 
     function oscillator_pdae_f(f, t, q, p, params)
         @unpack k = params
-        f[1] = -k*q[1]
+        f[1] = -k * q[1]
         nothing
     end
 
