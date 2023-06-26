@@ -11,6 +11,9 @@ using Test
 @test_nowarn Tests.HarmonicOscillator.podeproblem()
 @test_nowarn Tests.HarmonicOscillator.sodeproblem()
 
+@test_nowarn Tests.HarmonicOscillator.degenerate_iodeproblem()
+@test_nowarn Tests.HarmonicOscillator.degenerate_lodeproblem()
+
 @test_nowarn Tests.HarmonicOscillator.daeproblem()
 @test_nowarn Tests.HarmonicOscillator.hdaeproblem()
 @test_nowarn Tests.HarmonicOscillator.idaeproblem()

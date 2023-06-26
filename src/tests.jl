@@ -259,7 +259,7 @@ module HarmonicOscillator
         nothing
     end
 
-    function degenerate_oscillator_iode_v(v, t, q, params)
+    function degenerate_oscillator_iode_v(v, t, q, p, params)
         @unpack k = params
         v[1] = q[2]
         v[2] = -k * q[1]
