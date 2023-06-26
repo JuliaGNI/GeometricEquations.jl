@@ -75,7 +75,7 @@ end
 ```
 and
 ```julia
-function v̄(v, t, q)
+function v̄(v, t, q, p)
     v[1] = ...
     v[2] = ...
     ...
@@ -190,7 +190,7 @@ struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
 end
 
 _lode_default_g(g, t, q, v, λ, params) = nothing
-_lode_default_v̄(v, t, q, params) = nothing
+_lode_default_v̄(v, t, q, p, params) = nothing
 
 LODE(ϑ, f, g, ω, l; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_lode_default_v̄, f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameters, periodicity)
 
@@ -216,7 +216,7 @@ function check_methods(equ::LODE, tspan, ics, params)
     applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
     # TODO add missing methods
-    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
@@ -236,7 +236,7 @@ _get_ϑ(equ::LODE, params) = (ϑ, t, q, v) -> equ.ϑ(ϑ, t, q, v, params)
 _get_f(equ::LODE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
 _get_g(equ::LODE, params) = (g, t, q, v, λ) -> equ.g(g, t, q, v, λ, params)
 _get_ω(equ::LODE, params) = (ω, t, q, v) -> equ.ω(ω, t, q, v, params)
-_get_v̄(equ::LODE, params) = (v, t, q)    -> equ.v̄(v, t, q, params)
+_get_v̄(equ::LODE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::LODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_l(equ::LODE, params) = (t, q, v)    -> equ.lagrangian(t, q, v, params)
 _get_invariant(::LODE, inv, params) = (t, q, v) -> inv(t, q, v, params)

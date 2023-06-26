@@ -68,7 +68,7 @@ function g(g, t, q, v, p, λ)
     ...
 end
 
-function v̄(v, t, q)
+function v̄(v, t, q, p)
     v[1] = ...
     v[2] = ...
     ...
@@ -228,7 +228,7 @@ struct LDAE{ϑType <: Callable, fType <: Callable,
     end
 end
 
-_ldae_default_v̄(t,q,v,params) = nothing
+_ldae_default_v̄(t, q, v, p, params) = nothing
 
 LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄=_ldae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
 LDAE(ϑ, f, u, g, ϕ, ω, lagrangian; kwargs...) = LDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian; kwargs...)
@@ -259,7 +259,7 @@ function check_methods(equ::LDAE, tspan, ics::NamedTuple, params)
     applicable(equ.u, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, params) || return false
-    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
@@ -287,7 +287,7 @@ _get_ϕ(equ::LDAE, params) = (ϕ, t, q, v, p)    -> equ.ϕ(ϕ, t, q, v, p, param
 _get_ū(equ::LDAE, params) = (u, t, q, v, p, λ)    -> equ.ū(u, t, q, v, p, λ, params)
 _get_ḡ(equ::LDAE, params) = (g, t, q, v, p, λ)    -> equ.ḡ(g, t, q, v, p, λ, params)
 _get_ψ(equ::LDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
-_get_v̄(equ::LDAE, params) = (v, t, q)          -> equ.v̄(v, t, q, params)
+_get_v̄(equ::LDAE, params) = (v, t, q, p)       -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::LDAE, params) = (f, t, q, v)       -> equ.f̄(f, t, q, v, params)
 _get_ω(equ::LDAE, params) = (ω, t, q, v)       -> equ.ω(ω, t, q, v, params)
 _get_l(equ::LDAE, params) = (t, q, v)          -> equ.lagrangian(t, q, v, params)

@@ -68,7 +68,7 @@ function g(g, t, q, v, λ)
     ...
 end
 
-function v̄(v, t, q)
+function v̄(v, t, q, p)
     v[1] = ...
     v[2] = ...
     ...
@@ -158,7 +158,7 @@ struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
 end
 
 _iode_default_g(g, t, q, v, λ, params) = nothing
-_iode_default_v̄(v, t, q, params) = nothing
+_iode_default_v̄(v, t, q, p, params) = nothing
 
 function IODE(ϑ, f, g; invariants = NullInvariants(), parameters = NullParameters(),
               periodicity = NullPeriodicity(), v̄ = _iode_default_v̄, f̄ = f)
@@ -185,7 +185,7 @@ function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
-    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
 end
@@ -203,7 +203,7 @@ end
 _get_ϑ(equ::IODE, params) = (ϑ, t, q, v) -> equ.ϑ(ϑ, t, q, v, params)
 _get_f(equ::IODE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
 _get_g(equ::IODE, params) = (g, t, q, v, λ) -> equ.g(g, t, q, v, λ, params)
-_get_v̄(equ::IODE, params) = (v, t, q) -> equ.v̄(v, t, q, params)
+_get_v̄(equ::IODE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::IODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IODE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 

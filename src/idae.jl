@@ -69,7 +69,7 @@ function g(g, t, q, v, p, λ)
     ...
 end
 
-function v̄(v, t, q)
+function v̄(v, t, q, p)
     v[1] = ...
     v[2] = ...
     ...
@@ -206,7 +206,7 @@ struct IDAE{ϑType <: Callable, fType <: Callable,
     end
 end
 
-_idae_default_v̄(t,q,v,params) = nothing
+_idae_default_v̄(t, q, v, p, params) = nothing
 
 IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄=_idae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
 IDAE(ϑ, f, u, g, ϕ; kwargs...) = IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
@@ -236,7 +236,7 @@ function check_methods(equ::IDAE, tspan, ics::NamedTuple, params)
     applicable(equ.u, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, params) || return false
-    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
@@ -263,7 +263,7 @@ _get_ϕ(equ::IDAE, params) = (ϕ, t, q, v, p)    -> equ.ϕ(ϕ, t, q, v, p, param
 _get_ū(equ::IDAE, params) = (u, t, q, v, p, λ)    -> equ.ū(u, t, q, v, p, λ, params)
 _get_ḡ(equ::IDAE, params) = (g, t, q, v, p, λ)    -> equ.ḡ(g, t, q, v, p, λ, params)
 _get_ψ(equ::IDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
-_get_v̄(equ::IDAE, params) = (v, t, q)          -> equ.v̄(v, t, q, params)
+_get_v̄(equ::IDAE, params) = (v, t, q, p)       -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::IDAE, params) = (f, t, q, v)       -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IDAE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 

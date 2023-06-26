@@ -217,8 +217,8 @@ module HarmonicOscillator
         nothing
     end
 
-    function oscillator_iode_v(v, t, q, params)
-        v[1] = 0#p[1]
+    function oscillator_iode_v(v, t, q, p, params)
+        v[1] = p[1]
         nothing
     end
 
@@ -226,7 +226,8 @@ module HarmonicOscillator
         @assert length(q₀) == length(p₀) == 1
         IODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
              oscillator_iode_g, tspan, tstep, q₀, p₀;
-             invariants = (h=hamiltonian,), parameters = parameters)
+             invariants = (h=hamiltonian,), parameters = parameters,
+             v̄ = oscillator_iode_v)
     end
 
     function lodeproblem(q₀=q₀, p₀=p₀; parameters = default_parameters, tspan = tspan, tstep = Δt)
@@ -234,7 +235,8 @@ module HarmonicOscillator
         LODEProblem(oscillator_iode_ϑ, oscillator_iode_f,
              oscillator_iode_g, oscillator_ω!, lagrangian,
              tspan, tstep, q₀, p₀;
-             invariants = (h=hamiltonian,), parameters = parameters)
+             invariants = (h=hamiltonian,), parameters = parameters,
+             v̄ = oscillator_iode_v)
     end
 
 
