@@ -279,3 +279,6 @@ function GeometricBase.periodicity(prob::IODEProblem)
 end
 
 @inline GeometricBase.nconstraints(prob::IODEProblem) = ndims(prob)
+
+
+const IODEEnsemble  = GeometricEnsemble{IODE}

@@ -311,3 +311,6 @@ function GeometricBase.periodicity(prob::DAEProblem)
 end
 
 @inline GeometricBase.nconstraints(prob::DAEProblem) = length(initial_conditions(prob).λ)
+
+
+const DAEEnsemble   = GeometricEnsemble{DAE}

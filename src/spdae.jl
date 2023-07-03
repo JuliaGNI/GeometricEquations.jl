@@ -178,3 +178,6 @@ const SPDAEProblem = GeometricProblem{SPDAE}
 function GeometricBase.periodicity(prob::SPDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
 end
+
+
+const SPDAEEnsemble = GeometricEnsemble{SPDAE}

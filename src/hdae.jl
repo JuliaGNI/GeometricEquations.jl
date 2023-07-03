@@ -379,3 +379,6 @@ function GeometricBase.periodicity(prob::HDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
      μ = NullPeriodicity())
 end
+
+
+const HDAEEnsemble  = GeometricEnsemble{HDAE}

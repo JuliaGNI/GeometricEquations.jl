@@ -63,6 +63,7 @@ module GeometricEquations
     include("abstract_problem.jl")
     include("geometric_equation.jl")
     include("geometric_problem.jl")
+    include("geometric_ensemble.jl")
 
     include("ode.jl")
     include("hode.jl")
@@ -82,8 +83,6 @@ module GeometricEquations
     include("sde.jl")
     include("psde.jl")
     include("spsde.jl")
-
-    include("geometric_ensemble.jl")
 
     include("substep_problem.jl")
 

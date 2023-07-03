@@ -192,3 +192,6 @@ end
 function GeometricBase.periodicity(prob::PSDEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
+
+
+const PSDEEnsemble  = GeometricEnsemble{PSDE}

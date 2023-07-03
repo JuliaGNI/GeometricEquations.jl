@@ -202,3 +202,6 @@ end
 function GeometricBase.periodicity(prob::HODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
+
+
+const HODEEnsemble  = GeometricEnsemble{HODE}

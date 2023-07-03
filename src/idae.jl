@@ -364,3 +364,6 @@ function GeometricBase.periodicity(prob::IDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
      μ = NullPeriodicity())
 end
+
+
+const IDAEEnsemble  = GeometricEnsemble{IDAE}

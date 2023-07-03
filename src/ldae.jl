@@ -412,3 +412,6 @@ function GeometricBase.periodicity(prob::LDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
      μ = NullPeriodicity())
 end
+
+
+const LDAEEnsemble  = GeometricEnsemble{LDAE}

@@ -96,21 +96,3 @@ function problem(ge::GeometricEnsemble, i)
 end
 
 Base.iterate(ge::GeometricEnsemble, i=1) = i > nsamples(ge) ? nothing : (problem(ge, i), i+1)
-
-
-
-const ODEEnsemble   = GeometricEnsemble{ODE}
-const IODEEnsemble  = GeometricEnsemble{IODE}
-const PODEEnsemble  = GeometricEnsemble{PODE}
-const HODEEnsemble  = GeometricEnsemble{HODE}
-const LODEEnsemble  = GeometricEnsemble{LODE}
-const SODEEnsemble  = GeometricEnsemble{SODE}
-const DAEEnsemble   = GeometricEnsemble{DAE}
-const IDAEEnsemble  = GeometricEnsemble{IDAE}
-const PDAEEnsemble  = GeometricEnsemble{PDAE}
-const HDAEEnsemble  = GeometricEnsemble{HDAE}
-const LDAEEnsemble  = GeometricEnsemble{LDAE}
-const SPDAEEnsemble = GeometricEnsemble{SPDAE}
-const SDEEnsemble   = GeometricEnsemble{SDE}
-const PSDEEnsemble  = GeometricEnsemble{PSDE}
-const SPSDEEnsemble = GeometricEnsemble{SPSDE}

@@ -154,3 +154,6 @@ function ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
 end
 
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
+
+
+const ODEEnsemble = GeometricEnsemble{ODE}

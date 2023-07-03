@@ -208,3 +208,6 @@ function SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
 end
 
 GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)
+
+
+const SODEEnsemble  = GeometricEnsemble{SODE}

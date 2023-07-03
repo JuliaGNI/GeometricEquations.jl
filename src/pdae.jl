@@ -366,3 +366,6 @@ function GeometricBase.periodicity(prob::PDAEProblem)
 end
 
 @inline GeometricBase.nconstraints(prob::PDAEProblem) = length(initial_conditions(prob).λ)
+
+
+const PDAEEnsemble  = GeometricEnsemble{PDAE}

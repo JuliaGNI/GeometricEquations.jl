@@ -314,3 +314,6 @@ function GeometricBase.periodicity(prob::LODEProblem)
 end
 
 @inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
+
+
+const LODEEnsemble  = GeometricEnsemble{LODE}

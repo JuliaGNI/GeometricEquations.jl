@@ -170,3 +170,6 @@ end
 function GeometricBase.periodicity(prob::PODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
+
+
+const PODEEnsemble  = GeometricEnsemble{PODE}
