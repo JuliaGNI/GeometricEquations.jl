@@ -14,6 +14,22 @@ qₛ = rand(1,3,3)
 pₛ = rand(1,3,3)
 xₛ = rand(2,3,3)
 
+ode_ics   = (q=x₀,)
+pode_ics  = (q=q₀, p=p₀)
+iode_ics  = (q=q₀, p=p₀, λ=λ₀)
+hode_ics  = (q=q₀, p=p₀)
+lode_ics  = (q=q₀, p=p₀, λ=λ₀)
+
+dae_ics   = (q=x₀, λ=λ₀)
+pdae_ics  = (q=q₀, p=p₀, λ=λ₀)
+hdae_ics  = (q=q₀, p=p₀, λ=λ₀)
+idae_ics  = (q=q₀, p=p₀, λ=λ₀)
+ldae_ics  = (q=q₀, p=p₀, λ=λ₀)
+
+sde_ics   = (q=x₀,)
+psde_ics  = (q=q₀, p=p₀)
+spsde_ics = (q=q₀, p=p₀)
+
 ode_params = (α=1,)
 ode_param_types = parameter_types(ode_params)
 

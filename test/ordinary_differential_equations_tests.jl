@@ -9,11 +9,11 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Ordinary Differential Equations (ODE)",80))" begin
 
-    ode  = ODE(ode_v, NullInvariants(), NullParameters(), NullPeriodicity())
-    ode1 = ODE(ode_v)
-    ode2 = ODE(ode_v; invariants=NullInvariants())
-    ode3 = ODE(ode_v; parameters=NullParameters())
-    ode4 = ODE(ode_v; periodicity=NullPeriodicity())
+    ode  = ODE(ode_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    ode1 = ODE(ode_eqs...)
+    ode2 = ODE(ode_eqs...; invariants=NullInvariants())
+    ode3 = ODE(ode_eqs...; parameters=NullParameters())
+    ode4 = ODE(ode_eqs...; periodicity=NullPeriodicity())
 
     @test ode == ode1
     @test ode == ode2
@@ -25,7 +25,7 @@ include("initial_conditions.jl")
     @test hash(ode) == hash(ode3)
     @test hash(ode) == hash(ode4)
 
-    @test functions(ode) == NamedTuple{(:v,)}((ode_v,))
+    @test functions(ode) == NamedTuple{(:v,)}(ode_eqs)
     @test solutions(ode) == NamedTuple()
 
     @test parameters(ode) == NullParameters()

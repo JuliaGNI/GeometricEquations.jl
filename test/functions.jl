@@ -9,6 +9,8 @@ function ode_v(ẋ, t, x, params)
     ẋ[2] = 2x[1]
 end
 
+ode_eqs = (ode_v,)
+
 
 function sode_v1(v, t, x, params)
     v[1] = x[2]
