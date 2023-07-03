@@ -95,4 +95,5 @@ function problem(ge::GeometricEnsemble, i)
     GeometricProblem(equation(ge), tspan(ge), tstep(ge), initial_condition(ge, i), parameter(ge, i))
 end
 
+Base.length(ge::GeometricEnsemble) = nsamples(ge)
 Base.iterate(ge::GeometricEnsemble, i=1) = i > nsamples(ge) ? nothing : (problem(ge, i), i+1)

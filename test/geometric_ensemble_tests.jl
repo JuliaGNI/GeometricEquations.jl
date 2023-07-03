@@ -44,7 +44,7 @@ include("initial_conditions.jl")
     @test solutions(ens) == solutions(ode)
     @test parameters(ens) == [params, params]
     @test initial_conditions(ens) == ics
-    @test nsamples(ens) == 2
+    @test nsamples(ens) == length(ens) == 2
 
     probs = (
         GeometricProblem(ode, (t₀,t₁), Δt, ics[1], params),
@@ -71,7 +71,7 @@ include("initial_conditions.jl")
     @test parameters(ens) == params
 
     @test initial_conditions(ens) == [ics, ics]
-    @test nsamples(ens) == 2
+    @test nsamples(ens) == length(ens) == 2
 
     probs = (
         GeometricProblem(ode, (t₀,t₁), Δt, ics, params[1]),
@@ -98,7 +98,7 @@ include("initial_conditions.jl")
     @test parameters(ens) == params
 
     @test initial_conditions(ens) == ics
-    @test nsamples(ens) == 2
+    @test nsamples(ens) == length(ens) == 2
 
     probs = (
         GeometricProblem(ode, (t₀,t₁), Δt, ics[1], params[1]),
