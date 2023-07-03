@@ -3,6 +3,7 @@ using Test
 
 
 @test_nowarn Tests.ExponentialGrowth.odeproblem()
+@test_nowarn Tests.ExponentialGrowth.odeensemble()
 
 @test_nowarn Tests.HarmonicOscillator.odeproblem()
 @test_nowarn Tests.HarmonicOscillator.hodeproblem()
