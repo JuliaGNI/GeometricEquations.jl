@@ -17,6 +17,8 @@ module ExponentialGrowth
     const tbeg = 0.0
     const tend = 10.0
 
+    const ics = [(q = rand(1),), (q = rand(1),), (q = rand(1),)]
+
     const k = 1.0
 
     const default_parameters = (k=k,)
@@ -37,7 +39,7 @@ module ExponentialGrowth
         ODEProblem(vectorfield, (tbegin, tend), Δt, x₀; parameters = parameters)
     end
 
-    function odeensemble(ics = [(q₀ =rand(1),), (q₀ =rand(1),), (q₀ =rand(1),)]; parameters = default_parameters, tbegin = tbeg, tend = tend, Δt = Δt)
+    function odeensemble(ics = ics; parameters = default_parameters, tbegin = tbeg, tend = tend, Δt = Δt)
         ODEEnsemble(vectorfield, (tbegin, tend), Δt, ics; parameters = parameters)
     end
 
