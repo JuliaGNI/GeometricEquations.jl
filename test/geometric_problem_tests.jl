@@ -82,7 +82,7 @@ end
 
 @testset "$(rpad("SODE Problem",80))" begin
 
-    sode = SODE(sode_v)
+    sode = SODE(sode_eqs)
     prob = GeometricProblem(sode, (t₀,t₁), Δt, ode_ics)
 
     @test typeof(prob) <: GeometricProblem
@@ -91,10 +91,10 @@ end
 
     @test periodicity(prob).q == periodicity(equation(prob))
 
-    prob1 = SODEProblem(sode_v, (t₀,t₁), Δt, ode_ics)
-    prob2 = SODEProblem(sode_v, (t₀,t₁), Δt, ode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = SODEProblem(sode_v, (t₀,t₁), Δt, ode_ics...)
-    prob4 = SODEProblem(sode_v, (t₀,t₁), Δt, ode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics)
+    prob2 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics...)
+    prob4 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
@@ -102,17 +102,17 @@ end
     @test prob4 == prob
     
 
-    sode = SODE(sode_v, sode_q)
+    sode = SODE(sode_eqs, sode_sols)
     prob = GeometricProblem(sode, (t₀,t₁), Δt, ode_ics)
 
     @test typeof(prob) <: GeometricProblem
     @test typeof(prob) <: SODEProblem
     @test equtype(prob) == SODE
 
-    prob1 = SODEProblem(sode_v, sode_q, (t₀,t₁), Δt, ode_ics)
-    prob2 = SODEProblem(sode_v, sode_q, (t₀,t₁), Δt, ode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = SODEProblem(sode_v, sode_q, (t₀,t₁), Δt, ode_ics...)
-    prob4 = SODEProblem(sode_v, sode_q, (t₀,t₁), Δt, ode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics)
+    prob2 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics...)
+    prob4 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob

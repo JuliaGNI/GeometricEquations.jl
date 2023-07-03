@@ -57,11 +57,11 @@ end
 
 @testset "$(rpad("Split Ordinary Differential Equations (SODE)",80))" begin
 
-    sode  = SODE(sode_v, nothing, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(sode_v)
-    sode2 = SODE(sode_v; invariants=NullInvariants())
-    sode3 = SODE(sode_v; parameters=NullParameters())
-    sode4 = SODE(sode_v; periodicity=NullPeriodicity())
+    sode  = SODE(sode_eqs, nothing, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode1 = SODE(sode_eqs)
+    sode2 = SODE(sode_eqs; invariants=NullInvariants())
+    sode3 = SODE(sode_eqs; parameters=NullParameters())
+    sode4 = SODE(sode_eqs; periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -73,7 +73,7 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) == sode_v # NamedTuple{(:v,)}((sode_v,))
+    @test functions(sode) == sode_eqs # NamedTuple{(:v,)}((sode_v,))
     @test solutions(sode) === nothing # NamedTuple()
 
     @test parameters(sode) == NullParameters()
@@ -93,11 +93,11 @@ end
     @test haslagrangian(sode) == false
 
 
-    sode  = SODE(sode_v, sode_q, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(sode_v, sode_q)
-    sode2 = SODE(sode_v, sode_q; invariants=NullInvariants())
-    sode3 = SODE(sode_v, sode_q; parameters=NullParameters())
-    sode4 = SODE(sode_v, sode_q; periodicity=NullPeriodicity())
+    sode  = SODE(sode_eqs, sode_sols, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode1 = SODE(sode_eqs, sode_sols)
+    sode2 = SODE(sode_eqs, sode_sols; invariants=NullInvariants())
+    sode3 = SODE(sode_eqs, sode_sols; parameters=NullParameters())
+    sode4 = SODE(sode_eqs, sode_sols; periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -109,8 +109,8 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) == sode_v # NamedTuple{(:v,)}((sode_v,))
-    @test solutions(sode) == sode_q # NamedTuple{(:q,)}((sode_q,))
+    @test functions(sode) == sode_eqs # NamedTuple{(:v,)}((sode_v,))
+    @test solutions(sode) == sode_sols # NamedTuple{(:q,)}((sode_q,))
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -129,11 +129,11 @@ end
     @test haslagrangian(sode) == false
 
 
-    sode  = SODE(nothing, sode_q, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(nothing, sode_q)
-    sode2 = SODE(nothing, sode_q; invariants=NullInvariants())
-    sode3 = SODE(nothing, sode_q; parameters=NullParameters())
-    sode4 = SODE(nothing, sode_q; periodicity=NullPeriodicity())
+    sode  = SODE(nothing, sode_sols, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode1 = SODE(nothing, sode_sols)
+    sode2 = SODE(nothing, sode_sols; invariants=NullInvariants())
+    sode3 = SODE(nothing, sode_sols; parameters=NullParameters())
+    sode4 = SODE(nothing, sode_sols; periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -146,7 +146,7 @@ end
     @test hash(sode) == hash(sode4)
 
     @test functions(sode) === nothing # NamedTuple()
-    @test solutions(sode) == sode_q # NamedTuple{(:q,)}((sode_q,))
+    @test solutions(sode) == sode_sols # NamedTuple{(:q,)}((sode_q,))
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()

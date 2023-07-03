@@ -30,8 +30,8 @@ function sode_q2(x, t, x̄, t̄, params)
     x[2] = x̄[2]
 end
 
-sode_v = (sode_v1, sode_v2)
-sode_q = (sode_q1, sode_q2)
+sode_eqs = (sode_v1, sode_v2)
+sode_sols = (sode_q1, sode_q2)
 
 
 function pode_v(v, t, q, p, params)
