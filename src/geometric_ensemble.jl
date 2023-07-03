@@ -24,8 +24,7 @@ function GeometricEnsemble(equ::equType, tspan, tstep, ics::AbstractVector{<:Nam
 
     for ic in ics
         @assert check_initial_conditions(equ, ic)
-        # @assert typeof(ic) == typeof(ics[begin])
-        # @assert axes(ic) == axes(ics[begin])
+        @assert typeof(ic) == typeof(ics[begin])
     end
 
     @assert check_methods(equ, _tspan, ics[begin], parameters)

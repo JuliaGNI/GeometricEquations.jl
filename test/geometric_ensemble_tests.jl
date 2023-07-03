@@ -7,7 +7,7 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Geometric Ensemble",80))" begin
 
-    ics = [(q=x₀,), (q=rand(x₀),)]
+    ics = [(q=x₀,), (q=rand(length(x₀)),)]
     
     @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics)
     @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics, nothing)
