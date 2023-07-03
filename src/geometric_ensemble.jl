@@ -89,8 +89,15 @@ initial_conditions(ge::GeometricEnsemble) = ge.ics
 
 @inline GeometricBase.nsamples(ge::GeometricEnsemble) = length(initial_conditions(ge))
 
+initial_condition(ge::GeometricEnsemble, i) = initial_conditions(ge)[i]
+parameter(ge::GeometricEnsemble, i) = parameters(ge)[i]
 
-# TODO: implement iterator eachproblem()
+function problem(ge::GeometricEnsemble, i)
+    GeometricProblem(equation(ge), tspan(ge), tstep(ge), initial_condition(ge, i), parameter(ge, i))
+end
+
+Base.iterate(ge::GeometricEnsemble, i=1) = i > nsamples(ge) ? nothing : (problem(ge, i), i+1)
+
 
 
 const ODEEnsemble   = GeometricEnsemble{ODE}

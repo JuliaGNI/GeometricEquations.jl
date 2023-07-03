@@ -7,17 +7,22 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Geometric Ensemble",80))" begin
 
-    ode = ODE(ode_v)
-    
     ics = [(q=x₀,), (q=rand(x₀),)]
-    params = NullParameters()
     
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics)
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics, nothing)
+    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics)
+    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics, nothing)
+    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics, NullParameters())
+    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics; parameters=NullParameters())
+
+
+    ode = ODE(ode_v, parameters = ode_param_types)
+    ics = [(q=x₀,), (q=rand(length(x₀)),)]
+    params = ode_params
+    
     @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
     @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics; parameters=params)
 
-    ens = GeometricEnsemble(ode, (t₀,t₁), Δt, ics)
+    ens = GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
 
     @test typeof(ens) <: GeometricEnsemble
     @test typeof(ens) <: ODEEnsemble
@@ -37,12 +42,21 @@ include("initial_conditions.jl")
     @test equation(ens) == ode
     @test functions(ens) == functions(ode)
     @test solutions(ens) == solutions(ode)
-    @test parameters(ens) == [NullParameters(), NullParameters()]
-
+    @test parameters(ens) == [params, params]
     @test initial_conditions(ens) == ics
     @test nsamples(ens) == 2
 
+    probs = (
+        GeometricProblem(ode, (t₀,t₁), Δt, ics[1], params),
+        GeometricProblem(ode, (t₀,t₁), Δt, ics[2], params),
+    )
 
+    for prob in ens
+        @test prob ∈ probs
+    end
+
+
+    ode = ODE(ode_v, parameters = ode_param_types)
     ics = (q=x₀,)
     params = [(α=1,), (α=2,)]
 
@@ -59,8 +73,18 @@ include("initial_conditions.jl")
     @test initial_conditions(ens) == [ics, ics]
     @test nsamples(ens) == 2
 
+    probs = (
+        GeometricProblem(ode, (t₀,t₁), Δt, ics, params[1]),
+        GeometricProblem(ode, (t₀,t₁), Δt, ics, params[2]),
+    )
 
-    ics = [(q=x₀,), (q=rand(x₀),)]
+    for prob in ens
+        @test prob ∈ probs
+    end
+
+
+    ode = ODE(ode_v, parameters = ode_param_types)
+    ics = [(q=x₀,), (q=rand(length(x₀)),)]
     params = [(α=1,), (α=2,)]
 
     @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
@@ -75,5 +99,14 @@ include("initial_conditions.jl")
 
     @test initial_conditions(ens) == ics
     @test nsamples(ens) == 2
+
+    probs = (
+        GeometricProblem(ode, (t₀,t₁), Δt, ics[1], params[1]),
+        GeometricProblem(ode, (t₀,t₁), Δt, ics[2], params[2]),
+    )
+
+    for prob in ens
+        @test prob ∈ probs
+    end
 
 end
