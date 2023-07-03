@@ -95,8 +95,6 @@ end
 SODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, nothing, invariants, parameters, periodicity)
 SODE(v, q; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, q, invariants, parameters, periodicity)
 
-GeometricBase.functions(equation::SODE) = equation.v
-GeometricBase.solutions(equation::SODE) = equation.q
 GeometricBase.invariants(equation::SODE) = equation.invariants
 GeometricBase.parameters(equation::SODE) = equation.parameters
 GeometricBase.periodicity(equation::SODE) = equation.periodicity

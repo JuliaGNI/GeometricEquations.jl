@@ -73,8 +73,8 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) == sode_eqs # NamedTuple{(:v,)}((sode_v,))
-    @test solutions(sode) === nothing # NamedTuple()
+    @test functions(sode) == (v = sode_eqs,)
+    @test solutions(sode) == NamedTuple()
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -109,8 +109,8 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) == sode_eqs # NamedTuple{(:v,)}((sode_v,))
-    @test solutions(sode) == sode_sols # NamedTuple{(:q,)}((sode_q,))
+    @test functions(sode) == (v = sode_eqs,)
+    @test solutions(sode) == (q = sode_sols,)
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -145,8 +145,8 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) === nothing # NamedTuple()
-    @test solutions(sode) == sode_sols # NamedTuple{(:q,)}((sode_q,))
+    @test functions(sode) == NamedTuple()
+    @test solutions(sode) == (q = sode_sols,)
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
