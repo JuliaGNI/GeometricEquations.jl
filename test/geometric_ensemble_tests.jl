@@ -109,4 +109,27 @@ include("initial_conditions.jl")
         @test prob ∈ probs
     end
 
+
+    _copy(x, n) = [x for _ in 1:n]
+
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, _copy(ode_ics, 3))
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, _copy(ode_ics, 3))
+    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
+    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, _copy(ode_ics, 3))
+    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, _copy(pode_ics, 3))
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, _copy(pode_ics, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, _copy(iode_ics, 3))
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, _copy(iode_ics, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, _copy(hode_ics, 3))
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, _copy(hode_ics, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3))
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3); parameters = _copy((α=1,), 3))
+
 end

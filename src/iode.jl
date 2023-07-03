@@ -252,9 +252,11 @@ $(iode_functions)
 """
 const IODEProblem = GeometricProblem{IODE}
 
-function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(),
-                     parameters = NullParameters(), periodicity = NullPeriodicity(),
-                     v̄ = _iode_default_v̄, f̄ = f)
+function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple;
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity(),
+        v̄ = _iode_default_v̄, f̄ = f)
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -282,3 +284,16 @@ end
 
 
 const IODEEnsemble  = GeometricEnsemble{IODE}
+
+function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity(),
+        v̄ = _iode_default_v̄, f̄ = f)
+    equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function IODEEnsemble(ϑ, f, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, ics; kwargs...)
+end
