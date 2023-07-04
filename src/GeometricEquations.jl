@@ -7,7 +7,7 @@ module GeometricEquations
     import GeometricBase: datatype, timetype, arrtype, equtype
     import GeometricBase: tspan, tstep, tbegin, tend, timestep
     import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity
-    import GeometricBase: ntime, nsamples, nconstraints
+    import GeometricBase: ntime, nsamples, nconstraints, nsteps
 
     export NullInvariants, NullParameters, NullPeriodicity
 
@@ -51,7 +51,7 @@ module GeometricEquations
     export problem, equation, equations, functions, solutions
     export invariants, parameters, periodicity
     export initial_conditions
-    export ntime, nsamples, nconstraints
+    export ntime, nsamples, nconstraints, nsteps
 
     export hassolution, hasvectorfield, hasprimary, hassecondary,
            hasinvariants, hasparameters, hasperiodicity,

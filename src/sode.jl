@@ -38,6 +38,10 @@ methods, e.g., it allows to use another integrator for solving substeps.
 with the vector field ``v_i``.
 """
 
+sode_equations_compatibility(v::Nothing, q::Nothing) = false
+sode_equations_compatibility(v::Tuple, q::Nothing) = true
+sode_equations_compatibility(v::Nothing, q::Tuple) = true
+sode_equations_compatibility(v::Tuple, q::Tuple) = length(q) == length(v)
 
 @doc """
 `SODE`: Split Ordinary Differential Equation
@@ -87,17 +91,20 @@ struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing},
     periodicity::perType
 
     function SODE(v, q, invariants, parameters, periodicity)
+        @assert sode_equations_compatibility(v, q)
         new{typeof(v), typeof(q), typeof(invariants), typeof(parameters), typeof(periodicity)}(
                 v, q, invariants, parameters, periodicity)
     end
 end
 
-SODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, nothing, invariants, parameters, periodicity)
-SODE(v, q; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, q, invariants, parameters, periodicity)
+SODE(v, q=nothing; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, q, invariants, parameters, periodicity)
 
 GeometricBase.invariants(equation::SODE) = equation.invariants
 GeometricBase.parameters(equation::SODE) = equation.parameters
 GeometricBase.periodicity(equation::SODE) = equation.periodicity
+
+GeometricBase.nsteps(equ::SODE{<:Nothing}) = length(equ.q)
+GeometricBase.nsteps(equ::SODE) = length(equ.v)
 
 const SODEQT{QT,VT,invT,parT,perT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on solution type parameter
 const SODEVT{VT,QT,invT,parT,perT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on vector field type parameter

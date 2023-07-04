@@ -57,6 +57,14 @@ end
 
 @testset "$(rpad("Split Ordinary Differential Equations (SODE)",80))" begin
 
+    @test_throws AssertionError SODE(nothing, nothing)
+    @test_throws AssertionError SODE(sode_eqs, (sode_sols..., sode_sols...))
+    
+    @test_nowarn SODE(sode_eqs, nothing)
+    @test_nowarn SODE(nothing, sode_sols)
+    @test_nowarn SODE(sode_eqs, sode_sols)
+
+
     sode  = SODE(sode_eqs, nothing, NullInvariants(), NullParameters(), NullPeriodicity())
     sode1 = SODE(sode_eqs)
     sode2 = SODE(sode_eqs; invariants=NullInvariants())
@@ -73,6 +81,7 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
+    @test nsteps(sode) == 2
     @test functions(sode) == (v = sode_eqs,)
     @test solutions(sode) == NamedTuple()
 
@@ -109,6 +118,7 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
+    @test nsteps(sode) == 2
     @test functions(sode) == (v = sode_eqs,)
     @test solutions(sode) == (q = sode_sols,)
 
@@ -145,6 +155,7 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
+    @test nsteps(sode) == 2
     @test functions(sode) == NamedTuple()
     @test solutions(sode) == (q = sode_sols,)
 
