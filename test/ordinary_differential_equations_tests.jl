@@ -9,11 +9,11 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Ordinary Differential Equations (ODE)",80))" begin
 
-    ode  = ODE(ode_v, NullInvariants(), NullParameters(), NullPeriodicity())
-    ode1 = ODE(ode_v)
-    ode2 = ODE(ode_v; invariants=NullInvariants())
-    ode3 = ODE(ode_v; parameters=NullParameters())
-    ode4 = ODE(ode_v; periodicity=NullPeriodicity())
+    ode  = ODE(ode_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    ode1 = ODE(ode_eqs...)
+    ode2 = ODE(ode_eqs...; invariants=NullInvariants())
+    ode3 = ODE(ode_eqs...; parameters=NullParameters())
+    ode4 = ODE(ode_eqs...; periodicity=NullPeriodicity())
 
     @test ode == ode1
     @test ode == ode2
@@ -25,7 +25,7 @@ include("initial_conditions.jl")
     @test hash(ode) == hash(ode3)
     @test hash(ode) == hash(ode4)
 
-    @test functions(ode) == NamedTuple{(:v,)}((ode_v,))
+    @test functions(ode) == NamedTuple{(:v,)}(ode_eqs)
     @test solutions(ode) == NamedTuple()
 
     @test parameters(ode) == NullParameters()
@@ -57,11 +57,11 @@ end
 
 @testset "$(rpad("Split Ordinary Differential Equations (SODE)",80))" begin
 
-    sode  = SODE(sode_v, nothing, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(sode_v)
-    sode2 = SODE(sode_v; invariants=NullInvariants())
-    sode3 = SODE(sode_v; parameters=NullParameters())
-    sode4 = SODE(sode_v; periodicity=NullPeriodicity())
+    sode  = SODE(sode_eqs, nothing, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode1 = SODE(sode_eqs)
+    sode2 = SODE(sode_eqs; invariants=NullInvariants())
+    sode3 = SODE(sode_eqs; parameters=NullParameters())
+    sode4 = SODE(sode_eqs; periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -73,8 +73,8 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) == sode_v # NamedTuple{(:v,)}((sode_v,))
-    @test solutions(sode) === nothing # NamedTuple()
+    @test functions(sode) == (v = sode_eqs,)
+    @test solutions(sode) == NamedTuple()
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -93,11 +93,11 @@ end
     @test haslagrangian(sode) == false
 
 
-    sode  = SODE(sode_v, sode_q, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(sode_v, sode_q)
-    sode2 = SODE(sode_v, sode_q; invariants=NullInvariants())
-    sode3 = SODE(sode_v, sode_q; parameters=NullParameters())
-    sode4 = SODE(sode_v, sode_q; periodicity=NullPeriodicity())
+    sode  = SODE(sode_eqs, sode_sols, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode1 = SODE(sode_eqs, sode_sols)
+    sode2 = SODE(sode_eqs, sode_sols; invariants=NullInvariants())
+    sode3 = SODE(sode_eqs, sode_sols; parameters=NullParameters())
+    sode4 = SODE(sode_eqs, sode_sols; periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -109,8 +109,8 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) == sode_v # NamedTuple{(:v,)}((sode_v,))
-    @test solutions(sode) == sode_q # NamedTuple{(:q,)}((sode_q,))
+    @test functions(sode) == (v = sode_eqs,)
+    @test solutions(sode) == (q = sode_sols,)
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -129,11 +129,11 @@ end
     @test haslagrangian(sode) == false
 
 
-    sode  = SODE(nothing, sode_q, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(nothing, sode_q)
-    sode2 = SODE(nothing, sode_q; invariants=NullInvariants())
-    sode3 = SODE(nothing, sode_q; parameters=NullParameters())
-    sode4 = SODE(nothing, sode_q; periodicity=NullPeriodicity())
+    sode  = SODE(nothing, sode_sols, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode1 = SODE(nothing, sode_sols)
+    sode2 = SODE(nothing, sode_sols; invariants=NullInvariants())
+    sode3 = SODE(nothing, sode_sols; parameters=NullParameters())
+    sode4 = SODE(nothing, sode_sols; periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -145,8 +145,8 @@ end
     @test hash(sode) == hash(sode3)
     @test hash(sode) == hash(sode4)
 
-    @test functions(sode) === nothing # NamedTuple()
-    @test solutions(sode) == sode_q # NamedTuple{(:q,)}((sode_q,))
+    @test functions(sode) == NamedTuple()
+    @test solutions(sode) == (q = sode_sols,)
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -321,8 +321,6 @@ end
 
 @testset "$(rpad("Hamiltonian Ordinary Differential Equations (HODE)",80))" begin
 
-    hode_eqs = (pode_v, pode_f, hode_h)
-
     hode  = HODE(pode_v, pode_f, hode_h, NullInvariants(), NullParameters(), NullPeriodicity())
 
     hode1 = HODE(hode_eqs...)
@@ -416,8 +414,6 @@ end
 
 
 @testset "$(rpad("Lagrangian Ordinary Differential Equations (LODE)",80))" begin
-
-    lode_eqs = (iode_ϑ, iode_f, iode_g, lode_ω, lode_l)
 
     lode = LODE(iode_ϑ, iode_f, iode_g, lode_ω, iode_v, iode_f, lode_l, NullInvariants(), NullParameters(), NullPeriodicity())
 

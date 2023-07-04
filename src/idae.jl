@@ -208,7 +208,8 @@ end
 
 _idae_default_v̄(t, q, v, p, params) = nothing
 
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄=_idae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄=_idae_default_v̄, f̄=f, kwargs...) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
 IDAE(ϑ, f, u, g, ϕ; kwargs...) = IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::IDAE) = equation.invariants
@@ -363,4 +364,19 @@ end
 function GeometricBase.periodicity(prob::IDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
      μ = NullPeriodicity())
+end
+
+
+const IDAEEnsemble  = GeometricEnsemble{IDAE}
+
+function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = _idae_default_v̄, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function IDAEEnsemble(ϑ, f, u, g, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    IDAEEnsemble(ϑ, f, u, g, ϕ, nothing, nothing, nothing, tspan, tstep, ics; kwargs...)
 end

@@ -287,8 +287,10 @@ $(lode_functions)
 const LODEProblem = GeometricProblem{LODE}
 
 function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple;
-                     invariants = NullInvariants(), parameters = NullParameters(),
-                     periodicity = NullPeriodicity(), v̄ = _lode_default_v̄, f̄ = f)
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity(),
+        v̄ = _lode_default_v̄, f̄ = f)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -314,3 +316,19 @@ function GeometricBase.periodicity(prob::LODEProblem)
 end
 
 @inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
+
+
+const LODEEnsemble  = GeometricEnsemble{LODE}
+
+function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity(),
+        v̄ = _lode_default_v̄, f̄ = f)
+    equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function LODEEnsemble(ϑ, f, ω, l, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, tspan, tstep, ics; kwargs...)
+end

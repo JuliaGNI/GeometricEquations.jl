@@ -1,5 +1,5 @@
 @doc raw"""
-GeometricProblem: stores a GeometricEquation togehter with initial conditions, parameters, time span and time step size.
+GeometricProblem: stores a GeometricEquation together with initial conditions, parameters, time span and time step size.
 
 ### Parameters
 
@@ -51,16 +51,16 @@ with other values than zero is currently missing but can be added if demand aris
 struct GeometricProblem{superType <: GeometricEquation, dType <: Number, tType <: Real,
                         arrayType <: AbstractArray{dType},
                         equType <: GeometricEquation,
-                        icsType <: NamedTuple,
                         functionsType <: NamedTuple,
                         solutionsType <: NamedTuple,
+                        icsType <: NamedTuple,
                         paramsType <: OptionalParameters} <: AbstractProblem
     equation::equType
+    functions::functionsType
+    solutions::solutionsType
     tspan::Tuple{tType, tType}
     tstep::tType
     ics::icsType
-    functions::functionsType
-    solutions::solutionsType
     parameters::paramsType
 
     function GeometricProblem(equ, tspan, tstep, ics, parameters)
@@ -78,16 +78,17 @@ struct GeometricProblem{superType <: GeometricEquation, dType <: Number, tType <
         funcs = functions(equ, parameters)
         sols = solutions(equ, parameters)
 
-        new{superType, dType, tType, arrayType, typeof(equ), typeof(ics), typeof(funcs), typeof(sols), typeof(parameters)
-            }(equ, _tspan, _tstep, ics, funcs, sols, parameters)
+        new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs), typeof(sols), typeof(ics), typeof(parameters)
+            }(equ, funcs, sols, _tspan, _tstep, ics, parameters)
     end
+end
+
+function GeometricProblem(equ, tspan, tstep, ics, ::Nothing)
+    GeometricProblem(equ, tspan, tstep, ics, NullParameters())
 end
 
 function GeometricProblem(equ, tspan, tstep, ics; parameters = NullParameters())
     GeometricProblem(equ, tspan, tstep, ics, parameters)
-end
-function GeometricProblem(equ, tspan, tstep, ics, ::Nothing)
-    GeometricProblem(equ, tspan, tstep, ics, NullParameters())
 end
 
 # Base.hash(prob::GeometricProblem, h::UInt) = hash(hash(prob.equation,

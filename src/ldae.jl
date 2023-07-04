@@ -230,7 +230,8 @@ end
 
 _ldae_default_v̄(t, q, v, p, params) = nothing
 
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄=_ldae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄=_ldae_default_v̄, f̄=f, kwargs...) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; kwargs...)
 LDAE(ϑ, f, u, g, ϕ, ω, lagrangian; kwargs...) = LDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian; kwargs...)
 
 GeometricBase.invariants(equation::LDAE) = equation.invariants
@@ -411,4 +412,19 @@ end
 function GeometricBase.periodicity(prob::LDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
      μ = NullPeriodicity())
+end
+
+
+const LDAEEnsemble  = GeometricEnsemble{LDAE}
+
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = _ldae_default_v̄, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    LDAEEnsemble(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian, tspan, tstep, ics; kwargs...)
 end

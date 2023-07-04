@@ -156,8 +156,10 @@ $(pode_functions)
 """
 const PODEProblem = GeometricProblem{PODE}
 
-function PODEProblem(v, f, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(),
-                     parameters = NullParameters(), periodicity = NullPeriodicity())
+function PODEProblem(v, f, tspan, tstep, ics::NamedTuple;
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
     equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -169,4 +171,15 @@ end
 
 function GeometricBase.periodicity(prob::PODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
+end
+
+
+const PODEEnsemble  = GeometricEnsemble{PODE}
+
+function PODEEnsemble(v, f, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
 end

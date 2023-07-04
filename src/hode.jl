@@ -188,8 +188,9 @@ $(hode_functions)
 const HODEProblem = GeometricProblem{HODE}
 
 function HODEProblem(v, f, hamiltonian, tspan, tstep, ics::NamedTuple;
-                     invariants = NullInvariants(), parameters = NullParameters(),
-                     periodicity = NullPeriodicity())
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
     equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -201,4 +202,15 @@ end
 
 function GeometricBase.periodicity(prob::HODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
+end
+
+
+const HODEEnsemble  = GeometricEnsemble{HODE}
+
+function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
 end

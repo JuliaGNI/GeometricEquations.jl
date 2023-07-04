@@ -161,3 +161,6 @@ function SDEProblem(v, B, tspan, tstep, q₀::State; kwargs...)
 end
 
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)),)
+
+
+const SDEEnsemble   = GeometricEnsemble{SDE}

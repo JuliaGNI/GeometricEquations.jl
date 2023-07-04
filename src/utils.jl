@@ -22,6 +22,16 @@ end
 parameter_types(params::NullParameters) = params
 parameter_types(params::NamedTuple) = NamedTuple{keys(params)}(typeof.(values(params)))
 
+function parameter_types(params::AbstractVector{<:NamedTuple})
+    ptypes = [NamedTuple{keys(p)}(typeof.(values(p))) for p in params]
+
+    for pt in ptypes
+        @assert pt == ptypes[begin]
+    end
+    
+    return ptypes[begin]
+end
+
 
 function initial_multiplier(q₀::AbstractVector{DT}, λ₀::AbstractVector{DT}) where {DT <: Number}
     zero(λ₀)

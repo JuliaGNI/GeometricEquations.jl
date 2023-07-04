@@ -162,7 +162,8 @@ end
 
 
 
-DAE(v, u, ϕ, ū, ψ; v̄=v, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+DAE(v, u, ϕ, ū, ψ, v̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+DAE(v, u, ϕ, ū, ψ; v̄=v, kwargs...) = DAE(v, u, ϕ, ū, ψ, v̄; kwargs...)
 DAE(v, u, ϕ; kwargs...) = DAE(v, u, ϕ, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::DAE) = equation.invariants
@@ -311,3 +312,18 @@ function GeometricBase.periodicity(prob::DAEProblem)
 end
 
 @inline GeometricBase.nconstraints(prob::DAEProblem) = length(initial_conditions(prob).λ)
+
+
+const DAEEnsemble   = GeometricEnsemble{DAE}
+
+function DAEEnsemble(v, u, ϕ, ū, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = DAE(v, u, ϕ, ū, ψ, v̄)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function DAEEnsemble(v, u, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    DAEEnsemble(v, u, ϕ, nothing, nothing, tspan, tstep, ics; kwargs...)
+end

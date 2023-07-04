@@ -200,7 +200,8 @@ struct PDAE{vType <: Callable, fType <: Callable,
     end
 end
 
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄=v, f̄=f, kwargs...) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
 PDAE(v, f, u, g, ϕ; kwargs...) = PDAE(v, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::PDAE) = equation.invariants
@@ -337,9 +338,10 @@ prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀, p₀, λ₀
 """
 const PDAEProblem = GeometricProblem{PDAE}
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
-                     f̄ = f, invariants = NullInvariants(), parameters = NullParameters(),
-                     periodicity = NullPeriodicity())
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = v, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
                periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
@@ -366,3 +368,18 @@ function GeometricBase.periodicity(prob::PDAEProblem)
 end
 
 @inline GeometricBase.nconstraints(prob::PDAEProblem) = length(initial_conditions(prob).λ)
+
+
+const PDAEEnsemble  = GeometricEnsemble{PDAE}
+
+function PDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function PDAEEnsemble(v, f, u, g, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    PDAEEnsemble(v, f, u, g, ϕ, nothing, nothing, nothing, tspan, tstep, ics; kwargs...)
+end

@@ -95,8 +95,6 @@ end
 SODE(v; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, nothing, invariants, parameters, periodicity)
 SODE(v, q; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, q, invariants, parameters, periodicity)
 
-GeometricBase.functions(equation::SODE) = equation.v
-GeometricBase.solutions(equation::SODE) = equation.q
 GeometricBase.invariants(equation::SODE) = equation.invariants
 GeometricBase.parameters(equation::SODE) = equation.parameters
 GeometricBase.periodicity(equation::SODE) = equation.periodicity
@@ -187,8 +185,9 @@ $(sode_functions)
 const SODEProblem = GeometricProblem{SODE}
 
 function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, ics::NamedTuple;
-                     invariants = NullInvariants(), parameters = NullParameters(),
-                     periodicity = NullPeriodicity())
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
     equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
 end
@@ -208,3 +207,18 @@ function SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
 end
 
 GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)
+
+
+const SODEEnsemble  = GeometricEnsemble{SODE}
+
+function SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function SODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    SODEEnsemble(v, nothing, tspan, tstep, ics; kwargs...)
+end
