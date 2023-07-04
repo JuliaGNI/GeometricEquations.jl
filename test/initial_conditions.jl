@@ -26,6 +26,12 @@ hdae_ics  = (q=q₀, p=p₀, λ=λ₀)
 idae_ics  = (q=q₀, p=p₀, λ=λ₀)
 ldae_ics  = (q=q₀, p=p₀, λ=λ₀)
 
+dae_ics_full   = (q=x₀, λ=λ₀, μ=λ₀)
+pdae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
+hdae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
+idae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
+ldae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
+
 sde_ics   = (q=x₀,)
 psde_ics  = (q=q₀, p=p₀)
 spsde_ics = (q=q₀, p=p₀)

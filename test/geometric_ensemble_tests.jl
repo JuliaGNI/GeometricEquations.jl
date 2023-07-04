@@ -132,4 +132,30 @@ include("initial_conditions.jl")
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3))
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3); parameters = _copy((α=1,), 3))
 
+
+    @test_nowarn DAEEnsemble(dae_eqs..., (t₀,t₁), Δt, _copy(dae_ics, 3))
+    @test_nowarn DAEEnsemble(dae_eqs..., (t₀,t₁), Δt, _copy(dae_ics, 3); parameters = _copy((α=1,), 3))
+    @test_nowarn DAEEnsemble(dae_eqs_full..., (t₀,t₁), Δt, _copy(dae_ics_full, 3))
+    @test_nowarn DAEEnsemble(dae_eqs_full..., (t₀,t₁), Δt, _copy(dae_ics_full, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn PDAEEnsemble(pdae_eqs..., (t₀,t₁), Δt, _copy(pdae_ics, 3))
+    @test_nowarn PDAEEnsemble(pdae_eqs..., (t₀,t₁), Δt, _copy(pdae_ics, 3); parameters = _copy((α=1,), 3))
+    @test_nowarn PDAEEnsemble(pdae_eqs_full..., (t₀,t₁), Δt, _copy(pdae_ics_full, 3))
+    @test_nowarn PDAEEnsemble(pdae_eqs_full..., (t₀,t₁), Δt, _copy(pdae_ics_full, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn IDAEEnsemble(idae_eqs..., (t₀,t₁), Δt, _copy(idae_ics, 3))
+    @test_nowarn IDAEEnsemble(idae_eqs..., (t₀,t₁), Δt, _copy(idae_ics, 3); parameters = _copy((α=1,), 3))
+    @test_nowarn IDAEEnsemble(idae_eqs_full..., (t₀,t₁), Δt, _copy(idae_ics_full, 3))
+    @test_nowarn IDAEEnsemble(idae_eqs_full..., (t₀,t₁), Δt, _copy(idae_ics_full, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn HDAEEnsemble(hdae_eqs..., (t₀,t₁), Δt, _copy(hdae_ics, 3))
+    @test_nowarn HDAEEnsemble(hdae_eqs..., (t₀,t₁), Δt, _copy(hdae_ics, 3); parameters = _copy((α=1,), 3))
+    @test_nowarn HDAEEnsemble(hdae_eqs_full..., (t₀,t₁), Δt, _copy(hdae_ics_full, 3))
+    @test_nowarn HDAEEnsemble(hdae_eqs_full..., (t₀,t₁), Δt, _copy(hdae_ics_full, 3); parameters = _copy((α=1,), 3))
+
+    @test_nowarn LDAEEnsemble(ldae_eqs..., (t₀,t₁), Δt, _copy(ldae_ics, 3))
+    @test_nowarn LDAEEnsemble(ldae_eqs..., (t₀,t₁), Δt, _copy(ldae_ics, 3); parameters = _copy((α=1,), 3))
+    @test_nowarn LDAEEnsemble(ldae_eqs_full..., (t₀,t₁), Δt, _copy(ldae_ics_full, 3))
+    @test_nowarn LDAEEnsemble(ldae_eqs_full..., (t₀,t₁), Δt, _copy(ldae_ics_full, 3); parameters = _copy((α=1,), 3))
+
 end

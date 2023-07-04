@@ -315,3 +315,15 @@ end
 
 
 const DAEEnsemble   = GeometricEnsemble{DAE}
+
+function DAEEnsemble(v, u, ϕ, ū, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = DAE(v, u, ϕ, ū, ψ, v̄)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function DAEEnsemble(v, u, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    DAEEnsemble(v, u, ϕ, nothing, nothing, tspan, tstep, ics; kwargs...)
+end

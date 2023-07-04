@@ -383,3 +383,15 @@ end
 
 
 const HDAEEnsemble  = GeometricEnsemble{HDAE}
+
+function HDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function HDAEEnsemble(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    HDAEEnsemble(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian, tspan, tstep, ics; kwargs...)
+end

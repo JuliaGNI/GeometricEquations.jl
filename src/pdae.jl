@@ -338,9 +338,10 @@ prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀, p₀, λ₀
 """
 const PDAEProblem = GeometricProblem{PDAE}
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
-                     f̄ = f, invariants = NullInvariants(), parameters = NullParameters(),
-                     periodicity = NullPeriodicity())
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = v, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
                periodicity)
     GeometricProblem(equ, tspan, tstep, ics, parameters)
@@ -370,3 +371,15 @@ end
 
 
 const PDAEEnsemble  = GeometricEnsemble{PDAE}
+
+function PDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function PDAEEnsemble(v, f, u, g, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    PDAEEnsemble(v, f, u, g, ϕ, nothing, nothing, nothing, tspan, tstep, ics; kwargs...)
+end

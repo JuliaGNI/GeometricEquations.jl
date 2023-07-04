@@ -416,3 +416,15 @@ end
 
 
 const LDAEEnsemble  = GeometricEnsemble{LDAE}
+
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = _ldae_default_v̄, f̄ = f,
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameter_types(parameters), periodicity)
+    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+end
+
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    LDAEEnsemble(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian, tspan, tstep, ics; kwargs...)
+end
