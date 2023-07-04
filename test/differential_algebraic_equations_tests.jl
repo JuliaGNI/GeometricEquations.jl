@@ -9,11 +9,7 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Differential Algebraic Equations (DAE)",80))" begin
 
-    dae_eqs  = (dae_v, dae_u, dae_ϕ, nothing, nothing, dae_v)
-    dae_eqs1 = (dae_v, dae_u, dae_ϕ, nothing, nothing)
-    dae_eqs2 = (dae_v, dae_u, dae_ϕ)
-
-    dae = DAE(dae_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    dae = DAE(dae_eqs...)
 
     @test invariants(dae) == NullInvariants()
     @test parameters(dae) == NullParameters()
@@ -39,6 +35,10 @@ include("initial_conditions.jl")
     @test funcs.ϕ != dae_ϕ
     @test funcs.v̄ != dae_v
     
+
+    dae_eqs1 = (dae_eqs..., nothing, nothing)
+    dae_eqs2 = (dae_eqs..., nothing, nothing, dae_v)
+
     for eqs in (dae_eqs1, dae_eqs2)
         dae1 = DAE(eqs...)
         dae2 = DAE(eqs...; invariants=NullInvariants())
@@ -57,10 +57,9 @@ include("initial_conditions.jl")
     end
 
 
-    dae_eqs  = (dae_v, dae_u, dae_ϕ, dae_ū, dae_ψ)
     dae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=π*ones(2))
 
-    dae = DAE(dae_eqs..., dae_v, dae_args.invariants, parameter_types(dae_args.parameters), dae_args.periodicity)
+    dae = DAE(dae_eqs_full..., dae_v, dae_args.invariants, parameter_types(dae_args.parameters), dae_args.periodicity)
 
     @test invariants(dae) == dae_args.invariants
     @test parameters(dae) == parameter_types(dae_args.parameters)
@@ -90,8 +89,8 @@ include("initial_conditions.jl")
     @test funcs.ψ != dae_ψ
     @test funcs.v̄ != dae_v
 
-    dae1 = DAE(dae_eqs...; v̄=dae_v, invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
-    dae2 = DAE(dae_eqs...; invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
+    dae1 = DAE(dae_eqs_full...; v̄=dae_v, invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
+    dae2 = DAE(dae_eqs_full...; invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
 
     @test dae == dae1
     @test dae == dae2
@@ -104,11 +103,7 @@ end
 
 @testset "$(rpad("Partitioned Differential Algebraic Equations (PDAE)",80))" begin
 
-    pdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_v, pdae_f)
-    pdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing)
-    pdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ)
-
-    pdae  = PDAE(pdae_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    pdae  = PDAE(pdae_eqs...)
 
     @test invariants(pdae) == NullInvariants()
     @test parameters(pdae) == NullParameters()
@@ -133,6 +128,10 @@ end
     # @test pdae == similar(pdae, t₀, q₀, p₀)
     # @test pdae == similar(pdae, q₀, p₀)
 
+
+    pdae_eqs1 = (pdae_eqs..., nothing, nothing, nothing)
+    pdae_eqs2 = (pdae_eqs..., nothing, nothing, nothing, pdae_v, pdae_f)
+
     for eqs in (pdae_eqs1, pdae_eqs2)
         pdae1 = PDAE(eqs...)
         pdae2 = PDAE(eqs...; invariants=NullInvariants())
@@ -151,10 +150,9 @@ end
     end
 
 
-    pdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ)
     pdae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=π*ones(1))
 
-    pdae  = PDAE(pdae_eqs..., pdae_v, pdae_f, pdae_args.invariants, parameter_types(pdae_args.parameters), pdae_args.periodicity)
+    pdae  = PDAE(pdae_eqs_full..., pdae_v, pdae_f, pdae_args.invariants, parameter_types(pdae_args.parameters), pdae_args.periodicity)
 
     @test invariants(pdae) == pdae_args.invariants
     @test parameters(pdae) == parameter_types(pdae_args.parameters)
@@ -190,8 +188,8 @@ end
     @test funcs.v̄ != pdae_v
     @test funcs.f̄ != pdae_f
     
-    pdae1 = PDAE(pdae_eqs...; v̄=pdae_v, f̄=pdae_f, invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
-    pdae2 = PDAE(pdae_eqs...; invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
+    pdae1 = PDAE(pdae_eqs_full...; v̄=pdae_v, f̄=pdae_f, invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
+    pdae2 = PDAE(pdae_eqs_full...; invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
 
     @test pdae == pdae1
     @test pdae == pdae2
@@ -204,11 +202,7 @@ end
 
 @testset "$(rpad("Implicit Differential Algebraic Equations (IDAE)",80))" begin
 
-    idae_eqs  = (idae_ϑ, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, idae_v, pdae_f)
-    idae_eqs1 = (idae_ϑ, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing)
-    idae_eqs2 = (idae_ϑ, pdae_f, pdae_u, pdae_g, pdae_ϕ)
-
-    idae  = IDAE(idae_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    idae  = IDAE(idae_eqs...)
 
     @test invariants(idae) == NullInvariants()
     @test parameters(idae) == NullParameters()
@@ -222,13 +216,16 @@ end
 
     funcs = functions(idae)
     @test funcs.ϑ == idae_ϑ == idae.ϑ
-    @test funcs.f == pdae_f == idae.f
-    @test funcs.u == pdae_u == idae.u
-    @test funcs.g == pdae_g == idae.g
-    @test funcs.ϕ == pdae_ϕ == idae.ϕ
+    @test funcs.f == idae_f == idae.f
+    @test funcs.u == idae_u == idae.u
+    @test funcs.g == idae_g == idae.g
+    @test funcs.ϕ == idae_ϕ == idae.ϕ
     @test funcs.v̄ == idae_v == idae.v̄
-    @test funcs.f̄ == pdae_f == idae.f̄
+    @test funcs.f̄ == idae_f == idae.f̄
     
+
+    idae_eqs1 = (idae_eqs..., nothing, nothing, nothing)
+    idae_eqs2 = (idae_eqs..., nothing, nothing, nothing, idae_v, idae_f)
 
     for eqs in (idae_eqs1, idae_eqs2)
         idae1 = IDAE(eqs...)
@@ -248,10 +245,9 @@ end
     end
 
 
-    idae_eqs  = (idae_ϑ, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ)
     idae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=π*ones(1))
 
-    idae  = IDAE(idae_eqs..., idae_v, pdae_f, idae_args.invariants, parameter_types(idae_args.parameters), idae_args.periodicity)
+    idae  = IDAE(idae_eqs_full..., idae_v, idae_f, idae_args.invariants, parameter_types(idae_args.parameters), idae_args.periodicity)
 
     @test invariants(idae) == idae_args.invariants
     @test parameters(idae) == parameter_types(idae_args.parameters)
@@ -265,30 +261,30 @@ end
 
     funcs = functions(idae)
     @test funcs.ϑ == idae_ϑ == idae.ϑ
-    @test funcs.f == pdae_f == idae.f
-    @test funcs.u == pdae_u == idae.u
-    @test funcs.g == pdae_g == idae.g
-    @test funcs.ϕ == pdae_ϕ == idae.ϕ
-    @test funcs.ū == pdae_u == idae.ū
-    @test funcs.ḡ == pdae_g == idae.ḡ
-    @test funcs.ψ == pdae_ψ == idae.ψ
+    @test funcs.f == idae_f == idae.f
+    @test funcs.u == idae_u == idae.u
+    @test funcs.g == idae_g == idae.g
+    @test funcs.ϕ == idae_ϕ == idae.ϕ
+    @test funcs.ū == idae_u == idae.ū
+    @test funcs.ḡ == idae_g == idae.ḡ
+    @test funcs.ψ == idae_ψ == idae.ψ
     @test funcs.v̄ == idae_v == idae.v̄
-    @test funcs.f̄ == pdae_f == idae.f̄
+    @test funcs.f̄ == idae_f == idae.f̄
     
     funcs = functions(idae, idae_args.parameters)
     @test funcs.ϑ != idae_ϑ
-    @test funcs.f != pdae_f
-    @test funcs.u != pdae_u
-    @test funcs.g != pdae_g
-    @test funcs.ϕ != pdae_ϕ
-    @test funcs.ū != pdae_u
-    @test funcs.ḡ != pdae_g
-    @test funcs.ψ != pdae_ψ
+    @test funcs.f != idae_f
+    @test funcs.u != idae_u
+    @test funcs.g != idae_g
+    @test funcs.ϕ != idae_ϕ
+    @test funcs.ū != idae_u
+    @test funcs.ḡ != idae_g
+    @test funcs.ψ != idae_ψ
     @test funcs.v̄ != idae_v
-    @test funcs.f̄ != pdae_f
+    @test funcs.f̄ != idae_f
     
-    idae1 = IDAE(idae_eqs...; v̄=idae_v, f̄=pdae_f, invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
-    idae2 = IDAE(idae_eqs...; invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
+    idae1 = IDAE(idae_eqs_full...; v̄=idae_v, f̄=idae_f, invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
+    idae2 = IDAE(idae_eqs_full...; invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
 
     @test idae == idae1
     @test idae == idae2
@@ -301,11 +297,7 @@ end
 
 @testset "$(rpad("Hamiltonian Differential Algebraic Equations (HDAE)",80))" begin
 
-    hdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_v, pdae_f, pdae_h)
-    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, nothing, nothing, nothing, pdae_h)
-    hdae_eqs2 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_h)
-
-    hdae = HDAE(hdae_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    hdae = HDAE(hdae_eqs...)
 
     @test hasvectorfield(hdae) == true
     @test hashamiltonian(hdae) == true
@@ -323,6 +315,10 @@ end
     @test funcs.v̄ == pdae_v == hdae.v̄
     @test funcs.f̄ == pdae_f == hdae.f̄
     @test funcs.h == pdae_h == hdae.hamiltonian
+
+
+    hdae_eqs1 = (pdae_eqs..., nothing, nothing, nothing, pdae_h)
+    hdae_eqs2 = (pdae_eqs..., nothing, nothing, nothing, pdae_v, pdae_f, pdae_h)
 
     for eqs in (hdae_eqs1, hdae_eqs2)
         hdae1 = HDAE(eqs...)
@@ -342,11 +338,9 @@ end
     end
 
 
-    hdae_eqs  = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, pdae_v, pdae_f, pdae_h)
-    hdae_eqs1 = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ, pdae_h)
     hdae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=π*ones(1))
 
-    hdae = HDAE(hdae_eqs..., hdae_args.invariants, parameter_types(hdae_args.parameters), hdae_args.periodicity)
+    hdae = HDAE(hdae_eqs_main..., hdae_args.invariants, parameter_types(hdae_args.parameters), hdae_args.periodicity)
 
     @test hasvectorfield(hdae) == true
     @test hashamiltonian(hdae) == true
@@ -381,8 +375,8 @@ end
     @test funcs.f̄ != pdae_f
     @test funcs.h != pdae_h
 
-    hdae1 = HDAE(hdae_eqs1...; v̄=pdae_v, f̄=pdae_f, invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
-    hdae2 = HDAE(hdae_eqs1...; invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
+    hdae1 = HDAE(hdae_eqs_full...; v̄=pdae_v, f̄=pdae_f, invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
+    hdae2 = HDAE(hdae_eqs_full...; invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
 
     @test hdae == hdae1
     @test hdae == hdae2
@@ -395,11 +389,7 @@ end
 
 @testset "$(rpad("Variational Differential Algebraic Equations (LDAE)",80))" begin
 
-    ldae_eqs  = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, nothing, nothing, nothing, lode_ω, ldae_v, iode_f, lode_l)
-    ldae_eqs1 = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, nothing, nothing, nothing, lode_ω, lode_l)
-    ldae_eqs2 = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, lode_ω, lode_l)
-
-    ldae = LDAE(ldae_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    ldae = LDAE(ldae_eqs...)
 
     @test hassecondary(ldae) == false
     @test hasinvariants(ldae) == false
@@ -407,15 +397,19 @@ end
     @test hasperiodicity(ldae) == false
 
     funcs = functions(ldae)
-    @test funcs.ϑ == iode_ϑ == ldae.ϑ
-    @test funcs.f == iode_f == ldae.f
-    @test funcs.u == iode_u == ldae.u
-    @test funcs.g == iode_g == ldae.g
-    @test funcs.ϕ == pdae_ϕ == ldae.ϕ
-    @test funcs.ω == lode_ω == ldae.ω
+    @test funcs.ϑ == idae_ϑ == ldae.ϑ
+    @test funcs.f == idae_f == ldae.f
+    @test funcs.u == idae_u == ldae.u
+    @test funcs.g == idae_g == ldae.g
+    @test funcs.ϕ == idae_ϕ == ldae.ϕ
+    @test funcs.ω == ldae_ω == ldae.ω
     @test funcs.v̄ == ldae_v == ldae.v̄
-    @test funcs.f̄ == iode_f == ldae.f̄
-    @test funcs.l == lode_l == ldae.lagrangian
+    @test funcs.f̄ == ldae_f == ldae.f̄
+    @test funcs.l == ldae_l == ldae.lagrangian
+
+
+    ldae_eqs1 = (idae_eqs..., nothing, nothing, nothing, ldae_ω, ldae_l)
+    ldae_eqs2 = (idae_eqs..., nothing, nothing, nothing, ldae_ω, ldae_v, ldae_f, ldae_l)
 
     for eqs in (ldae_eqs1, ldae_eqs2)
         ldae1 = LDAE(eqs...)
@@ -431,6 +425,7 @@ end
         @test ldae.ω == ldae1.ω
         @test ldae.v̄ == ldae1.v̄
         @test ldae.f̄ == ldae1.f̄
+        @test ldae.lagrangian == ldae1.lagrangian
 
         @test ldae == ldae1
         @test ldae == ldae2
@@ -444,10 +439,9 @@ end
     end
 
 
-    ldae_eqs  = (iode_ϑ, iode_f, iode_u, iode_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ)
     ldae_args = (invariants=(h=iode_h,), parameters=(a=1,), periodicity=π*ones(1))
 
-    ldae = LDAE(ldae_eqs..., lode_ω, iode_v, iode_f, lode_l, ldae_args.invariants, parameter_types(ldae_args.parameters), ldae_args.periodicity)
+    ldae = LDAE(idae_eqs_full..., ldae_ω, ldae_v, ldae_f, ldae_l, ldae_args.invariants, parameter_types(ldae_args.parameters), ldae_args.periodicity)
 
     @test hassecondary(ldae) == true
     @test hasinvariants(ldae) == true
@@ -455,26 +449,26 @@ end
     @test hasperiodicity(ldae) == true
 
     funcs = functions(ldae)
-    @test funcs.ϑ == iode_ϑ == ldae.ϑ
-    @test funcs.f == iode_f == ldae.f
-    @test funcs.u == iode_u == ldae.u
-    @test funcs.g == iode_g == ldae.g
-    @test funcs.ϕ == pdae_ϕ == ldae.ϕ
-    @test funcs.ω == lode_ω == ldae.ω
-    @test funcs.v̄ == iode_v == ldae.v̄
-    @test funcs.f̄ == iode_f == ldae.f̄
-    @test funcs.l == lode_l == ldae.lagrangian
+    @test funcs.ϑ == idae_ϑ == ldae.ϑ
+    @test funcs.f == idae_f == ldae.f
+    @test funcs.u == idae_u == ldae.u
+    @test funcs.g == idae_g == ldae.g
+    @test funcs.ϕ == idae_ϕ == ldae.ϕ
+    @test funcs.ω == ldae_ω == ldae.ω
+    @test funcs.v̄ == ldae_v == ldae.v̄
+    @test funcs.f̄ == ldae_f == ldae.f̄
+    @test funcs.l == ldae_l == ldae.lagrangian
 
     funcs = functions(ldae, ldae_args.parameters)
-    @test funcs.ϑ != iode_ϑ
-    @test funcs.f != iode_f
-    @test funcs.u != iode_u
-    @test funcs.g != iode_g
-    @test funcs.ϕ != pdae_ϕ
-    @test funcs.ω != lode_ω
-    @test funcs.v̄ != iode_v
-    @test funcs.f̄ != iode_f
-    @test funcs.l != lode_l
+    @test funcs.ϑ != idae_ϑ
+    @test funcs.f != idae_f
+    @test funcs.u != idae_u
+    @test funcs.g != idae_g
+    @test funcs.ϕ != idae_ϕ
+    @test funcs.ω != ldae_ω
+    @test funcs.v̄ != ldae_v
+    @test funcs.f̄ != ldae_f
+    @test funcs.l != ldae_l
 
     # ldae1 = LDAE(ldae_eqs..., lode_l, lode_ω, t₀, [q₀], [p₀], [λ₀], [λ₀]; v̄=iode_v, ldae_args...)
     # ldae2 = LDAE(ldae_eqs..., lode_l, lode_ω, t₀, [q₀], [p₀], [λ₀]; v̄=iode_v, ldae_args...)

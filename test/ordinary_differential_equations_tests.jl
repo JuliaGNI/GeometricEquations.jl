@@ -321,8 +321,6 @@ end
 
 @testset "$(rpad("Hamiltonian Ordinary Differential Equations (HODE)",80))" begin
 
-    hode_eqs = (pode_v, pode_f, hode_h)
-
     hode  = HODE(pode_v, pode_f, hode_h, NullInvariants(), NullParameters(), NullPeriodicity())
 
     hode1 = HODE(hode_eqs...)
@@ -416,8 +414,6 @@ end
 
 
 @testset "$(rpad("Lagrangian Ordinary Differential Equations (LODE)",80))" begin
-
-    lode_eqs = (iode_ϑ, iode_f, iode_g, lode_ω, lode_l)
 
     lode = LODE(iode_ϑ, iode_f, iode_g, lode_ω, iode_v, iode_f, lode_l, NullInvariants(), NullParameters(), NullPeriodicity())
 

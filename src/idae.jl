@@ -208,7 +208,8 @@ end
 
 _idae_default_v̄(t, q, v, p, params) = nothing
 
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄=_idae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄=_idae_default_v̄, f̄=f, kwargs...) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
 IDAE(ϑ, f, u, g, ϕ; kwargs...) = IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::IDAE) = equation.invariants

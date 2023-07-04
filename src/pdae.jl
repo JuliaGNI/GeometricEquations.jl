@@ -200,7 +200,8 @@ struct PDAE{vType <: Callable, fType <: Callable,
     end
 end
 
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄=v, f̄=f, kwargs...) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
 PDAE(v, f, u, g, ϕ; kwargs...) = PDAE(v, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::PDAE) = equation.invariants

@@ -201,7 +201,8 @@ struct HDAE{vType <: Callable, fType <: Callable,
     end
 end
 
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian; v̄=v, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian; v̄=v, f̄=f, kwargs...) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian; kwargs...)
 HDAE(v, f, u, g, ϕ, hamiltonian; kwargs...) = HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian; kwargs...)
 
 GeometricBase.invariants(equation::HDAE) = equation.invariants

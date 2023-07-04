@@ -162,7 +162,8 @@ end
 
 
 
-DAE(v, u, ϕ, ū, ψ; v̄=v, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+DAE(v, u, ϕ, ū, ψ, v̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+DAE(v, u, ϕ, ū, ψ; v̄=v, kwargs...) = DAE(v, u, ϕ, ū, ψ, v̄; kwargs...)
 DAE(v, u, ϕ; kwargs...) = DAE(v, u, ϕ, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::DAE) = equation.invariants

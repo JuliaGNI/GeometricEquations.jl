@@ -230,7 +230,8 @@ end
 
 _ldae_default_v̄(t, q, v, p, params) = nothing
 
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄=_ldae_default_v̄, f̄=f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄=_ldae_default_v̄, f̄=f, kwargs...) = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; kwargs...)
 LDAE(ϑ, f, u, g, ϕ, ω, lagrangian; kwargs...) = LDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian; kwargs...)
 
 GeometricBase.invariants(equation::LDAE) = equation.invariants
