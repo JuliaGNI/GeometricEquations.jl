@@ -213,6 +213,7 @@ function SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
     SODEProblem(v, tspan, tstep, ics; kwargs...)
 end
 
+GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))
 GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)
 
 
