@@ -152,6 +152,8 @@ end
 
 _get_v(equ::SODE, params) = Tuple((v, t, q) -> V(v, t, q, params) for V in equ.v)
 _get_q(equ::SODE, params) = Tuple((q̄, t̄, q, t) -> Q(q̄, t̄, q, t, params) for Q in equ.q)
+_get_v(::SODEVT{<:Nothing}, params) = nothing
+_get_q(::SODEQT{<:Nothing}, params) = nothing
 _get_invariant(::SODE, inv, params) = (t, q) -> inv(t, q, params)
 
 _functions(equ::SODE) = (v = equ.v,)
