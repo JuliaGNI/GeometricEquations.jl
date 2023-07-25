@@ -8,7 +8,7 @@ module ExponentialGrowth
 
     using Parameters
 
-    export odeproblem, odeensemble, exact_solution
+    export odeproblem, odeensemble
 
     const x₀ = [1.0]
     const Δt = 0.1
@@ -39,24 +39,6 @@ module ExponentialGrowth
 
     function odeensemble(ics = ics; parameters = default_parameters, tbegin = tbeg, tend = tend, Δt = Δt)
         ODEEnsemble(vectorfield, (tbegin, tend), Δt, ics; parameters = parameters)
-    end
-
-    function exact_solution(prob::ODEProblem)
-        sol = GeometricSolution(prob)
-        for n in eachtimestep(sol)
-            solution(sol.q[n], sol.t[n], sol.q[0], sol.t[0], parameters(prob))
-        end
-        return sol
-    end
-
-    function exact_solution(probs::ODEEnsemble)
-        sols = EnsembleSolution(probs)
-        for (sol,prob) in zip(sols.s, probs)
-            for n in eachtimestep(sol)
-                solution(sol.q[n], sol.t[n], sol.q[0], sol.t[0], parameters(prob))
-            end
-        end
-        return sols
     end
 
 end
