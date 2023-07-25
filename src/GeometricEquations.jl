@@ -99,6 +99,6 @@ module GeometricEquations
     const AbstractProblemPSDE = Union{PSDEProblem, SPSDEProblem}
 
 
-    include("tests.jl")
+    include("tests/Tests.jl")
     
 end
