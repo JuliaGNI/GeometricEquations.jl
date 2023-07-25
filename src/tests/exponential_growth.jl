@@ -23,13 +23,13 @@ module ExponentialGrowth
     
     function vectorfield(v, t, x, params)
         @unpack k = params
-        v[1] = k * x[1]
+        v .= k .* x
         nothing
     end
 
     function solution(x₁, t₁, x₀, t₀, params)
         @unpack k = params
-        x₁[1] = x₀[1] * exp(k*t₁)
+        x₁ .= x₀ .* exp(k * (t₁-t₀))
         return x₁
     end
 
