@@ -8,7 +8,7 @@ GeometricBase = "9a0b12b7-583b-4f04-aa1f-d8551b6addc9"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 
 [compat]
-GeometricBase = "0.4, 0.5, 0.6"
+GeometricBase = "0.4, 0.5, 0.6, 0.7"
 Parameters = "0.12"
 julia = "1.6"
 
