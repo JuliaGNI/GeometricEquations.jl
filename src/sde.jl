@@ -140,19 +140,19 @@ where `v` is the function computing the vector field and `B` computes the diffus
 The initial condition `q₀` can also be prescribed directly, with
 `State` an `AbstractArray{<:Number}`.
 
-For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
+For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
 ### Function Definitions
 
 $(sde_functions)
 
 """
-const SDEProblem = GeometricProblem{SDE}
+const SDEProblem = EquationProblem{SDE}
 
 function SDEProblem(v, B, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(),
                     parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = SDE(v, B, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function SDEProblem(v, B, tspan, tstep, q₀::State; kwargs...)

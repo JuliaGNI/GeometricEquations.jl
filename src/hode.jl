@@ -185,14 +185,14 @@ directly, with `State` an `AbstractArray{<:Number}`.
 $(hode_functions)
 
 """
-const HODEProblem = GeometricProblem{HODE}
+const HODEProblem = EquationProblem{HODE}
 
 function HODEProblem(v, f, hamiltonian, tspan, tstep, ics::NamedTuple;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::State, p₀::State; kwargs...)

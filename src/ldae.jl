@@ -357,7 +357,7 @@ $(ldae_constructors)
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`.
 
-In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `LDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _ldae_default_v̄` and `f̄ = f`.
 
@@ -382,14 +382,14 @@ or
 prob = LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, q₀, p₀, λ₀, γ₀)
 ```    
 """
-const LDAEProblem = GeometricProblem{LDAE}
+const LDAEProblem = EquationProblem{LDAE}
 
 function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::NamedTuple;
                      v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants,
                parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, q₀::State,

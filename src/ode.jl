@@ -133,21 +133,21 @@ where `v` is the function computing the vector field,
 The initial condition `q₀` can also be prescribed directly, with
 `State` an `AbstractArray{<:Number}`.
 
-For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
+For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
 ### Function Definitions
 
 $(ode_functions)
 
 """
-const ODEProblem = GeometricProblem{ODE}
+const ODEProblem = EquationProblem{ODE}
 
 function ODEProblem(v, tspan, tstep, ics::NamedTuple;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = ODE(v, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function ODEProblem(v, tspan, tstep, q₀::State; kwargs...)

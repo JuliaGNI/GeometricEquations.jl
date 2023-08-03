@@ -168,20 +168,20 @@ compute the diffusion matrices,
 The initial condition `q₀` can also be prescribed directly, with
 `State` an `AbstractArray{<:Number}`.
 
-For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
+For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
 ### Function Definitions
 
 $(psde_functions)
 
 """
-const PSDEProblem = GeometricProblem{PSDE}
+const PSDEProblem = EquationProblem{PSDE}
 
 function PSDEProblem(v, f, B, G, tspan, tstep, ics::NamedTuple;
                      invariants = NullInvariants(), parameters = NullParameters(),
                      periodicity = NullPeriodicity())
     equ = PSDE(v, f, B, G, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function PSDEProblem(v, f, B, G, tspan, tstep, q₀::State, p₀::State; kwargs...)

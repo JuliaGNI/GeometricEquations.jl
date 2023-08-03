@@ -1,7 +1,7 @@
 # Problems
 
 ```@docs
-GeometricEquations.GeometricProblem
+GeometricEquations.EquationProblem
 ```
 
 ## Ordinary Differential Equations

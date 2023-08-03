@@ -47,8 +47,8 @@ include("initial_conditions.jl")
     @test nsamples(ens) == length(ens) == 2
 
     probs = (
-        GeometricProblem(ode, (t₀,t₁), Δt, ics[1], params),
-        GeometricProblem(ode, (t₀,t₁), Δt, ics[2], params),
+        EquationProblem(ode, (t₀,t₁), Δt, ics[1], params),
+        EquationProblem(ode, (t₀,t₁), Δt, ics[2], params),
     )
 
     for prob in ens
@@ -74,8 +74,8 @@ include("initial_conditions.jl")
     @test nsamples(ens) == length(ens) == 2
 
     probs = (
-        GeometricProblem(ode, (t₀,t₁), Δt, ics, params[1]),
-        GeometricProblem(ode, (t₀,t₁), Δt, ics, params[2]),
+        EquationProblem(ode, (t₀,t₁), Δt, ics, params[1]),
+        EquationProblem(ode, (t₀,t₁), Δt, ics, params[2]),
     )
 
     for prob in ens
@@ -101,8 +101,8 @@ include("initial_conditions.jl")
     @test nsamples(ens) == length(ens) == 2
 
     probs = (
-        GeometricProblem(ode, (t₀,t₁), Δt, ics[1], params[1]),
-        GeometricProblem(ode, (t₀,t₁), Δt, ics[2], params[2]),
+        EquationProblem(ode, (t₀,t₁), Δt, ics[1], params[1]),
+        EquationProblem(ode, (t₀,t₁), Δt, ics[2], params[2]),
     )
 
     for prob in ens

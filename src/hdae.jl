@@ -324,7 +324,7 @@ $(hdae_constructors)
 The initial conditions `q₀`, `p₀`, `λ₀` and `γ₀` can also be prescribed directly,
 with `State` an `AbstractArray{<:Number}`.
 
-In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `HDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = v` and `f̄ = f`.
 
@@ -349,14 +349,14 @@ or
 prob = HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀, p₀, λ₀, γ₀)
 ```
 """
-const HDAEProblem = GeometricProblem{HDAE}
+const HDAEProblem = EquationProblem{HDAE}
 
 function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics::NamedTuple;
                      v̄ = v, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants,
                parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, q₀::State,

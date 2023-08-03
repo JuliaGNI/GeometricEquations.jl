@@ -5,7 +5,7 @@ function_dummy_v(t, q, p, v) = nothing
 
 """
     promote_tspan(tspan)
-Convert the `tspan` field of a `GeometricProblem` to a `(tmin, tmax)` tuple, where both
+Convert the `tspan` field of a `EquationProblem` to a `(tmin, tmax)` tuple, where both
 elements are of the same type.
 """
 promote_tspan((t1,t2)::Tuple{T,S}) where {T,S} = promote(t1, t2)

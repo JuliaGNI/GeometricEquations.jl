@@ -8,7 +8,7 @@ struct GeometricEnsemble{superType <: GeometricEquation, dType <: Number, tType 
                  functionsType <: NamedTuple,
                  solutionsType <: NamedTuple,
                  icsType <: AbstractVector{<:NamedTuple},
-                 paramsType <: AbstractVector{<:OptionalParameters}} <: AbstractProblem
+                 paramsType <: AbstractVector{<:OptionalParameters}} <: GeometricProblem
     equation::equType
     functions::functionsType
     solutions::solutionsType
@@ -92,7 +92,7 @@ initial_condition(ge::GeometricEnsemble, i) = initial_conditions(ge)[i]
 parameter(ge::GeometricEnsemble, i) = parameters(ge)[i]
 
 function problem(ge::GeometricEnsemble, i)
-    GeometricProblem(equation(ge), tspan(ge), tstep(ge), initial_condition(ge, i), parameter(ge, i))
+    EquationProblem(equation(ge), tspan(ge), tstep(ge), initial_condition(ge, i), parameter(ge, i))
 end
 
 Base.length(ge::GeometricEnsemble) = nsamples(ge)

@@ -173,7 +173,7 @@ end
 
 """
 """
-const SPDAEProblem = GeometricProblem{SPDAE}
+const SPDAEProblem = EquationProblem{SPDAE}
 
 function GeometricBase.periodicity(prob::SPDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())

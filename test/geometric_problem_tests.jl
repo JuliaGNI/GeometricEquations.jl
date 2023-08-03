@@ -9,9 +9,9 @@ include("initial_conditions.jl")
 
     ics  = (q=x₀,)
     ode  = ODE(ode_v)
-    prob = GeometricProblem(ode, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(ode, (t₀,t₁), Δt, ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: ODEProblem
     @test typeof(prob).parameters[1] == ODE
     @test typeof(prob).parameters[5] == typeof(ode)
@@ -33,10 +33,10 @@ include("initial_conditions.jl")
 
     @test functions(prob) == functions(ode, parameters(prob))
 
-    prob1 = GeometricProblem(ode, (t₀,t₁), Δt, ics)
-    prob2 = GeometricProblem(ode, (t₀,t₁), Δt, ics; parameters=NullParameters())
-    prob3 = GeometricProblem(ode, (t₀,t₁), Δt, ics, NullParameters())
-    prob4 = GeometricProblem(ode, (t₀,t₁), Δt, ics, nothing)
+    prob1 = EquationProblem(ode, (t₀,t₁), Δt, ics)
+    prob2 = EquationProblem(ode, (t₀,t₁), Δt, ics; parameters=NullParameters())
+    prob3 = EquationProblem(ode, (t₀,t₁), Δt, ics, NullParameters())
+    prob4 = EquationProblem(ode, (t₀,t₁), Δt, ics, nothing)
 
     @test prob == prob1
     @test prob == prob2
@@ -59,9 +59,9 @@ end
 @testset "$(rpad("ODE Problem",80))" begin
 
     ode  = ODE(ode_eqs...)
-    prob = GeometricProblem(ode, (t₀,t₁), Δt, ode_ics)
+    prob = EquationProblem(ode, (t₀,t₁), Δt, ode_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: ODEProblem
     @test equtype(prob) == ODE
 
@@ -83,9 +83,9 @@ end
 @testset "$(rpad("SODE Problem",80))" begin
 
     sode = SODE(sode_eqs)
-    prob = GeometricProblem(sode, (t₀,t₁), Δt, ode_ics)
+    prob = EquationProblem(sode, (t₀,t₁), Δt, ode_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: SODEProblem
     @test equtype(prob) == SODE
 
@@ -103,9 +103,9 @@ end
     
 
     sode = SODE(sode_eqs, sode_sols)
-    prob = GeometricProblem(sode, (t₀,t₁), Δt, ode_ics)
+    prob = EquationProblem(sode, (t₀,t₁), Δt, ode_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: SODEProblem
     @test equtype(prob) == SODE
 
@@ -156,9 +156,9 @@ end
 @testset "$(rpad("PODE Problem",80))" begin
 
     pode = PODE(pode_eqs...)
-    prob = GeometricProblem(pode, (t₀,t₁), Δt, pode_ics)
+    prob = EquationProblem(pode, (t₀,t₁), Δt, pode_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PODEProblem
     @test equtype(prob) == PODE
 
@@ -181,9 +181,9 @@ end
 @testset "$(rpad("IODE Problem",80))" begin
 
     iode = IODE(iode_eqs...)
-    prob = GeometricProblem(iode, (t₀,t₁), Δt, iode_ics)
+    prob = EquationProblem(iode, (t₀,t₁), Δt, iode_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: IODEProblem
     @test equtype(prob) == IODE
 
@@ -207,9 +207,9 @@ end
 @testset "$(rpad("HODE Problem",80))" begin
 
     hode = HODE(hode_eqs...)
-    prob = GeometricProblem(hode, (t₀,t₁), Δt, hode_ics)
+    prob = EquationProblem(hode, (t₀,t₁), Δt, hode_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: HODEProblem
     @test equtype(prob) == HODE
 
@@ -232,9 +232,9 @@ end
 @testset "$(rpad("LODE Problem",80))" begin
 
     lode = LODE(lode_eqs...)
-    prob = GeometricProblem(lode, (t₀,t₁), Δt, lode_ics)
+    prob = EquationProblem(lode, (t₀,t₁), Δt, lode_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: LODEProblem
     @test equtype(prob) == LODE
 
@@ -258,9 +258,9 @@ end
 @testset "$(rpad("DAE Problem",80))" begin
 
     dae  = DAE(dae_eqs...)
-    prob = GeometricProblem(dae, (t₀,t₁), Δt, dae_ics)
+    prob = EquationProblem(dae, (t₀,t₁), Δt, dae_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: DAEProblem
     @test equtype(prob) == DAE
 
@@ -285,9 +285,9 @@ end
 
     ics  = (q=x₀, λ=λ₀, μ=λ₀)
     dae  = DAE(dae_eqs_full...)
-    prob = GeometricProblem(dae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(dae, (t₀,t₁), Δt, ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: DAEProblem
     @test equtype(prob) == DAE
 
@@ -307,9 +307,9 @@ end
 @testset "$(rpad("PDAE Problem",80))" begin
 
     pdae = PDAE(pdae_eqs...)
-    prob = GeometricProblem(pdae, (t₀,t₁), Δt, pdae_ics)
+    prob = EquationProblem(pdae, (t₀,t₁), Δt, pdae_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PDAEProblem
     @test equtype(prob) == PDAE
 
@@ -334,9 +334,9 @@ end
 
     ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     pdae = PDAE(pdae_eqs_full...)
-    prob = GeometricProblem(pdae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(pdae, (t₀,t₁), Δt, ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PDAEProblem
     @test equtype(prob) == PDAE
 
@@ -356,9 +356,9 @@ end
 @testset "$(rpad("HDAE Problem",80))" begin
 
     hdae = HDAE(hdae_eqs...)
-    prob = GeometricProblem(hdae, (t₀,t₁), Δt, hdae_ics)
+    prob = EquationProblem(hdae, (t₀,t₁), Δt, hdae_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: HDAEProblem
     @test equtype(prob) == HDAE
 
@@ -383,9 +383,9 @@ end
 
     ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     hdae = HDAE(hdae_eqs_full...)
-    prob = GeometricProblem(hdae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(hdae, (t₀,t₁), Δt, ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: HDAEProblem
     @test equtype(prob) == HDAE
 
@@ -405,9 +405,9 @@ end
 @testset "$(rpad("IDAE Problem",80))" begin
 
     idae = IDAE(idae_eqs...; v̄=idae_v, f̄=idae_f)
-    prob = GeometricProblem(idae, (t₀,t₁), Δt, idae_ics)
+    prob = EquationProblem(idae, (t₀,t₁), Δt, idae_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: IDAEProblem
     @test equtype(prob) == IDAE
 
@@ -432,9 +432,9 @@ end
 
     ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     idae = IDAE(idae_eqs_full...)
-    prob = GeometricProblem(idae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(idae, (t₀,t₁), Δt, ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: IDAEProblem
     @test equtype(prob) == IDAE
 
@@ -454,9 +454,9 @@ end
 @testset "$(rpad("LDAE Problem",80))" begin
 
     ldae = LDAE(ldae_eqs...)
-    prob = GeometricProblem(ldae, (t₀,t₁), Δt, ldae_ics)
+    prob = EquationProblem(ldae, (t₀,t₁), Δt, ldae_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: LDAEProblem
     @test equtype(prob) == LDAE
 
@@ -481,9 +481,9 @@ end
 
     ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     ldae = LDAE(ldae_eqs_full...)
-    prob = GeometricProblem(ldae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(ldae, (t₀,t₁), Δt, ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: LDAEProblem
     @test equtype(prob) == LDAE
 
@@ -503,9 +503,9 @@ end
 @testset "$(rpad("SDE Problem",80))" begin
 
     sde  = SDE(sde_v, sde_B)
-    prob = GeometricProblem(sde, (t₀,t₁), Δt, sde_ics)
+    prob = EquationProblem(sde, (t₀,t₁), Δt, sde_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: SDEProblem
     @test equtype(prob) == SDE
 
@@ -527,9 +527,9 @@ end
 @testset "$(rpad("PSDE Problem",80))" begin
 
     psde = PSDE(psde_v, psde_f, psde_B, psde_G)
-    prob = GeometricProblem(psde, (t₀,t₁), Δt, psde_ics)
+    prob = EquationProblem(psde, (t₀,t₁), Δt, psde_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PSDEProblem
     @test equtype(prob) == PSDE
 
@@ -552,9 +552,9 @@ end
 @testset "$(rpad("SPSDE Problem",80))" begin
 
     psde = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2)
-    prob = GeometricProblem(psde, (t₀,t₁), Δt, spsde_ics)
+    prob = EquationProblem(psde, (t₀,t₁), Δt, spsde_ics)
 
-    @test typeof(prob) <: GeometricProblem
+    @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: SPSDEProblem
     @test equtype(prob) == SPSDE
 

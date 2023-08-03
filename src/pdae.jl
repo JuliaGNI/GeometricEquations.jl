@@ -311,7 +311,7 @@ $(pdae_constructors)
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed directly,
 with `State` an `AbstractArray{<:Number}`.
 
-In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `PDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = v` and `f̄ = f`.
     
@@ -336,7 +336,7 @@ or
 prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀, p₀, λ₀, γ₀)
 ```
 """
-const PDAEProblem = GeometricProblem{PDAE}
+const PDAEProblem = EquationProblem{PDAE}
 
 function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
@@ -344,7 +344,7 @@ function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple
         periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
                periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State,

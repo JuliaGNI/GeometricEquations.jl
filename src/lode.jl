@@ -275,7 +275,7 @@ where `ϑ`, `f` and `g` are the functions computing the momentum and the vector 
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
 
-In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _lode_default_v̄` and `f̄ = f`.
 
@@ -284,7 +284,7 @@ values `v̄ = _lode_default_v̄` and `f̄ = f`.
 $(lode_functions)
 
 """
-const LODEProblem = GeometricProblem{LODE}
+const LODEProblem = EquationProblem{LODE}
 
 function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple;
         invariants = NullInvariants(),
@@ -292,7 +292,7 @@ function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple
         periodicity = NullPeriodicity(),
         v̄ = _lode_default_v̄, f̄ = f)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple; kwargs...)

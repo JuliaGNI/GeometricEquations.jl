@@ -147,21 +147,21 @@ where `v` and `f` are the function computing the vector fields,
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`.
     
-For possible keyword arguments see the documentation on [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes.
+For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
 ### Function Definitions
 
 $(pode_functions)
 
 """
-const PODEProblem = GeometricProblem{PODE}
+const PODEProblem = EquationProblem{PODE}
 
 function PODEProblem(v, f, tspan, tstep, ics::NamedTuple;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function PODEProblem(v, f, tspan, tstep, q₀::State, p₀::State; kwargs...)

@@ -1,9 +1,9 @@
 
 struct SubstepProblem{DT, TT,
-        superType <: GeometricProblem, 
+        superType <: EquationProblem, 
         functionsType <: NamedTuple,
         solutionsType <: NamedTuple,
-        cType <: Real} <: AbstractProblem
+        cType <: Real} <: GeometricProblem
 
     problem::superType
     functions::functionsType

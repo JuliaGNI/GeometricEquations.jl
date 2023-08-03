@@ -241,7 +241,7 @@ $(iode_constructors)
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`.
 
-In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 an `IODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _iode_default_v̄` and `f̄ = f`.
 
@@ -250,7 +250,7 @@ values `v̄ = _iode_default_v̄` and `f̄ = f`.
 $(iode_functions)
 
 """
-const IODEProblem = GeometricProblem{IODE}
+const IODEProblem = EquationProblem{IODE}
 
 function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple;
         invariants = NullInvariants(),
@@ -258,7 +258,7 @@ function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple;
         periodicity = NullPeriodicity(),
         v̄ = _iode_default_v̄, f̄ = f)
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function IODEProblem(ϑ, f, tspan, tstep, ics::NamedTuple; kwargs...)

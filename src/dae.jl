@@ -260,7 +260,7 @@ $(dae_constructors)
 The initial conditions `q₀` and `λ₀` can also be prescribed directly, with
 `State` an `AbstractArray{<:Number}`.
 
-In addition to the standard keyword arguments for [`GeometricProblem`](@ref GeometricEquations.GeometricProblem) subtypes,
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `DAEProblem` accepts a function `v̄` for the computation of an initial guess for the vector field with default value `v̄ = v`.
 
 ### Function Definitions
@@ -283,13 +283,13 @@ or
 prob = DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀, λ₀, γ₀)
 ```
 """
-const DAEProblem = GeometricProblem{DAE}
+const DAEProblem = EquationProblem{DAE}
 
 function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
                     invariants = NullInvariants(), parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
-    GeometricProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::State, λ₀::State,
