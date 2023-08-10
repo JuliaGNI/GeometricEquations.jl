@@ -22,5 +22,7 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/JuliaGNI/GeometricEquations.jl",
+    repo   = "github.com/JuliaGNI/GeometricEquations.jl",
+    devurl = "latest",
+    devbranch = "main",
 )
