@@ -8,12 +8,16 @@ EquationProblem: stores a GeometricEquation together with initial conditions, pa
 * `TT <: Real`: time step type
 * `AT <: AbstractArray{DT}`: array type of state variable
 * `equType <: GeometricEquation`: equation type
-* `icsType <: paramsType`: initial conditions type
+* `functionsType <: NamedTuple`: types of all function methods
+* `solutionsType <: NamedTuple`: types of all solution methods
+* `icsType <: NamedTuple`: types of all initial conditions 
 * `parType <: OptionalParameters`: parameters type
 
 ### Fields
 
 * `equation`: reference to the parent equation object holding the vector fields, etc.
+* `functions`: methods for all vector fields, etc., that define the problem
+* `solutions`: methods for all solutions, etc., if defined
 * `tspan`: time span for problem `(t₀,t₁)`
 * `tstep`: time step to be used in simulation
 * `ics`: `NamedTuple` containing the initial conditions, must contain one field for each state variable
