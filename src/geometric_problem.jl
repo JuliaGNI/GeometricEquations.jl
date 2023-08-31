@@ -1,3 +1,6 @@
+"""
+Abstract type that describes a generic interface for different problem types.
+"""
 abstract type GeometricProblem <: AbstractProblem end
 
 "Returns the parent equation object of the problem."
