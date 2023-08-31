@@ -63,6 +63,7 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: ODEProblem
+    @test typeof(prob) <: AbstractProblemODE
     @test equtype(prob) == ODE
 
     @test periodicity(prob).q == periodicity(equation(prob))
@@ -160,6 +161,7 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PODEProblem
+    @test typeof(prob) <: AbstractProblemPODE
     @test equtype(prob) == PODE
 
     @test periodicity(prob).q == periodicity(equation(prob))
@@ -185,6 +187,7 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: IODEProblem
+    @test typeof(prob) <: AbstractProblemIODE
     @test equtype(prob) == IODE
 
     @test periodicity(prob).q == periodicity(equation(prob))
@@ -211,6 +214,8 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: HODEProblem
+    @test typeof(prob) <: AbstractProblemPODE
+    @test typeof(prob) <: AbstractProblemHODE
     @test equtype(prob) == HODE
 
     @test periodicity(prob).q == periodicity(equation(prob))
@@ -236,6 +241,8 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: LODEProblem
+    @test typeof(prob) <: AbstractProblemIODE
+    @test typeof(prob) <: AbstractProblemLODE
     @test equtype(prob) == LODE
 
     @test periodicity(prob).q == periodicity(equation(prob))
@@ -262,6 +269,8 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: DAEProblem
+    @test typeof(prob) <: AbstractProblemODE
+    @test typeof(prob) <: AbstractProblemDAE
     @test equtype(prob) == DAE
 
     prob1 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics)
@@ -311,6 +320,8 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PDAEProblem
+    @test typeof(prob) <: AbstractProblemPODE
+    @test typeof(prob) <: AbstractProblemPDAE
     @test equtype(prob) == PDAE
 
     prob1 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics)
@@ -360,6 +371,9 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: HDAEProblem
+    @test typeof(prob) <: AbstractProblemPODE
+    @test typeof(prob) <: AbstractProblemHODE
+    @test typeof(prob) <: AbstractProblemPDAE
     @test equtype(prob) == HDAE
 
     prob1 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics)
@@ -409,6 +423,8 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: IDAEProblem
+    @test typeof(prob) <: AbstractProblemIODE
+    @test typeof(prob) <: AbstractProblemIDAE
     @test equtype(prob) == IDAE
 
     prob1 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics)
@@ -458,6 +474,9 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: LDAEProblem
+    @test typeof(prob) <: AbstractProblemIODE
+    @test typeof(prob) <: AbstractProblemLODE
+    @test typeof(prob) <: AbstractProblemIDAE
     @test equtype(prob) == LDAE
 
     prob1 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics)
@@ -507,6 +526,7 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: SDEProblem
+    @test typeof(prob) <: AbstractProblemSDE
     @test equtype(prob) == SDE
 
     @test periodicity(prob).q == periodicity(equation(prob))
@@ -531,6 +551,7 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PSDEProblem
+    @test typeof(prob) <: AbstractProblemPSDE
     @test equtype(prob) == PSDE
 
     @test periodicity(prob).q == periodicity(equation(prob))
@@ -556,6 +577,7 @@ end
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: SPSDEProblem
+    @test typeof(prob) <: AbstractProblemSPSDE
     @test equtype(prob) == SPSDE
 
     @test periodicity(prob).q == periodicity(equation(prob))
