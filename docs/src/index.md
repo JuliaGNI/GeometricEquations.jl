@@ -28,9 +28,3 @@ Each problem holds an equation, a time span `(t₀,t₁)` to integrate over, a t
 
 GeometricEquations used to be part of [GeometricIntegrators](https://github.com/JuliaGNI/GeometricIntegrators.jl) and is primarily used to define equations and problems for GeometricIntegrators.
 [GeometricProblems](https://github.com/JuliaGNI/GeometricProblems.jl) contains various predefined problems and [EulerLagrange](https://github.com/JuliaGNI/EulerLagrange.jl) can be used to generate code for equations from action principles.
-
-
-## Index
-
-```@index
-```
