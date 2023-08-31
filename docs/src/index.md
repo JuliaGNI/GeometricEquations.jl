@@ -23,7 +23,7 @@ Each equation holds a number of functions determining the vector field, constrai
 In addition to each equation type, *GeometricEquations.jl* implements a corresponding problem type.
 Each problem holds an equation, a time span `(t₀,t₁)` to integrate over, a time step to be used in the simulation, initial conditions and optionally parameters.
 
-* The [`GeometricProblem`](@ref) type holds an equation together with initial conditions and parameters, the time span and the time step of a simulation.
+* The [`EquationProblem`](@ref) type holds an equation together with initial conditions and parameters, the time span and the time step of a simulation.
 * The [`GeometricEnsemble`](@ref) type holds an equation together with several initial conditions and/or parameters, etc.
 
 GeometricEquations used to be part of [GeometricIntegrators](https://github.com/JuliaGNI/GeometricIntegrators.jl) and is primarily used to define equations and problems for GeometricIntegrators.

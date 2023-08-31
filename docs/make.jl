@@ -18,7 +18,6 @@ makedocs(;
         "Equations" => "equations.md",
         "Problems" => "problems.md",
         "Ensembles" => "ensembles.md",
-        "Tests" => "tests.md",
         "Index" => "reference.md",
     ],
 )

@@ -2,10 +2,10 @@
 CurrentModule = GeometricEquations
 ```
 
-# Problems
+# Geometric Equation Problems
 
 ```@docs
-GeometricProblem
+EquationProblem
 ```
 
 
