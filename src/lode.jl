@@ -4,22 +4,18 @@ A Lagrangian system of equations is a special case of an implicit ordinary diffe
 that is an implicit initial value problem of the form
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t) , &
-q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), v(t)) , &
-p(t_{0}) &= p_{0} , \\
-p(t) &= ϑ(t, q(t), v(t))
+\dot{q} (t) &= v(t) , \\
+\dot{p} (t) &= f(t, q(t), v(t)) , \\
+p(t) &= ϑ(t, q(t), v(t)) ,
 \end{aligned}
 ```
 with momentum ``p`` and force field ``f``, given by
 ```math
 \begin{aligned}
 p &= \frac{\partial L}{\partial v} , &
-f &= \frac{\partial L}{\partial q} ,
+f &= \frac{\partial L}{\partial q} .
 \end{aligned}
 ```
-initial conditions ``(q_{0}, p_{0})`` and the solution ``(q,p)`` taking values
-in ``T^{*} Q \simeq \mathbb{R}^{d} \times \mathbb{R}^{d}``.
 This is a special case of an implicit ordinary differential equation, that
 is defined by a Lagrangian, as well as a special case of a differential algebraic
 equation with dynamical variables ``(q,p)`` and algebraic variable ``v``, that is
@@ -29,12 +25,9 @@ Many integrators perform a projection step in order to enforce this constraint. 
 the system is extended to
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t) + \lambda(t) , &
-q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), \lambda(t)) , &
-p(t_{0}) &= p_{0} , \\
-p(t) &= ϑ(t, q(t), v(t)) , &
-\lambda(t_{0}) &= \lambda_{0}
+\dot{q} (t) &= v(t) + \lambda(t) , \\
+\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), \lambda(t)) , \\
+p(t) &= ϑ(t, q(t), v(t)) ,
 \end{aligned}
 ```
 where the vector field defining the projection step is usually given as
@@ -273,6 +266,10 @@ _functions(equ::LODE, params::OptionalParameters) = (
 
 $(lode_equations)
 
+The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
+take values in ``T^{*} Q \\simeq \\mathbb{R}^{d} \\times \\mathbb{R}^{d}``. The algebraic variable ``λ``
+with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}``.
+
 ### Constructors
 
 ```julia
@@ -288,6 +285,7 @@ where `ϑ`, `f` and `g` are the functions computing the momentum and the vector 
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
+For the interfaces of the functions `ϑ`, `f`, `g`, `ω` and `l` see [`LODE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default

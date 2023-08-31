@@ -2,10 +2,9 @@
 const ode_equations = raw"""
 Ordinary differential equations define an initial value problem of the form
 ```math
-\dot{q} (t) = v(t, q(t)) , \qquad q(t_{0}) = q_{0} ,
+\dot{q} (t) = v(t, q(t)) ,
 ```
-with vector field ``v``, initial condition ``q_{0}`` and the solution
-``q`` taking values in ``\mathbb{R}^{d}``.
+with vector field ``v``.
 """
 
 const ode_functions = raw"""
@@ -131,6 +130,8 @@ _functions(equ::ODE, params::OptionalParameters) = (v = _get_v(equ, params),)
 
 $(ode_equations)
 
+The dynamical variables with initial condition ``q_{0}`` take values in ``\\mathbb{R}^{d}``.
+
 ### Constructors
 
 ```julia
@@ -143,6 +144,7 @@ where `v` is the function computing the vector field,
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
 `State` an `AbstractArray{<:Number}`.
+For the interface of the function `v` see [`ODE`](@ref).
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 

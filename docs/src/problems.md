@@ -1,34 +1,60 @@
-# Problems
-
-```@docs
-GeometricEquations.EquationProblem
+```@meta
+CurrentModule = GeometricEquations
 ```
 
-## Ordinary Differential Equations
+# Geometric Equation Problems
 
 ```@docs
-GeometricEquations.ODEProblem
-GeometricEquations.PODEProblem
-GeometricEquations.HODEProblem
-GeometricEquations.IODEProblem
-GeometricEquations.LODEProblem
-GeometricEquations.SODEProblem
+EquationProblem
 ```
 
-## Differential Algebraic Equations
+
+## Ordinary Differential Equation Problems
+
+- [`ODEProblem`](@ref)
+- [`PODEProblem`](@ref)
+- [`HODEProblem`](@ref)
+- [`IODEProblem`](@ref)
+- [`LODEProblem`](@ref)
+- [`SODEProblem`](@ref)
 
 ```@docs
-GeometricEquations.DAEProblem
-GeometricEquations.PDAEProblem
-GeometricEquations.HDAEProblem
-GeometricEquations.IDAEProblem
-GeometricEquations.LDAEProblem
+ODEProblem
+PODEProblem
+HODEProblem
+IODEProblem
+LODEProblem
+SODEProblem
 ```
 
-## Stochastic Differential Equations
+
+## Differential Algebraic Equation Problems
+
+- [`DAEProblem`](@ref)
+- [`PDAEProblem`](@ref)
+- [`HDAEProblem`](@ref)
+- [`IDAEProblem`](@ref)
+- [`LDAEProblem`](@ref)
+- [`SPDAEProblem`](@ref)
 
 ```@docs
-GeometricEquations.SDEProblem
-GeometricEquations.PSDEProblem
-GeometricEquations.SPSDEProblem
+DAEProblem
+PDAEProblem
+HDAEProblem
+IDAEProblem
+LDAEProblem
+SPDAEProblem
+```
+
+
+## Stochastic Differential Equation Problems
+
+- [`SDEProblem`](@ref)
+- [`PSDEProblem`](@ref)
+- [`SPSDEProblem`](@ref)
+
+```@docs
+SDEProblem
+PSDEProblem
+SPSDEProblem
 ```

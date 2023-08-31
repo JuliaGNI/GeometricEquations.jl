@@ -4,19 +4,17 @@ A canonical Hamiltonian system of equations is special case of a
 partitioned ordinary differential equation,
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t, q(t), p(t)) , & q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), p(t)) , & p(t_{0}) &= p_{0} ,
+\dot{q} (t) &= v(t, q(t), p(t)) , \\
+\dot{p} (t) &= f(t, q(t), p(t)) ,
 \end{aligned}
 ```
 with vector fields ``v`` and ``f``, given by
 ```math
 \begin{aligned}
 v &=   \frac{\partial H}{\partial p} , &
-f &= - \frac{\partial H}{\partial q} ,
+f &= - \frac{\partial H}{\partial q} .
 \end{aligned}
 ```
-initial conditions ``(q_{0}, p_{0})`` and the dynamical variables ``(q,p)``
-taking values in ``T^{*} Q \simeq \mathbb{R}^{d} \times \mathbb{R}^{d}``.
 """
 
 const hode_functions = raw"""
@@ -173,6 +171,9 @@ end
 
 $(hode_equations)
 
+The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
+take values in ``T^{*} Q \\simeq \\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
+
 ### Constructors
 
 ```julia
@@ -186,12 +187,9 @@ where `v` and `f` are the function computing the vector fields,
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`.
+For the interfaces of the functions `v`, `f`, `poisson` and `hamiltonian` see [`HODE`](@ref).
 
-### Keyword arguments:
-
-* `invariants = NullInvariants()`
-* `parameters = NullParameters()`
-* `periodicity = NullPeriodicity()`
+For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
 ### Function Definitions
 

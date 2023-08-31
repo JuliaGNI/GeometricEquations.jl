@@ -3,29 +3,25 @@ const pdae_equations = raw"""
 A partitioned differential algebraic equation has the form
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) , & q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) , & p(t_{0}) &= p_{0} , \\
-0 &= \phi (t, q(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} ,
+\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) , \\
+\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) , \\
+0 &= \phi (t, q(t), p(t)) ,
 \end{aligned}
 ```
 with vector fields ``v`` and ``f``, projection ``u`` and ``g``,
-algebraic constraint ``\phi=0``, initial conditions ``(q_{0}, p_{0})``
-and ``\lambda_{0}``, the dynamical variables ``(q,p)`` taking values
-in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and the algebraic variable
-``\lambda`` taking values in ``\mathbb{R}^{m}``.
+algebraic constraint ``\phi=0``.
 
 Some integrators also enforce the secondary constraint ``\psi``, that is the time
 derivative of the algebraic constraint ``\phi``.
 In this case, the system of equations is modified as follows
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) + \bar{u} (t, q(t), p(t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) + \bar{g} (t, q(t), p(t), \gamma(t)) , & p(t_{0}) &= p_{0} , \\
-0 &= \phi (t, q(t), p(t)) , & \lambda(t_{0}) &= \lambda_{0} , \\
-0 &= \psi (t, q(t), p(t), \dot{q} (t), \dot{p} (t)) , & \gamma(t_{0}) &= \gamma_{0} ,
+\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) + \bar{u} (t, q(t), p(t), \mu(t)) , \\
+\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) + \bar{g} (t, q(t), p(t), \mu(t)) , \\
+0 &= \phi (t, q(t), p(t)) , \\
+0 &= \psi (t, q(t), p(t), \dot{q} (t), \dot{p} (t)) .
 \end{aligned}
 ```
-with the second algebraic variable ``\gamma`` also taking values in ``\mathbb{R}^{m}``.
 """
 
 const pdae_constructors = raw"""
@@ -74,13 +70,13 @@ algebraic constraint ``\phi``, evaluated on `t`, `q`, `p` and `λ`.
 Some integrators also enforce the secondary constraint ``\psi`` and require
 the following additional functions
 ```
-function ū(u, t, q, p, γ, params)
+function ū(u, t, q, p, μ, params)
     u[1] = ...
     u[2] = ...
     ...
 end
 
-function ḡ(g, t, q, p, γ, params)
+function ḡ(g, t, q, p, μ, params)
     g[1] = ...
     g[2] = ...
     ...
@@ -315,11 +311,15 @@ end
 
 $(pdae_equations)
 
+The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
+take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``. The algebraic variables ``(λ,μ)``
+with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values in ``\\mathbb{R}^{m} \\times \\mathbb{R}^{m}``.
+
 ### Constructors
 
 ```julia
 PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; kwargs...)
-PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
 PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
 PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
 ```
@@ -328,9 +328,10 @@ $(pdae_constructors)
 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
-`ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
-The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed directly,
+`ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `μ`.
+The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed directly,
 with `State` an `AbstractArray{<:Number}`.
+For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ` see [`PDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `PDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
@@ -348,13 +349,13 @@ tstep = 0.1
 q₀ = [1., 1.]
 p₀ = [1., 0.]
 λ₀ = [0.]
-γ₀ = [0.]
+μ₀ = [0.]
 
 prob = PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀, p₀, λ₀)
 ```
 or
 ```julia
-prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀, p₀, λ₀, γ₀)
+prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀, p₀, λ₀, μ₀)
 ```
 """
 const PDAEProblem = EquationProblem{PDAE}

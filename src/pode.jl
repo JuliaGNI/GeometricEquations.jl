@@ -3,14 +3,11 @@ const pode_equations = raw"""
 A partitioned ordinary differential equation is an initial value problem of the form
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t, q(t), p(t)) , &
-q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), p(t)) , &
-p(t_{0}) &= p_{0} ,
+\dot{q} (t) &= v(t, q(t), p(t)) , \\
+\dot{p} (t) &= f(t, q(t), p(t)) ,
 \end{aligned}
 ```
-with vector fields ``v`` and ``f``, initial conditions ``(q_{0}, p_{0})`` and the solution
-``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
+with vector fields ``v`` and ``f``.
 """
 
 const pode_functions = raw"""
@@ -145,6 +142,9 @@ _functions(equ::PODE, params::OptionalParameters) = (v = _get_v(equ, params), f 
 
 $(pode_equations)
 
+The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
+take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
+
 ### Constructors
 
 ```julia
@@ -157,7 +157,8 @@ where `v` and `f` are the function computing the vector fields,
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`.
-    
+For the interfaces of the functions `v` and `f` see [`PODE`](@ref).
+
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
 ### Function Definitions
