@@ -63,29 +63,29 @@ module GeometricEquations
     include("geometric_equation.jl")
     include("geometric_problem.jl")
 
-    include("ensemble_problem.jl")
-    include("equation_problem.jl")
+    include("problems/ensemble_problem.jl")
+    include("problems/equation_problem.jl")
 
-    include("ode.jl")
-    include("hode.jl")
-    include("iode.jl")
-    include("lode.jl")
-    include("pode.jl")
+    include("odes/ode.jl")
+    include("odes/hode.jl")
+    include("odes/iode.jl")
+    include("odes/lode.jl")
+    include("odes/pode.jl")
 
-    include("dae.jl")
-    include("hdae.jl")
-    include("idae.jl")
-    include("ldae.jl")
-    include("pdae.jl")
+    include("daes/dae.jl")
+    include("daes/hdae.jl")
+    include("daes/idae.jl")
+    include("daes/ldae.jl")
+    include("daes/pdae.jl")
 
-    include("sode.jl")
-    include("spdae.jl")
+    include("odes/sode.jl")
+    include("daes/spdae.jl")
 
-    include("sde.jl")
-    include("psde.jl")
-    include("spsde.jl")
+    include("sdes/sde.jl")
+    include("sdes/psde.jl")
+    include("sdes/spsde.jl")
 
-    include("substep_problem.jl")
+    include("problems/substep_problem.jl")
     
     include("conversion.jl")
 
