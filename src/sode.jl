@@ -121,6 +121,21 @@ hasvectorfield(::SODEVT{<:Tuple}) = true # && all(typeof(V) <: Function for V in
 hasvectorfield(::SODEVT{<:Nothing}, i) = false
 hasvectorfield(equ::SODEVT{<:Tuple}, i) = i ≤ length(equ.v)# && typeof(equ.v[i]) <: Function
 
+function Base.show(io::IO, equation::SODE)
+    print(io, "Split Ordinary Differential Equation (SODE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields")
+    print(io, "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "\n")
+    print(io, " and solutions")
+    print(io, "\n")
+    print(io, "   q = ", equation.q, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::SODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     return true

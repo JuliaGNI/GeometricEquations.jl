@@ -171,6 +171,18 @@ GeometricBase.periodicity(equation::IODE) = equation.periodicity
 
 hasvectorfield(::IODE) = true
 
+function Base.show(io::IO, equation::IODE)
+    print(io, "Implicit Ordinary Differential Equation (IODE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields", "\n")
+    print(io, "   v = ", equation.ϑ, "\n")
+    print(io, "   f = ", equation.f, "\n")
+    print(io, "   g = ", equation.g, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::IODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false

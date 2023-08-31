@@ -115,6 +115,19 @@ GeometricBase.periodicity(equation::HODE) = equation.periodicity
 hasvectorfield(::HODE) = true
 hashamiltonian(::HODE) = true
 
+function Base.show(io::IO, equation::HODE)
+    print(io, "Hamiltonian Ordinary Differential Equation (HODE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields", "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "   f = ", equation.f, "\n")
+    print(io, "\n")
+    print(io, " Hamiltonian: H = ", equation.hamiltonian, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::HODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false

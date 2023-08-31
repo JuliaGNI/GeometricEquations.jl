@@ -94,6 +94,17 @@ GeometricBase.periodicity(equation::PODE) = equation.periodicity
 
 hasvectorfield(::PODE) = true
 
+function Base.show(io::IO, equation::PODE)
+    print(io, "Partitioned Ordinary Differential Equation (PODE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields", "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "   f = ", equation.f, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::PODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false

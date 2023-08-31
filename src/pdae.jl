@@ -210,6 +210,27 @@ GeometricBase.periodicity(equation::PDAE) = equation.periodicity
 
 hasvectorfield(::PDAE) = true
 
+function Base.show(io::IO, equation::PDAE)
+    print(io, "Partitioned Differential Algebraic Equation (PDAE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields")
+    print(io, "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "   u = ", equation.u, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "   f = ", equation.f, "\n")
+    print(io, "   g = ", equation.g, "\n")
+    print(io, "   ḡ = ", equation.ḡ, "\n")
+    print(io, "\n")
+    print(io, " and constraints")
+    print(io, "\n")
+    print(io, "   ϕ = ", equation.ϕ, "\n")
+    print(io, "   ψ = ", equation.ψ, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(equ::PDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
