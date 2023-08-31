@@ -346,6 +346,7 @@ $(hdae_constructors)
 `ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `γ`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `γ₀` can also be prescribed directly,
 with `State` an `AbstractArray{<:Number}`.
+For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ`, and `h` see [`HDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `HDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default

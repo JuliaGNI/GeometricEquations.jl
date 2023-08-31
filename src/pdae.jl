@@ -331,6 +331,7 @@ $(pdae_constructors)
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed directly,
 with `State` an `AbstractArray{<:Number}`.
+For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ` see [`PDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `PDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default

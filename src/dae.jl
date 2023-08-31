@@ -277,6 +277,7 @@ $(dae_constructors)
 `ics` is a `NamedTuple` with entries `q` and `λ`.
 The initial conditions `q₀` and `λ₀` can also be prescribed directly, with
 `State` an `AbstractArray{<:Number}`.
+For the interfaces of the functions `v`, `u`, `ϕ`, `ū`, `ψ` see [`DAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `DAEProblem` accepts a function `v̄` for the computation of an initial guess for the vector field with default value `v̄ = v`.
