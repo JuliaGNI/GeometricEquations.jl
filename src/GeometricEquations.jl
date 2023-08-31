@@ -92,21 +92,21 @@ module GeometricEquations
     
     # Union types for problems that share a common interface
 
-    const AbstractProblemODE = Union{ODEProblem, SubstepProblem, DAEProblem}
-    const AbstractProblemDAE = Union{DAEProblem}
+    const AbstractProblemODE{DT,TT} = Union{ODEProblem{DT,TT}, SubstepProblem{DT,TT}, DAEProblem{DT,TT}}
+    const AbstractProblemDAE{DT,TT} = Union{DAEProblem{DT,TT}}
 
-    const AbstractProblemPODE = Union{PODEProblem, HODEProblem, PDAEProblem, HDAEProblem}
-    const AbstractProblemIODE = Union{IODEProblem, LODEProblem, IDAEProblem, LDAEProblem}
+    const AbstractProblemPODE{DT,TT} = Union{PODEProblem{DT,TT}, HODEProblem{DT,TT}, PDAEProblem{DT,TT}, HDAEProblem{DT,TT}}
+    const AbstractProblemIODE{DT,TT} = Union{IODEProblem{DT,TT}, LODEProblem{DT,TT}, IDAEProblem{DT,TT}, LDAEProblem{DT,TT}}
 
-    const AbstractProblemHODE = Union{HODEProblem, HDAEProblem}
-    const AbstractProblemLODE = Union{LODEProblem, LDAEProblem}
+    const AbstractProblemHODE{DT,TT} = Union{HODEProblem{DT,TT}, HDAEProblem{DT,TT}}
+    const AbstractProblemLODE{DT,TT} = Union{LODEProblem{DT,TT}, LDAEProblem{DT,TT}}
 
-    const AbstractProblemPDAE = Union{PDAEProblem, HDAEProblem}
-    const AbstractProblemIDAE = Union{IDAEProblem, LDAEProblem}
+    const AbstractProblemPDAE{DT,TT} = Union{PDAEProblem{DT,TT}, HDAEProblem{DT,TT}}
+    const AbstractProblemIDAE{DT,TT} = Union{IDAEProblem{DT,TT}, LDAEProblem{DT,TT}}
 
-    const AbstractProblemSDE = Union{SDEProblem}
-    const AbstractProblemPSDE = Union{PSDEProblem}
-    const AbstractProblemSPSDE = Union{SPSDEProblem}
+    const AbstractProblemSDE{DT,TT} = Union{SDEProblem{DT,TT}}
+    const AbstractProblemPSDE{DT,TT} = Union{PSDEProblem{DT,TT}}
+    const AbstractProblemSPSDE{DT,TT} = Union{SPSDEProblem{DT,TT}}
 
 
     include("tests/Tests.jl")
