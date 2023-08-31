@@ -79,8 +79,8 @@ struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <:
         dType = datatype(equ, ics)
         arrayType = arrtype(equ, ics)
 
-        funcs = functions(equ, parameters)
-        sols = solutions(equ, parameters)
+        funcs = functions(equ)
+        sols = solutions(equ)
 
         new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs), typeof(sols), typeof(ics), typeof(parameters)
             }(equ, funcs, sols, _tspan, _tstep, ics, parameters)

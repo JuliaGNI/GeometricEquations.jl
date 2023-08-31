@@ -31,7 +31,7 @@ include("initial_conditions.jl")
     @test equation(prob) == ode
     @test nsamples(prob) == 1
 
-    @test functions(prob) == functions(ode, parameters(prob))
+    @test functions(prob) == functions(ode)
 
     prob1 = EquationProblem(ode, (t₀,t₁), Δt, ics)
     prob2 = EquationProblem(ode, (t₀,t₁), Δt, ics; parameters=NullParameters())
