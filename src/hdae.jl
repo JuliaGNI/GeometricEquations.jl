@@ -212,6 +212,29 @@ GeometricBase.periodicity(equation::HDAE) = equation.periodicity
 hasvectorfield(::HDAE) = true
 hashamiltonian(::HDAE) = true
 
+function Base.show(io::IO, equation::HDAE)
+    print(io, "Hamiltonian Differential Algebraic Equation (HDAE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields")
+    print(io, "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "   f = ", equation.f, "\n")
+    print(io, "   u = ", equation.u, "\n")
+    print(io, "   g = ", equation.g, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "   ḡ = ", equation.ḡ, "\n")
+    print(io, "\n")
+    print(io, " and constraints")
+    print(io, "\n")
+    print(io, "   ϕ = ", equation.ϕ, "\n")
+    print(io, "   ψ = ", equation.ψ, "\n")
+    print(io, "\n")
+    print(io, " Hamiltonian: H = ", equation.hamiltonian, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(equ::HDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false

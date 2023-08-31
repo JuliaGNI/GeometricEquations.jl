@@ -131,6 +131,25 @@ GeometricBase.periodicity(equation::SPSDE) = equation.periodicity
 
 hasvectorfield(::SPSDE) = true
 
+function Base.show(io::IO, equation::SPSDE)
+    print(io, "Stratonovich Split Partitioned Stochastic Differential Equation (PSDE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields")
+    print(io, "\n")
+    print(io, "   v  = ", equation.v, "\n")
+    print(io, "   f1 = ", equation.f1, "\n")
+    print(io, "   f2 = ", equation.f2, "\n")
+    print(io, "\n")
+    print(io, " and diffusion matrices")
+    print(io, "\n")
+    print(io, "   B  = ", equation.B, "\n")
+    print(io, "   G1 = ", equation.G1, "\n")
+    print(io, "   G2 = ", equation.G2, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::SPSDE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false

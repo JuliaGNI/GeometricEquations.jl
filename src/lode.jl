@@ -201,6 +201,20 @@ GeometricBase.periodicity(equation::LODE) = equation.periodicity
 hasvectorfield(::LODE) = true
 haslagrangian(::LODE) = true
 
+function Base.show(io::IO, equation::LODE)
+    print(io, "Lagrangian Ordinary Differential Equation (LODE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields", "\n")
+    print(io, "   ϑ = ", equation.ϑ, "\n")
+    print(io, "   f = ", equation.f, "\n")
+    print(io, "   g = ", equation.g, "\n")
+    print(io, "\n")
+    print(io, " Lagrangian: L = ", equation.lagrangian, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::LODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :v) || haskey(ics, :p) || return false

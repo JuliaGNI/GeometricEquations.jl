@@ -87,6 +87,17 @@ GeometricBase.periodicity(equation::ODE) = equation.periodicity
 
 hasvectorfield(::ODE) = true
 
+function Base.show(io::IO, equation::ODE)
+    print(io, "Ordinary Differential Equation (ODE)", "\n")
+    print(io, "\n")
+    print(io, " with vector field")
+    print(io, "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::ODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     return true

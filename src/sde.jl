@@ -92,6 +92,21 @@ GeometricBase.periodicity(equation::SDE) = equation.periodicity
 
 hasvectorfield(::SDE) = true
 
+function Base.show(io::IO, equation::SDE)
+    print(io, "Stratonovich Stochastic Differential Equation (SDE)", "\n")
+    print(io, "\n")
+    print(io, " with vector field")
+    print(io, "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "\n")
+    print(io, " and diffusion matrix")
+    print(io, "\n")
+    print(io, "   B = ", equation.B, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(::SDE, ics::NamedTuple)
     haskey(ics, :q) || return false
     return true

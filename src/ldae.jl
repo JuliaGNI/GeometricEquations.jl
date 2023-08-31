@@ -241,6 +241,29 @@ GeometricBase.periodicity(equation::LDAE) = equation.periodicity
 hasvectorfield(::LDAE) = true
 haslagrangian(::LDAE) = true
 
+function Base.show(io::IO, equation::LDAE)
+    print(io, "Lagrangian Differential Algebraic Equation (LDAE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields")
+    print(io, "\n")
+    print(io, "   ϑ = ", equation.ϑ, "\n")
+    print(io, "   f = ", equation.f, "\n")
+    print(io, "   u = ", equation.u, "\n")
+    print(io, "   g = ", equation.g, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "   ḡ = ", equation.ḡ, "\n")
+    print(io, "\n")
+    print(io, " and constraints")
+    print(io, "\n")
+    print(io, "   ϕ = ", equation.ϕ, "\n")
+    print(io, "   ψ = ", equation.ψ, "\n")
+    print(io, "\n")
+    print(io, " Lagrangian: L = ", equation.lagrangian, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(equ::LDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :v) || haskey(ics, :p) || return false

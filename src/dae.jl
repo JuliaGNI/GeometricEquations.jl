@@ -172,6 +172,24 @@ GeometricBase.periodicity(equation::DAE) = equation.periodicity
 
 hasvectorfield(::DAE) = true
 
+function Base.show(io::IO, equation::DAE)
+    print(io, "Differential Algebraic Equation (DAE)", "\n")
+    print(io, "\n")
+    print(io, " with vector fields")
+    print(io, "\n")
+    print(io, "   v = ", equation.v, "\n")
+    print(io, "   u = ", equation.u, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "\n")
+    print(io, " and constraints")
+    print(io, "\n")
+    print(io, "   ϕ = ", equation.ϕ, "\n")
+    print(io, "   ψ = ", equation.ψ, "\n")
+    print(io, "\n")
+    print(io, " Invariants: \n")
+    print(io, "   ", invariants(equation))
+end
+
 function check_initial_conditions(equ::DAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :λ) || return false
