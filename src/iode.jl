@@ -3,15 +3,12 @@ const iode_equations = raw"""
 An implicit ordinary differential equations is an initial value problem of the form
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t) , &
-q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), v(t)) , &
-p(t_{0}) &= p_{0} , \\
-p(t) &= ϑ(t, q(t), v(t))
+\dot{q} (t) &= v(t) , \\
+\dot{p} (t) &= f(t, q(t), v(t)) , \\
+p(t) &= ϑ(t, q(t), v(t)) ,
 \end{aligned}
 ```
-with force field ``f``, the momentum defined by ``p``, initial conditions ``(q_{0}, p_{0})``
-and the solution ``(q,p)`` taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}``.
+with force field ``f``, the momentum defined by ``p``.
 This is a special case of a differential algebraic equation with dynamical
 variables ``(q,p)`` and algebraic variable ``v``, that is determined such that the constraint
 ``p(t) = ϑ(t, q(t), v(t))`` is satisfied.
@@ -20,12 +17,9 @@ Most integrators perform a projection step in order to enforce this constraint. 
 the system is extended to
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t) + λ(t) , &
-q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), λ(t)) , &
-p(t_{0}) &= p_{0} , \\
-p(t) &= ϑ(t, q(t), v(t)) , &
-λ(t_{0}) &= λ_{0}
+\dot{q} (t) &= v(t) + λ(t) , \\
+\dot{p} (t) &= f(t, q(t), v(t)) + g(t, q(t), v(t), λ(t)) , \\
+p(t) &= ϑ(t, q(t), v(t)) ,
 \end{aligned}
 ```
 where the vector field defining the projection step is usually given as
@@ -236,6 +230,10 @@ end
  
 $(iode_equations)
 
+The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
+take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``. The algebraic variable ``λ``
+with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}``.
+
 ### Constructors
 
 ```julia
@@ -249,9 +247,10 @@ $(iode_constructors)
 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
-`ics` is a `NamedTuple` with entries `q` and `p`.
+`ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `State` an `AbstractArray{<:Number}`.
+For the interfaces of the functions `ϑ`, `f` and `g` see [`IODE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 an `IODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
