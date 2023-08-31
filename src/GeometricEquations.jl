@@ -26,9 +26,9 @@ module GeometricEquations
     export GeometricProblem, EquationProblem, SubstepProblem
     export EnsembleProblem
 
-    export AbstractProblemODE, AbstractProblemPODE,
-           AbstractProblemDAE, AbstractProblemPDAE,
-           AbstractProblemSDE, AbstractProblemPSDE
+    export AbstractProblemODE, AbstractProblemPODE, AbstractProblemIODE, AbstractProblemHODE, AbstractProblemLODE,
+           AbstractProblemDAE, AbstractProblemPDAE, AbstractProblemIDAE,
+           AbstractProblemSDE, AbstractProblemPSDE, AbstractProblemSPSDE
 
     export ODE, IODE, PODE, HODE, LODE, SODE
     export DAE, IDAE, PDAE, HDAE, LDAE, SPDAE
@@ -90,14 +90,23 @@ module GeometricEquations
     include("conversion.jl")
 
     
-    # Union types for problems of similar kind
+    # Union types for problems that share a common interface
 
-    const AbstractProblemODE = Union{ODEProblem, SODEProblem, SubstepProblem}
+    const AbstractProblemODE = Union{ODEProblem, SubstepProblem, DAEProblem}
     const AbstractProblemDAE = Union{DAEProblem}
+
+    const AbstractProblemPODE = Union{PODEProblem, HODEProblem, PDAEProblem, HDAEProblem}
+    const AbstractProblemIODE = Union{IODEProblem, LODEProblem, IDAEProblem, LDAEProblem}
+
+    const AbstractProblemHODE = Union{HODEProblem, HDAEProblem}
+    const AbstractProblemLODE = Union{LODEProblem, LDAEProblem}
+
+    const AbstractProblemPDAE = Union{PDAEProblem, HDAEProblem}
+    const AbstractProblemIDAE = Union{IDAEProblem, LDAEProblem}
+
     const AbstractProblemSDE = Union{SDEProblem}
-    const AbstractProblemPODE = Union{PODEProblem, HODEProblem, IODEProblem, LODEProblem}
-    const AbstractProblemPDAE = Union{PDAEProblem, HDAEProblem, IDAEProblem, LDAEProblem}
-    const AbstractProblemPSDE = Union{PSDEProblem, SPSDEProblem}
+    const AbstractProblemPSDE = Union{PSDEProblem}
+    const AbstractProblemSPSDE = Union{SPSDEProblem}
 
 
     include("tests/Tests.jl")
