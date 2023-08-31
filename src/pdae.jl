@@ -392,14 +392,14 @@ end
 @inline GeometricBase.nconstraints(prob::PDAEProblem) = length(initial_conditions(prob).λ)
 
 
-const PDAEEnsemble  = GeometricEnsemble{PDAE}
+const PDAEEnsemble  = EnsembleProblem{PDAE}
 
 function PDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function PDAEEnsemble(v, f, u, g, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)

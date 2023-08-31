@@ -24,7 +24,7 @@ module GeometricEquations
            AbstractEquationSDE, AbstractEquationPSDE
 
     export GeometricProblem, EquationProblem, SubstepProblem
-    export GeometricEnsemble
+    export EnsembleProblem
 
     export AbstractProblemODE, AbstractProblemPODE,
            AbstractProblemDAE, AbstractProblemPDAE,
@@ -62,8 +62,8 @@ module GeometricEquations
 
     include("geometric_equation.jl")
     include("geometric_problem.jl")
-    include("geometric_ensemble.jl")
 
+    include("ensemble_problem.jl")
     include("equation_problem.jl")
 
     include("ode.jl")

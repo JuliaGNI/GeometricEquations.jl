@@ -216,12 +216,12 @@ function GeometricBase.periodicity(prob::HODEProblem)
 end
 
 
-const HODEEnsemble  = GeometricEnsemble{HODE}
+const HODEEnsemble  = EnsembleProblem{HODE}
 
 function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end

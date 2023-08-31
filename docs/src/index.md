@@ -24,7 +24,7 @@ In addition to each equation type, *GeometricEquations.jl* implements a correspo
 Each problem holds an equation, a time span `(t₀,t₁)` to integrate over, a time step to be used in the simulation, initial conditions and optionally parameters.
 
 * The [`EquationProblem`](@ref) type holds an equation together with initial conditions and parameters, the time span and the time step of a simulation.
-* The [`GeometricEnsemble`](@ref) type holds an equation together with several initial conditions and/or parameters, etc.
+* The [`EnsembleProblem`](@ref) type holds an equation together with several initial conditions and/or parameters, etc.
 
 GeometricEquations used to be part of [GeometricIntegrators](https://github.com/JuliaGNI/GeometricIntegrators.jl) and is primarily used to define equations and problems for GeometricIntegrators.
 [GeometricProblems](https://github.com/JuliaGNI/GeometricProblems.jl) contains various predefined problems and [EulerLagrange](https://github.com/JuliaGNI/EulerLagrange.jl) can be used to generate code for equations from action principles.

@@ -180,4 +180,4 @@ function GeometricBase.periodicity(prob::SPDAEProblem)
 end
 
 
-const SPDAEEnsemble = GeometricEnsemble{SPDAE}
+const SPDAEEnsemble = EnsembleProblem{SPDAE}

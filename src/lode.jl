@@ -330,7 +330,7 @@ end
 @inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
 
 
-const LODEEnsemble  = GeometricEnsemble{LODE}
+const LODEEnsemble  = EnsembleProblem{LODE}
 
 function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
@@ -338,7 +338,7 @@ function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::AbstractVector{<:Named
         periodicity = NullPeriodicity(),
         v̄ = _lode_default_v̄, f̄ = f)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function LODEEnsemble(ϑ, f, ω, l, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)

@@ -389,14 +389,14 @@ function GeometricBase.periodicity(prob::IDAEProblem)
 end
 
 
-const IDAEEnsemble  = GeometricEnsemble{IDAE}
+const IDAEEnsemble  = EnsembleProblem{IDAE}
 
 function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = _idae_default_v̄, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function IDAEEnsemble(ϑ, f, u, g, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)

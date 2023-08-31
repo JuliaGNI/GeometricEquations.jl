@@ -9,22 +9,22 @@ include("initial_conditions.jl")
 
     ics = [(q=x₀,), (q=rand(length(x₀)),)]
     
-    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics)
-    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics, nothing)
-    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics, NullParameters())
-    @test_nowarn GeometricEnsemble(ODE(ode_v), (t₀,t₁), Δt, ics; parameters=NullParameters())
+    @test_nowarn EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics)
+    @test_nowarn EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics, nothing)
+    @test_nowarn EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics, NullParameters())
+    @test_nowarn EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics; parameters=NullParameters())
 
 
     ode = ODE(ode_v, parameters = ode_param_types)
     ics = [(q=x₀,), (q=rand(length(x₀)),)]
     params = ode_params
     
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics; parameters=params)
+    @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics, params)
+    @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics; parameters=params)
 
-    ens = GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
+    ens = EnsembleProblem(ode, (t₀,t₁), Δt, ics, params)
 
-    @test typeof(ens) <: GeometricEnsemble
+    @test typeof(ens) <: EnsembleProblem
     @test typeof(ens) <: ODEEnsemble
     @test typeof(ens).parameters[1] == ODE
     @test typeof(ens).parameters[5] == typeof(ode)
@@ -60,10 +60,10 @@ include("initial_conditions.jl")
     ics = (q=x₀,)
     params = [(α=1,), (α=2,)]
 
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics; parameters=params)
+    @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics, params)
+    @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics; parameters=params)
 
-    ens = GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
+    ens = EnsembleProblem(ode, (t₀,t₁), Δt, ics, params)
 
     @test equation(ens) == ode
     @test functions(ens) == functions(ode)
@@ -87,10 +87,10 @@ include("initial_conditions.jl")
     ics = [(q=x₀,), (q=rand(length(x₀)),)]
     params = [(α=1,), (α=2,)]
 
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
-    @test_nowarn GeometricEnsemble(ode, (t₀,t₁), Δt, ics; parameters=params)
+    @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics, params)
+    @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics; parameters=params)
 
-    ens = GeometricEnsemble(ode, (t₀,t₁), Δt, ics, params)
+    ens = EnsembleProblem(ode, (t₀,t₁), Δt, ics, params)
 
     @test equation(ens) == ode
     @test functions(ens) == functions(ode)

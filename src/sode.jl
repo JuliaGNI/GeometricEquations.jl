@@ -234,14 +234,14 @@ GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))
 GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)
 
 
-const SODEEnsemble  = GeometricEnsemble{SODE}
+const SODEEnsemble  = EnsembleProblem{SODE}
 
 function SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function SODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)

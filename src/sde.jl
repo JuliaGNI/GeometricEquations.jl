@@ -178,4 +178,4 @@ end
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)),)
 
 
-const SDEEnsemble   = GeometricEnsemble{SDE}
+const SDEEnsemble   = EnsembleProblem{SDE}

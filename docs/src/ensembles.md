@@ -5,6 +5,6 @@ CurrentModule = GeometricEquations
 # Ensembles
 
 ```@docs
-GeometricEnsemble
+EnsembleProblem
 ```
 

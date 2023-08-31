@@ -171,17 +171,17 @@ end
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
 
 
-const ODEEnsemble = GeometricEnsemble{ODE}
+const ODEEnsemble = EnsembleProblem{ODE}
 
 function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple};
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = ODE(v, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
 # function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:State}; kwargs...)
 #     _ics = [(q = q₀,) for q₀ in ics]
-#     GeometricEnsemble(v, tspan, tstep, _ics; kwargs...)
+#     EnsembleProblem(v, tspan, tstep, _ics; kwargs...)
 # end

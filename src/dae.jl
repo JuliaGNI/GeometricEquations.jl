@@ -334,14 +334,14 @@ end
 @inline GeometricBase.nconstraints(prob::DAEProblem) = length(initial_conditions(prob).λ)
 
 
-const DAEEnsemble   = GeometricEnsemble{DAE}
+const DAEEnsemble   = EnsembleProblem{DAE}
 
 function DAEEnsemble(v, u, ϕ, ū, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = DAE(v, u, ϕ, ū, ψ, v̄)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function DAEEnsemble(v, u, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)

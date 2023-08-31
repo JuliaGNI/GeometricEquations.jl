@@ -211,4 +211,4 @@ function GeometricBase.periodicity(prob::PSDEProblem)
 end
 
 
-const PSDEEnsemble  = GeometricEnsemble{PSDE}
+const PSDEEnsemble  = EnsembleProblem{PSDE}

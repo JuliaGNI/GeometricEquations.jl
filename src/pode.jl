@@ -186,12 +186,12 @@ function GeometricBase.periodicity(prob::PODEProblem)
 end
 
 
-const PODEEnsemble  = GeometricEnsemble{PODE}
+const PODEEnsemble  = EnsembleProblem{PODE}
 
 function PODEEnsemble(v, f, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end

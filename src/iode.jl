@@ -294,7 +294,7 @@ end
 @inline GeometricBase.nconstraints(prob::IODEProblem) = ndims(prob)
 
 
-const IODEEnsemble  = GeometricEnsemble{IODE}
+const IODEEnsemble  = EnsembleProblem{IODE}
 
 function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
@@ -302,7 +302,7 @@ function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         periodicity = NullPeriodicity(),
         v̄ = _iode_default_v̄, f̄ = f)
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    GeometricEnsemble(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
 function IODEEnsemble(ϑ, f, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
