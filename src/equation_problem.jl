@@ -127,6 +127,20 @@ end
 
 initial_conditions(prob::EquationProblem) = merge((t = tbegin(prob),), prob.ics)
 
+function Base.show(io::IO, prob::EquationProblem)
+    print(io, "\nGeometric Equation Problem for \n")
+    print(io, "\n")
+    print(io, equation(prob))
+    print(io, "\n\n")
+    print(io, " Timespan: $(tspan(prob)) \n")
+    print(io, " Timestep: $(tstep(prob)) \n")
+    print(io, "\n")
+    print(io, " Initial conditions: \n")
+    print(io, initial_conditions(prob))
+    print(io, "\n\n Parameters:\n")
+    print(io, parameters(prob))
+end
+
 function Base.similar(prob::EquationProblem, tspan, tstep = tstep(prob), ics = prob.ics,
                       parameters = parameters(prob))
     EquationProblem(equation(prob), tspan, tstep, ics, parameters)
