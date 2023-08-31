@@ -4,18 +4,14 @@ A Hamiltonian differential algebraic is an initial value problem, that is
 a canonical Hamiltonian system of equations subject to Dirac constraints,
 ```math
 \begin{aligned}
-\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) + \bar{u} (t, q(t), p(t), \gamma(t)) , & q(t_{0}) &= q_{0} , \\
-\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) + \bar{g} (t, q(t), p(t), \gamma(t)) , & p(t_{0}) &= p_{0} , \\
+\dot{q} (t) &= v(t, q(t), p(t)) + u(t, q(t), p(t), \lambda(t)) + \bar{u} (t, q(t), p(t), \mu(t)) , \\
+\dot{p} (t) &= f(t, q(t), p(t)) + g(t, q(t), p(t), \lambda(t)) + \bar{g} (t, q(t), p(t), \mu(t)) , \\
 0 &= \phi (t, q(t), p(t)) , \\
 0 &= \psi (t, q(t), p(t), \dot{q}(t), \dot{p}(t)) ,
 \end{aligned}
 ```
 with vector fields ``v``, ``u``, ``\bar{u}`` and ``f``, ``g``, ``\bar{g}``,
-primary constraint ``\phi(q,p)=0`` and secondary constraint ``\psi(q,p,\dot{q},\dot{p})=0``,
-initial conditions ``(q_{0}, p_{0})``, the dynamical variables ``(q,p)``
-taking values in ``\mathbb{R}^{d} \times \mathbb{R}^{d}`` and
-the algebraic variables ``(\lambda, \gamma)`` taking values in
-``\mathbb{R}^{m} \times \mathbb{R}^{m}``.
+primary constraint ``\phi(q,p)=0`` and secondary constraint ``\psi(q,p,\dot{q},\dot{p})=0``.
 """
 
 const hdae_constructors = raw"""
@@ -61,7 +57,7 @@ function h(t, q, p, params)
     ...
 end
 ```
-where `t` is the current time, `q`, `p`, `λ` and `γ` are the current solution vectors,
+where `t` is the current time, `q`, `p`, `λ` and `μ` are the current solution vectors,
 `v`, `f`, `u` and `g` are the vectors which hold the result of evaluating the
 vector fields ``v`` and ``f``, the projections on the primary constraint ``u`` and ``g``, 
 `ϕ` holds the algebraic constraint ``\phi``, and `h` returns the Hamiltonian of the system,
@@ -70,13 +66,13 @@ all evaluated on `t`, `q`, `p` and `λ`.
 Some integrators also enforce the secondary constraint ``\psi`` and require
 the following additional functions
 ```
-function ū(u, t, q, p, γ, params)
+function ū(u, t, q, p, μ, params)
     u[1] = ...
     u[2] = ...
     ...
 end
 
-function ḡ(g, t, q, p, γ, params)
+function ḡ(g, t, q, p, μ, params)
     g[1] = ...
     g[2] = ...
     ...
@@ -330,11 +326,15 @@ end
 
 $(hdae_equations)
 
+The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
+take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``. The algebraic variables ``(λ,μ)``
+with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values in ``\\mathbb{R}^{m} \\times \\mathbb{R}^{m}``.
+
 ### Constructors
 
 ```julia
 HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, ics::NamedTuple; kwargs...)
-HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
+HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
 HDAEProblem(v, f, u, g, ϕ, h, tspan, tstep, ics::NamedTuple; kwargs...)
 HDAEProblem(v, f, u, g, ϕ, h, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
 ```
@@ -343,8 +343,8 @@ $(hdae_constructors)
 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
-`ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `γ`.
-The initial conditions `q₀`, `p₀`, `λ₀` and `γ₀` can also be prescribed directly,
+`ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `μ`.
+The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed directly,
 with `State` an `AbstractArray{<:Number}`.
 For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ`, and `h` see [`HDAE`](@ref).
 
@@ -364,13 +364,13 @@ tstep = 0.1
 q₀ = [1., 1.]
 p₀ = [1., 0.]
 λ₀ = [0.]
-γ₀ = [0.]
+μ₀ = [0.]
 
 prob = HDAEProblem(v, f, u, g, ϕ, h, tspan, tstep, q₀, p₀, λ₀)
 ```
 or
 ```julia
-prob = HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀, p₀, λ₀, γ₀)
+prob = HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀, p₀, λ₀, μ₀)
 ```
 """
 const HDAEProblem = EquationProblem{HDAE}
