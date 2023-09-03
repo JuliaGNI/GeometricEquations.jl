@@ -319,9 +319,9 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 
 ```julia
 PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; kwargs...)
-PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
 PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
-PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable; kwargs...)
 ```
 
 $(pdae_constructors)
@@ -330,7 +330,7 @@ $(pdae_constructors)
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `μ`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed directly,
-with `State` an `AbstractArray{<:Number}`.
+with `StateVariable` an `AbstractArray{<:Number}`.
 For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ` see [`PDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
@@ -369,8 +369,8 @@ function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::State, p₀::State,
-                     λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::StateVariable, p₀::StateVariable,
+                     λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
 end
@@ -379,7 +379,7 @@ function PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
     PDAEProblem(v, f, u, g, ϕ, nothing, nothing, nothing, tspan, tstep, ics; kwargs...)
 end
 
-function PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::State, p₀::State, λ₀::State;
+function PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable;
                      kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics; kwargs...)

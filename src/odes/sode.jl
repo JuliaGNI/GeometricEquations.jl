@@ -186,9 +186,9 @@ $(sode_equations)
 
 ```julia
 SODEProblem(v, q, tspan, tstep, ics::NamedTuple; kwargs...)
-SODEProblem(v, q, tspan, tstep, q₀::State; kwargs...)
+SODEProblem(v, q, tspan, tstep, q₀::StateVariable; kwargs...)
 SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
-SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+SODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
 ```
 
 where `v` is a tuple of functions computing the vector fields for each substep, 
@@ -197,7 +197,7 @@ where `v` is a tuple of functions computing the vector fields for each substep,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
-`State` an `AbstractArray{<:Number}`.
+`StateVariable` an `AbstractArray{<:Number}`.
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
     
@@ -216,7 +216,7 @@ function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, ics::Name
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::State; kwargs...)
+function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::StateVariable; kwargs...)
     ics = (q = q₀,)
     SODEProblem(v, q, tspan, tstep, ics; kwargs...)
 end
@@ -225,7 +225,7 @@ function SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
     SODEProblem(v, nothing, tspan, tstep, ics; kwargs...)
 end
 
-function SODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+function SODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
     ics = (q = q₀,)
     SODEProblem(v, tspan, tstep, ics; kwargs...)
 end

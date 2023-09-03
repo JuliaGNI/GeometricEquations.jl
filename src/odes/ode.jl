@@ -136,14 +136,14 @@ The dynamical variables with initial condition ``q_{0}`` take values in ``\\math
 
 ```julia
 ODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
-ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+ODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
 ```
 where `v` is the function computing the vector field, 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
-`State` an `AbstractArray{<:Number}`.
+`StateVariable` an `AbstractArray{<:Number}`.
 For the interface of the function `v` see [`ODE`](@ref).
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
@@ -163,7 +163,7 @@ function ODEProblem(v, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+function ODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
     ics = (q = q₀,)
     ODEProblem(v, tspan, tstep, ics; kwargs...)
 end

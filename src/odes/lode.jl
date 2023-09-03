@@ -274,9 +274,9 @@ with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}`
 
 ```julia
 LODEProblem(ϑ, f, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
 where `ϑ`, `f` and `g` are the functions computing the momentum and the vector fields, respectively,
 `ω` determines the symplectic matrix, and `l` returns the Lagrangian,
@@ -284,7 +284,7 @@ where `ϑ`, `f` and `g` are the functions computing the momentum and the vector 
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed
-directly, with `State` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
+directly, with `StateVariable` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
 For the interfaces of the functions `ϑ`, `f`, `g`, `ω` and `l` see [`LODE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
@@ -311,13 +311,13 @@ function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple; k
     LODEProblem(ϑ, f, _lode_default_g, ω, l, tspan, tstep, ics; kwargs...)
 end
 
-function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, q₀::State, p₀::State,
-                     λ₀::State = zero(q₀); kwargs...)
+function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, q₀::StateVariable, p₀::StateVariable,
+                     λ₀::StateVariable = zero(q₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
 end
 
-function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, q₀::State, p₀::State, λ₀::State = zero(q₀);
+function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀);
     kwargs...)
     LODEProblem(ϑ, f, _lode_default_g, ω, l, tspan, tstep, q₀, p₀, λ₀; kwargs...)
 end

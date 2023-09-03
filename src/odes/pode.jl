@@ -149,14 +149,14 @@ take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
 
 ```julia
 PODEProblem(v, f, tspan, tstep, ics; kwargs...)
-PODEProblem(v, f, tspan, tstep, q₀::State, p₀::State; kwargs...)
+PODEProblem(v, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
 ```
 where `v` and `f` are the function computing the vector fields, 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed
-directly, with `State` an `AbstractArray{<:Number}`.
+directly, with `StateVariable` an `AbstractArray{<:Number}`.
 For the interfaces of the functions `v` and `f` see [`PODE`](@ref).
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
@@ -176,7 +176,7 @@ function PODEProblem(v, f, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function PODEProblem(v, f, tspan, tstep, q₀::State, p₀::State; kwargs...)
+function PODEProblem(v, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
     ics = (q = q₀, p = p₀)
     PODEProblem(v, f, tspan, tstep, ics; kwargs...)
 end

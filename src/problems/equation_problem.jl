@@ -32,7 +32,7 @@ const ODEProblem = EquationProblem{ODE}
 and provide convenience constructors to construct an equation and the corresponding problem in one step, e.g.,
 ```julia
 ODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
-ODEProblem(v, tspan, tstep, q₀::State; kwargs...)
+ODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
 ```
 
 All problem subtypes take the following keyword arguments:

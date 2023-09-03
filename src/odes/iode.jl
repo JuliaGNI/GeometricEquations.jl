@@ -238,9 +238,9 @@ with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}`
 
 ```julia
 IODEProblem(ϑ, f, tspan, tstep, ics; kwargs...)
-IODEProblem(ϑ, f, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+IODEProblem(ϑ, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
-IODEProblem(ϑ, f, g, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
 
 $(iode_constructors)
@@ -249,7 +249,7 @@ $(iode_constructors)
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀` and `p₀` can also be prescribed
-directly, with `State` an `AbstractArray{<:Number}`.
+directly, with `StateVariable` an `AbstractArray{<:Number}`.
 For the interfaces of the functions `ϑ`, `f` and `g` see [`IODE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
@@ -276,13 +276,13 @@ function IODEProblem(ϑ, f, tspan, tstep, ics::NamedTuple; kwargs...)
     IODEProblem(ϑ, f, _iode_default_g, tspan, tstep, ics; kwargs...)
 end
 
-function IODEProblem(ϑ, f, g, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀);
+function IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀);
                      kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
 end
 
-function IODEProblem(ϑ, f, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀);
+function IODEProblem(ϑ, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀);
     kwargs...)
     IODEProblem(ϑ, f, _iode_default_g, tspan, tstep, q₀, p₀, λ₀; kwargs...)
 end

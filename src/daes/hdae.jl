@@ -334,9 +334,9 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 
 ```julia
 HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, ics::NamedTuple; kwargs...)
-HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀::State, p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
 HDAEProblem(v, f, u, g, ϕ, h, tspan, tstep, ics::NamedTuple; kwargs...)
-HDAEProblem(v, f, u, g, ϕ, h, tspan, tstep, q₀::State, p₀::State, λ₀::State; kwargs...)
+HDAEProblem(v, f, u, g, ϕ, h, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable; kwargs...)
 ```
 
 $(hdae_constructors)
@@ -345,7 +345,7 @@ $(hdae_constructors)
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `μ`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed directly,
-with `State` an `AbstractArray{<:Number}`.
+with `StateVariable` an `AbstractArray{<:Number}`.
 For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ`, and `h` see [`HDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
@@ -383,8 +383,8 @@ function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ic
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, q₀::State,
-                     p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, q₀::StateVariable,
+                     p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics; kwargs...)
 end
@@ -394,8 +394,8 @@ function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics::NamedTuple;
                 kwargs...)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, q₀::State, p₀::State,
-                     λ₀::State; kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, q₀::StateVariable, p₀::StateVariable,
+                     λ₀::StateVariable; kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics; kwargs...)
 end

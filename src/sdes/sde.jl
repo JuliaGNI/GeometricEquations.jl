@@ -146,14 +146,14 @@ $(sde_equations)
 
 ```julia
 SDEProblem(v, B, tspan, tstep, ics::NamedTuple; kwargs...)
-SDEProblem(v, B, tspan, tstep, q₀::State; kwargs...)
+SDEProblem(v, B, tspan, tstep, q₀::StateVariable; kwargs...)
 ```
 where `v` is the function computing the vector field and `B` computes the diffusion matrix
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
-`State` an `AbstractArray{<:Number}`.
+`StateVariable` an `AbstractArray{<:Number}`.
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
@@ -170,7 +170,7 @@ function SDEProblem(v, B, tspan, tstep, ics::NamedTuple; invariants = NullInvari
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SDEProblem(v, B, tspan, tstep, q₀::State; kwargs...)
+function SDEProblem(v, B, tspan, tstep, q₀::StateVariable; kwargs...)
     ics = (q = q₀,)
     SDEProblem(v, B, tspan, tstep, ics; kwargs...)
 end

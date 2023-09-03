@@ -16,7 +16,7 @@ module GeometricEquations
            OptionalInvariants, OptionalParameters,
            OptionalPeriodicity
     
-    export State, StateVector
+    export StateVariable, StateVector
     
     export GeometricEquation
     export AbstractEquationODE, AbstractEquationPODE,

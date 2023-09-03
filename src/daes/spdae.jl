@@ -43,8 +43,8 @@ the algebraic variables ``(\lambda, \gamma)`` taking values in
 ```julia
 SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector; kwargs...)
 SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector; kwargs...)
-SPDAE(v, f, ϕ, ψ, t₀, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...)
-SPDAE(v, f, ϕ, ψ, q₀::State, p₀::State, λ₀::State=zero(q₀); kwargs...)
+SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
+SPDAE(v, f, ϕ, ψ, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
 
 ### Keyword arguments:
@@ -108,10 +108,10 @@ end
 
 _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
 
-SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
-SPDAE(v, f, ϕ, ψ, t₀, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
-SPDAE(v, f, ϕ, ψ, q₀::State, p₀::State, λ₀::State, μ₀::State=zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
+SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector = zero(λ₀); kwargs...) = _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
+SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector = zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
+SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
+SPDAE(v, f, ϕ, ψ, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
 
 Base.hash(dae::SPDAE, h::UInt) = hash(dae.d, hash(dae.m,
                     hash(dae.v, hash(dae.f, hash(dae.ϕ, hash(dae.ψ,
@@ -134,7 +134,7 @@ Base.:(==)(dae1::SPDAE, dae2::SPDAE) = (
                              && dae1.parameters  == dae2.parameters
                              && dae1.periodicity == dae2.periodicity)
 
-function Base.similar(equ::SPDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector=initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
+function Base.similar(equ::SPDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector = initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
     @assert all([length(q) == equ.d for q in q₀])
     @assert all([length(p) == equ.d for p in p₀])
     @assert all([length(λ) == equ.m for λ in λ₀])
@@ -144,7 +144,7 @@ function Base.similar(equ::SPDAE, t₀::Real, q₀::StateVector, p₀::StateVect
 end
 
 Base.similar(equ::SPDAE, q₀, p₀, λ₀=initial_multiplier(q₀, equ.λ₀), μ₀=initial_multiplier(q₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-Base.similar(equ::SPDAE, t₀::Real, q₀::State, p₀::State, λ₀::State=initial_multiplier(q₀, equ.λ₀), μ₀::State=initial_multiplier(λ₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
+Base.similar(equ::SPDAE, t₀::Real, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = initial_multiplier(q₀, equ.λ₀), μ₀::StateVariable = initial_multiplier(λ₀, equ.μ₀); kwargs...) = similar(equ, equ.t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
 
 @inline Base.axes(equation::SPDAE) = axes(equation.q₀[begin])
 @inline Base.ndims(equation::SPDAE) = equation.d

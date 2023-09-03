@@ -266,9 +266,9 @@ values in ``\\mathbb{R}^{m} \\times \\mathbb{R}^{m}``.
 
 ```julia
 DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; kwargs...)
-DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
 DAEProblem(v, u, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
-DAEProblem(v, u, ϕ, tspan, tstep, q₀::State, λ₀::State; kwargs...)
+DAEProblem(v, u, ϕ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable; kwargs...)
 ```
 
 $(dae_constructors)
@@ -277,7 +277,7 @@ $(dae_constructors)
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `λ` and `μ`.
 The initial conditions `q₀`, `λ₀` and `μ₀` can also be prescribed directly,
-with `State` an `AbstractArray{<:Number}`.
+with `StateVariable` an `AbstractArray{<:Number}`.
 For the interfaces of the functions `v`, `u`, `ϕ`, `ū`, `ψ` see [`DAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
@@ -312,8 +312,8 @@ function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::State, λ₀::State,
-                    μ₀::State = zero(λ₀); kwargs...)
+function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable,
+                    μ₀::StateVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, λ = λ₀, μ = μ₀)
     DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics; kwargs...)
 end
@@ -322,7 +322,7 @@ function DAEProblem(v, u, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
     DAEProblem(v, u, ϕ, nothing, nothing, tspan, tstep, ics; kwargs...)
 end
 
-function DAEProblem(v, u, ϕ, tspan, tstep, q₀::State, λ₀::State; kwargs...)
+function DAEProblem(v, u, ϕ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable; kwargs...)
     ics = (q = q₀, λ = λ₀)
     DAEProblem(v, u, ϕ, tspan, tstep, ics; kwargs...)
 end

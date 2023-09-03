@@ -175,7 +175,7 @@ $(psde_equations)
 
 ```julia
 PSDEProblem(v, f, B, G, tspan, tstep, ics::NamedTuple; kwargs...)
-PSDEProblem(v, f, B, G, tspan, tstep, q₀::State; p₀::State; kwargs...)
+PSDEProblem(v, f, B, G, tspan, tstep, q₀::StateVariable; p₀::StateVariable; kwargs...)
 ```
 where `v` and `f` are the functions computing the vector field and `B` and `G`
 compute the diffusion matrices,
@@ -183,7 +183,7 @@ compute the diffusion matrices,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
-`State` an `AbstractArray{<:Number}`.
+`StateVariable` an `AbstractArray{<:Number}`.
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
@@ -201,7 +201,7 @@ function PSDEProblem(v, f, B, G, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function PSDEProblem(v, f, B, G, tspan, tstep, q₀::State, p₀::State; kwargs...)
+function PSDEProblem(v, f, B, G, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
     ics = (q = q₀, p = p₀)
     PSDEProblem(v, f, B, G, tspan, tstep, ics; kwargs...)
 end

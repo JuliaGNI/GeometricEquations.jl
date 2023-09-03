@@ -364,9 +364,9 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 
 ```julia
 LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, ics; kwargs...)
-LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀), μ₀::State = zero(λ₀); kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀), μ₀::StateVariable = zero(λ₀); kwargs...)
 LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, ics; kwargs...)
-LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, q₀::State, p₀::State, λ₀::State = zero(q₀); kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
 
 $(ldae_constructors)
@@ -375,7 +375,7 @@ $(ldae_constructors)
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed
-directly, with `State` an `AbstractArray{<:Number}`.
+directly, with `StateVariable` an `AbstractArray{<:Number}`.
 For the interfaces of the functions `ϑ`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ`, `ω` and `l` see [`LDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
@@ -413,8 +413,8 @@ function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, q₀::State,
-                     p₀::State, λ₀::State, μ₀::State = zero(λ₀); kwargs...)
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, q₀::StateVariable,
+                     p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics; kwargs...)
 end
@@ -424,8 +424,8 @@ function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics::NamedTu
                 kwargs...)
 end
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, q₀::State, p₀::State,
-                     λ₀::State; kwargs...)
+function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, q₀::StateVariable, p₀::StateVariable,
+                     λ₀::StateVariable; kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics; kwargs...)
 end

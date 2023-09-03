@@ -207,7 +207,7 @@ $(spsde_equations)
 
 ```julia
 SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics::NamedTuple; kwargs...)
-SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::State; p₀::State; kwargs...)
+SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::StateVariable; p₀::StateVariable; kwargs...)
 ```
 where `v` and `f` are the functions computing the vector field and `Bᵢ` and `Gᵢ`
 compute the diffusion matrices,
@@ -215,7 +215,7 @@ compute the diffusion matrices,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
-`State` an `AbstractArray{<:Number}`.
+`StateVariable` an `AbstractArray{<:Number}`.
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 
@@ -233,7 +233,7 @@ function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::State, p₀::State; kwargs...)
+function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
     ics = (q = q₀, p = p₀)
     SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics; kwargs...)
 end
