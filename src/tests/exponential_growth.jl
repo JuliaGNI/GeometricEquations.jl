@@ -9,6 +9,7 @@ module ExponentialGrowth
     using Parameters
 
     export odeproblem, odeensemble
+    using Random
 
     const x₀ = [1.0]
     const Δt = 0.1
