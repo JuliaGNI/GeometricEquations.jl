@@ -1,5 +1,6 @@
 
 using GeometricEquations: parameter_types
+using Random
 
 
 Δt = .1
