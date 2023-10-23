@@ -5,8 +5,8 @@ DocMeta.setdocmeta!(GeometricEquations, :DocTestSetup, :(using GeometricEquation
 
 makedocs(;
     modules = [GeometricEquations],
+    warnonly = Documenter.except(:autodocs_block, :cross_references, :docs_block, :doctest, :eval_block, :example_block, :footnote, :linkcheck_remotes, :linkcheck, :meta_block, :parse_error, :setup_block),
     authors = "Michael Kraus",
-    repo = "https://github.com/JuliaGNI/GeometricEquations.jl/blob/{commit}{path}#{line}",
     sitename = "GeometricEquations.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
