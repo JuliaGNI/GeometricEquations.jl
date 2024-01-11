@@ -126,7 +126,7 @@ end
 end
 
 @inline function GeometricBase.invariants(prob::EquationProblem)
-    invariants(equation(prob), parameters(prob))
+    invariants(equation(prob))
 end
 
 initial_conditions(prob::EquationProblem) = merge((t = tbegin(prob),), prob.ics)
