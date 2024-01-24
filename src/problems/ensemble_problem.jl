@@ -181,3 +181,4 @@ end
 
 Base.length(ge::EnsembleProblem) = nsamples(ge)
 Base.iterate(ge::EnsembleProblem, i=1) = i > nsamples(ge) ? nothing : (problem(ge, i), i+1)
+Base.getindex(ge::EnsembleProblem, i::Union{Integer,Base.AbstractCartesianIndex}) = problem(ge, i)

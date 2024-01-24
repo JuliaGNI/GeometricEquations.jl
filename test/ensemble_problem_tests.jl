@@ -46,6 +46,8 @@ include("initial_conditions.jl")
     @test initial_conditions(ens) == ics
     @test nsamples(ens) == length(ens) == 2
 
+    @test problem(ens, 2) == ens[2] == ens[CartesianIndex(2)] == ens[CartesianIndex(2,1)]
+
     probs = (
         EquationProblem(ode, (t₀,t₁), Δt, ics[1], params),
         EquationProblem(ode, (t₀,t₁), Δt, ics[2], params),
@@ -72,6 +74,8 @@ include("initial_conditions.jl")
 
     @test initial_conditions(ens) == [ics, ics]
     @test nsamples(ens) == length(ens) == 2
+
+    @test problem(ens, 2) == ens[2] == ens[CartesianIndex(2)] == ens[CartesianIndex(2,1)]
 
     probs = (
         EquationProblem(ode, (t₀,t₁), Δt, ics, params[1]),
