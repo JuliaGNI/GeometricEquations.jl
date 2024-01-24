@@ -16,6 +16,34 @@ In the third case, the respective constructor creates an initial condition vecto
 One may be inclined to think that the first and second constructor lead to a waste of memory, but in reality the respective vectors only hold references to the same initial conditons or parameters.
 Thus the data is not actually duplicated.
 
+Each pair of initial conditions and parameters is referred to as sample.
+The methods
+```
+length(::EnsembleProblem)
+nsamples(::EnsembleProblem)
+```
+return the number of samples in a `EnsembleProblem`.
+A single initial condition or parameter set can be retrieved by the methods
+```
+initial_condition(::EnsembleProblem, i)
+parameter(::EnsembleProblem, i)
+```
+where `i` is the index of the sample.
+Typically, however, e.g. when integrating all samples of an `EnsembleProblem` with GeometricIntegrators, it is more convenient to retrieve the corresponding `GeometricProblem` via the method
+```
+problem(::EnsembleProblem, i)
+```
+The `EnsembleProblem` also allows to iterate over all samples, e.g.
+```
+for problem in ensemble
+    # ...
+    # integrate problem
+    # ...
+end
+```
+where `ensemble` is an `EnsembleProblem` and `problem` is the corresponding `GeometricProblem`.
+
+
 ### Parameters
 
 * `ST <: GeometricEquation`: super type, used for dispatch
