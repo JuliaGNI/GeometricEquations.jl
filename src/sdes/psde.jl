@@ -85,6 +85,7 @@ struct PSDE{vType <: Callable,
             fType <: Callable,
             BType <: Callable,
             GType <: Callable,
+            nType <: AbstractStochasticProcess,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
             perType <: OptionalPeriodicity} <: AbstractEquationPSDE{invType,parType,perType}
@@ -94,17 +95,20 @@ struct PSDE{vType <: Callable,
     B::BType
     G::GType
 
+    noise::nType
+
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function PSDE(v, f, B, G, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f), typeof(B), typeof(G), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, B, G, invariants, parameters, periodicity)
+    function PSDE(v, f, B, G, noise, invariants, parameters, periodicity)
+        new{typeof(v), typeof(f), typeof(B), typeof(G), 
+            typeof(noise), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f, B, G, noise, invariants, parameters, periodicity)
     end
 end
 
-PSDE(v, f, B, G; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PSDE(v, f, B, G, invariants, parameters, periodicity)
+PSDE(v, f, B, G, noise; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PSDE(v, f, B, G, noise, invariants, parameters, periodicity)
 
 GeometricBase.invariants(equation::PSDE) = equation.invariants
 GeometricBase.parameters(equation::PSDE) = equation.parameters
@@ -194,16 +198,16 @@ $(psde_functions)
 """
 const PSDEProblem = EquationProblem{PSDE}
 
-function PSDEProblem(v, f, B, G, tspan, tstep, ics::NamedTuple;
+function PSDEProblem(v, f, B, G, noise, tspan, tstep, ics::NamedTuple;
                      invariants = NullInvariants(), parameters = NullParameters(),
                      periodicity = NullPeriodicity())
-    equ = PSDE(v, f, B, G, invariants, parameter_types(parameters), periodicity)
+    equ = PSDE(v, f, B, G, noise, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function PSDEProblem(v, f, B, G, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
+function PSDEProblem(v, f, B, G, noise, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
     ics = (q = q₀, p = p₀)
-    PSDEProblem(v, f, B, G, tspan, tstep, ics; kwargs...)
+    PSDEProblem(v, f, B, G, noise, tspan, tstep, ics; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::PSDEProblem)
@@ -211,4 +215,4 @@ function GeometricBase.periodicity(prob::PSDEProblem)
 end
 
 
-const PSDEEnsemble  = EnsembleProblem{PSDE}
+const PSDEEnsemble = EnsembleProblem{PSDE}

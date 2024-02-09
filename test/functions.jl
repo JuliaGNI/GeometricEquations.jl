@@ -1,7 +1,10 @@
 
 using Parameters: @unpack
 
-using GeometricEquations: _idae_default_v̄, _ldae_default_v̄
+import GeometricBase: AbstractStochasticProcess
+import GeometricEquations: _idae_default_v̄, _ldae_default_v̄
+
+struct TestNoise <: AbstractStochasticProcess end
 
 
 function ode_v(ẋ, t, x, params)

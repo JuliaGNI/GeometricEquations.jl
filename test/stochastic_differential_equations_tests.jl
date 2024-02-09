@@ -8,11 +8,11 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Stochastic Differential Equations (SDE)",80))" begin
 
-    sde  = SDE(sde_v, sde_B, NullInvariants(), NullParameters(), NullPeriodicity())
-    sde1 = SDE(sde_v, sde_B)
-    sde2 = SDE(sde_v, sde_B; invariants=NullInvariants())
-    sde3 = SDE(sde_v, sde_B; parameters=NullParameters())
-    sde4 = SDE(sde_v, sde_B; periodicity=NullPeriodicity())
+    sde  = SDE(sde_v, sde_B, TestNoise(), NullInvariants(), NullParameters(), NullPeriodicity())
+    sde1 = SDE(sde_v, sde_B, TestNoise())
+    sde2 = SDE(sde_v, sde_B, TestNoise(); invariants=NullInvariants())
+    sde3 = SDE(sde_v, sde_B, TestNoise(); parameters=NullParameters())
+    sde4 = SDE(sde_v, sde_B, TestNoise(); periodicity=NullPeriodicity())
 
     @test sde == sde1
     @test sde == sde2
@@ -44,7 +44,7 @@ include("initial_conditions.jl")
     @test haslagrangian(sde) == false
 
 
-    sde  = SDE(sde_v, sde_B, NullInvariants(), sde_param_types, NullPeriodicity())
+    sde  = SDE(sde_v, sde_B, TestNoise(), NullInvariants(), sde_param_types, NullPeriodicity())
 
     funcs = functions(sde)
 
@@ -59,11 +59,11 @@ end
 
 @testset "$(rpad("Partitioned Stochastic Differential Equations (PSDE)",80))" begin
 
-    psde  = PSDE(psde_v, psde_f, psde_B, psde_G, NullInvariants(), NullParameters(), NullPeriodicity())
-    psde1 = PSDE(psde_v, psde_f, psde_B, psde_G)
-    psde2 = PSDE(psde_v, psde_f, psde_B, psde_G; invariants=NullInvariants())
-    psde3 = PSDE(psde_v, psde_f, psde_B, psde_G; parameters=NullParameters())
-    psde4 = PSDE(psde_v, psde_f, psde_B, psde_G; periodicity=NullPeriodicity())
+    psde  = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise(), NullInvariants(), NullParameters(), NullPeriodicity())
+    psde1 = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise())
+    psde2 = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise(); invariants=NullInvariants())
+    psde3 = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise(); parameters=NullParameters())
+    psde4 = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise(); periodicity=NullPeriodicity())
 
     @test psde == psde1
     @test psde == psde2
@@ -95,7 +95,7 @@ end
     @test haslagrangian(psde) == false
 
 
-    psde = PSDE(psde_v, psde_f, psde_B, psde_G, NullInvariants(), sde_param_types, NullPeriodicity())
+    psde = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise(), NullInvariants(), sde_param_types, NullPeriodicity())
 
     funcs = functions(psde)
 
@@ -112,11 +112,11 @@ end
 
 @testset "$(rpad("Split Partitioned Stochastic Differential Equations (SPSDE)",80))" begin
 
-    psde  = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, NullInvariants(), NullParameters(), NullPeriodicity())
-    psde1 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2)
-    psde2 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2; invariants=NullInvariants())
-    psde3 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2; parameters=NullParameters())
-    psde4 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2; periodicity=NullPeriodicity())
+    psde  = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), NullInvariants(), NullParameters(), NullPeriodicity())
+    psde1 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise())
+    psde2 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(); invariants=NullInvariants())
+    psde3 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(); parameters=NullParameters())
+    psde4 = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(); periodicity=NullPeriodicity())
 
     @test psde == psde1
     @test psde == psde2
@@ -148,7 +148,7 @@ end
     @test haslagrangian(psde) == false
 
 
-    psde = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, NullInvariants(), sde_param_types, NullPeriodicity())
+    psde = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), NullInvariants(), sde_param_types, NullPeriodicity())
 
     funcs = functions(psde)
 

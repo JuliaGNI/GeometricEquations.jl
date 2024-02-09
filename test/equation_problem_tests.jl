@@ -521,7 +521,7 @@ end
 
 @testset "$(rpad("SDE Problem",80))" begin
 
-    sde  = SDE(sde_v, sde_B)
+    sde  = SDE(sde_v, sde_B, TestNoise())
     prob = EquationProblem(sde, (t₀,t₁), Δt, sde_ics)
 
     @test typeof(prob) <: EquationProblem
@@ -531,10 +531,10 @@ end
 
     @test periodicity(prob).q == periodicity(equation(prob))
 
-    prob1 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, sde_ics)
-    prob2 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, sde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, sde_ics...)
-    prob4 = SDEProblem(sde_v, sde_B, (t₀,t₁), Δt, sde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics)
+    prob2 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics...)
+    prob4 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
@@ -546,7 +546,7 @@ end
 
 @testset "$(rpad("PSDE Problem",80))" begin
 
-    psde = PSDE(psde_v, psde_f, psde_B, psde_G)
+    psde = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise())
     prob = EquationProblem(psde, (t₀,t₁), Δt, psde_ics)
 
     @test typeof(prob) <: EquationProblem
@@ -557,10 +557,10 @@ end
     @test periodicity(prob).q == periodicity(equation(prob))
     @test periodicity(prob).p == NullPeriodicity()
 
-    prob1 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, psde_ics)
-    prob2 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, psde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, psde_ics...)
-    prob4 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, (t₀,t₁), Δt, psde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics)
+    prob2 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics...)
+    prob4 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
@@ -572,7 +572,7 @@ end
 
 @testset "$(rpad("SPSDE Problem",80))" begin
 
-    psde = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2)
+    psde = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise())
     prob = EquationProblem(psde, (t₀,t₁), Δt, spsde_ics)
 
     @test typeof(prob) <: EquationProblem
@@ -583,10 +583,10 @@ end
     @test periodicity(prob).q == periodicity(equation(prob))
     @test periodicity(prob).p == NullPeriodicity()
 
-    prob1 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, spsde_ics)
-    prob2 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, spsde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, spsde_ics...)
-    prob4 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, (t₀,t₁), Δt, spsde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics)
+    prob2 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob3 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics...)
+    prob4 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob

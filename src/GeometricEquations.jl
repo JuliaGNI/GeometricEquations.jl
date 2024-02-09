@@ -8,6 +8,7 @@ module GeometricEquations
     import GeometricBase: tspan, tstep, tbegin, tend, timestep
     import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity
     import GeometricBase: ntime, nsamples, nconstraints, nsteps
+    import GeometricBase: AbstractStochasticProcess
 
     export NullInvariants, NullParameters, NullPeriodicity
 

@@ -102,6 +102,7 @@ struct SPSDE{vType <: Callable,
              BType <: Callable,
              G1Type <: Callable,
              G2Type <: Callable,
+             nType <: AbstractStochasticProcess,
              invType <: OptionalInvariants,
              parType <: OptionalParameters,
              perType <: OptionalPeriodicity} <: AbstractEquationPSDE{invType,parType,perType}
@@ -113,17 +114,20 @@ struct SPSDE{vType <: Callable,
     G1::G1Type
     G2::G2Type
 
+    noise::nType
+
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function SPSDE(v, f1, f2, B, G1, G2, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f1), typeof(f2), typeof(B), typeof(G1), typeof(G2), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f1, f2, B, G1, G2, invariants, parameters, periodicity)
+    function SPSDE(v, f1, f2, B, G1, G2, noise, invariants, parameters, periodicity)
+        new{typeof(v), typeof(f1), typeof(f2), typeof(B), typeof(G1), typeof(G2),
+            typeof(noise), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f1, f2, B, G1, G2, noise, invariants, parameters, periodicity)
     end
 end
 
-SPSDE(v, f1, f2, B, G1, G2; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SPSDE(v, f1, f2, B, G1, G2, invariants, parameters, periodicity)
+SPSDE(v, f1, f2, B, G1, G2, noise; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SPSDE(v, f1, f2, B, G1, G2, noise, invariants, parameters, periodicity)
 
 GeometricBase.invariants(equation::SPSDE) = equation.invariants
 GeometricBase.parameters(equation::SPSDE) = equation.parameters
@@ -226,16 +230,16 @@ $(spsde_functions)
 """
 const SPSDEProblem = EquationProblem{SPSDE}
 
-function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics::NamedTuple;
+function SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, ics::NamedTuple;
                       invariants = NullInvariants(), parameters = NullParameters(),
                       periodicity = NullPeriodicity())
-    equ = SPSDE(v, f1, f2, B, G1, G2, invariants, parameter_types(parameters), periodicity)
+    equ = SPSDE(v, f1, f2, B, G1, G2, noise, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
+function SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
     ics = (q = q₀, p = p₀)
-    SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics; kwargs...)
+    SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, ics; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::SPSDEProblem)

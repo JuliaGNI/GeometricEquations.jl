@@ -67,6 +67,7 @@ $(sde_functions)
 """
 struct SDE{vType <: Callable,
            BType <: Callable,
+           nType <: AbstractStochasticProcess,
            invType <: OptionalInvariants,
            parType <: OptionalParameters,
            perType <: OptionalPeriodicity} <: AbstractEquationSDE{invType,parType,perType}
@@ -74,17 +75,19 @@ struct SDE{vType <: Callable,
     v::vType
     B::BType
 
+    noise::nType
+
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function SDE(v, B, invariants, parameters, periodicity)
-        new{typeof(v), typeof(B), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, B, invariants, parameters, periodicity)
+    function SDE(v, B, noise, invariants, parameters, periodicity)
+        new{typeof(v), typeof(B), typeof(noise), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, B, noise, invariants, parameters, periodicity)
     end
 end
 
-SDE(v, B; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SDE(v, B, invariants, parameters, periodicity)
+SDE(v, B, noise; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SDE(v, B, noise, invariants, parameters, periodicity)
 
 GeometricBase.invariants(equation::SDE) = equation.invariants
 GeometricBase.parameters(equation::SDE) = equation.parameters
@@ -164,18 +167,18 @@ $(sde_functions)
 """
 const SDEProblem = EquationProblem{SDE}
 
-function SDEProblem(v, B, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(),
+function SDEProblem(v, B, noise, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(),
                     parameters = NullParameters(), periodicity = NullPeriodicity())
-    equ = SDE(v, B, invariants, parameter_types(parameters), periodicity)
+    equ = SDE(v, B, noise, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SDEProblem(v, B, tspan, tstep, q₀::StateVariable; kwargs...)
+function SDEProblem(v, B, noise, tspan, tstep, q₀::StateVariable; kwargs...)
     ics = (q = q₀,)
-    SDEProblem(v, B, tspan, tstep, ics; kwargs...)
+    SDEProblem(v, B, noise, tspan, tstep, ics; kwargs...)
 end
 
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)),)
 
 
-const SDEEnsemble   = EnsembleProblem{SDE}
+const SDEEnsemble = EnsembleProblem{SDE}
