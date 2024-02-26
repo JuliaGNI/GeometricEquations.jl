@@ -181,7 +181,7 @@ function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple};
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-# function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:State}; kwargs...)
-#     _ics = [(q = q₀,) for q₀ in ics]
-#     EnsembleProblem(v, tspan, tstep, _ics; kwargs...)
-# end
+function ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<:AbstractArray}; kwargs...)
+    _ics = [(q = StateVariable(q),) for q in q₀]
+    EnsembleProblem(v, tspan, tstep, _ics; kwargs...)
+end
