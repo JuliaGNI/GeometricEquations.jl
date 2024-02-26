@@ -181,6 +181,10 @@ function PODEProblem(v, f, tspan, tstep, q₀::StateVariable, p₀::StateVariabl
     PODEProblem(v, f, tspan, tstep, ics; kwargs...)
 end
 
+function PODEProblem(v, f, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+    PODEProblem(v, f, tspan, tstep, StateVariable(q₀), StateVariable(p₀); kwargs...)
+end
+
 function GeometricBase.periodicity(prob::PODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end

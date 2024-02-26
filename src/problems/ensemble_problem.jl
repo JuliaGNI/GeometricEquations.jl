@@ -153,6 +153,14 @@ function EnsembleProblem(equ, tspan, tstep, ics; parameters = NullParameters())
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
+Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
+                                ens1.equation   == ens2.equation
+                             && ens1.functions  == ens2.functions
+                             && ens1.solutions  == ens2.solutions
+                             && ens1.tspan      == ens2.tspan
+                             && ens1.tstep      == ens2.tstep
+                             && ens1.ics        == ens2.ics
+                             && ens1.parameters == ens2.parameters)
 
 @inline GeometricBase.datatype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
 @inline GeometricBase.timetype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT

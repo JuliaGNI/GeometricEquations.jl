@@ -378,26 +378,27 @@ const HDAEProblem = EquationProblem{HDAE}
 function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics::NamedTuple;
                      v̄ = v, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zero(ics.λ),))
     equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants,
                parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, q₀::StateVariable,
-                     p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep,
+                     q₀::StateVariable, p₀::StateVariable,
+                     λ₀::AlgebraicVariable, μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics::NamedTuple; kwargs...)
-    HDAEProblem(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian, tspan, tstep, ics;
-                kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep,
+                     q₀::AbstractArray, p₀::AbstractArray,
+                     λ₀::AbstractArray, μ₀::AbstractArray = zero(λ₀); kwargs...)
+    HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀), AlgebraicVariable(μ₀); kwargs...)
 end
 
-function HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, q₀::StateVariable, p₀::StateVariable,
-                     λ₀::StateVariable; kwargs...)
-    ics = (q = q₀, p = p₀, λ = λ₀)
-    HDAEProblem(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics; kwargs...)
+function HDAEProblem(v, f, u, g, ϕ, hamiltonian, args...; kwargs...)
+    HDAEProblem(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian, args...; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::HDAEProblem)

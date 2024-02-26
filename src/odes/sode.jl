@@ -221,6 +221,10 @@ function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::Sta
     SODEProblem(v, q, tspan, tstep, ics; kwargs...)
 end
 
+function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::AbstractArray; kwargs...)
+    SODEProblem(v, q, tspan, tstep, StateVariable(q₀); kwargs...)
+end
+
 function SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
     SODEProblem(v, nothing, tspan, tstep, ics; kwargs...)
 end
@@ -228,6 +232,10 @@ end
 function SODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
     ics = (q = q₀,)
     SODEProblem(v, tspan, tstep, ics; kwargs...)
+end
+
+function SODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
+    SODEProblem(v, tspan, tstep, StateVariable(q₀); kwargs...)
 end
 
 GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))

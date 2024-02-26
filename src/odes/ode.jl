@@ -99,6 +99,7 @@ end
 
 function check_initial_conditions(::ODE, ics::NamedTuple)
     haskey(ics, :q) || return false
+    typeof(ics.q) <: StateVariable || return false
     return true
 end
 
@@ -168,6 +169,10 @@ function ODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
     ODEProblem(v, tspan, tstep, ics; kwargs...)
 end
 
+function ODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
+    ODEProblem(v, tspan, tstep, StateVariable(q₀); kwargs...)
+end
+
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
 
 
@@ -181,7 +186,12 @@ function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple};
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
+function ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<:StateVariable}; kwargs...)
+    _ics = [(q = q,) for q in q₀]
+    ODEEnsemble(v, tspan, tstep, _ics; kwargs...)
+end
+
 function ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<:AbstractArray}; kwargs...)
-    _ics = [(q = StateVariable(q),) for q in q₀]
-    EnsembleProblem(v, tspan, tstep, _ics; kwargs...)
+    _ics = [StateVariable(q) for q in q₀]
+    ODEEnsemble(v, tspan, tstep, _ics; kwargs...)
 end

@@ -16,7 +16,7 @@ module ExponentialGrowth
     const tbeg = 0.0
     const tend = 10.0
 
-    const ics = [(q = rand(1),), (q = rand(1),), (q = rand(1),)]
+    const ics = [(q = StateVariable(rand(1)),), (q = StateVariable(rand(1)),), (q = StateVariable(rand(1)),)]
 
     const k = 1.0
 

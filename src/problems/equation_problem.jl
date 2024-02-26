@@ -99,12 +99,14 @@ end
 #                                                   hash(prob.tspan, hash(prob.tstep,
 #                                                   hash(prov.ics, hash(prov.parameters, h))))))
 
-# Base.:(==)(prob1::EquationProblem, prob2::EquationProblem) = (
-#                                 prob1.equation   == prob2.equation
-#                              && prob1.tspan      == prob2.tspan
-#                              && prob1.tstep      == prob2.tstep
-#                              && prob1.ics        == prob2.ics
-#                              && prob1.parameters == prob2.parameters)
+Base.:(==)(prob1::EquationProblem, prob2::EquationProblem) = (
+                                prob1.equation   == prob2.equation
+                             && prob1.functions  == prob2.functions
+                             && prob1.solutions  == prob2.solutions
+                             && prob1.tspan      == prob2.tspan
+                             && prob1.tstep      == prob2.tstep
+                             && prob1.ics        == prob2.ics
+                             && prob1.parameters == prob2.parameters)
 
 @inline GeometricBase.datatype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
 @inline GeometricBase.timetype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT

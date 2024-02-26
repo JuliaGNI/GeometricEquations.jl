@@ -7,9 +7,8 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Geometric Problem",80))" begin
 
-    ics  = (q=x₀,)
     ode  = ODE(ode_v)
-    prob = EquationProblem(ode, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(ode, (t₀,t₁), Δt, ode_ics)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: ODEProblem
@@ -18,7 +17,7 @@ include("initial_conditions.jl")
 
     @test datatype(prob) == eltype(x₀)
     @test timetype(prob) == typeof(t₀)
-    @test arrtype(prob) == typeof(x₀)
+    @test arrtype(prob) == StateVariable{eltype(x₀), ndims(x₀), typeof(x₀)}
     @test equtype(prob) == ODE
 
     @test tspan(prob) == (t₀,t₁)
@@ -33,10 +32,10 @@ include("initial_conditions.jl")
 
     @test functions(prob) == functions(ode)
 
-    prob1 = EquationProblem(ode, (t₀,t₁), Δt, ics)
-    prob2 = EquationProblem(ode, (t₀,t₁), Δt, ics; parameters=NullParameters())
-    prob3 = EquationProblem(ode, (t₀,t₁), Δt, ics, NullParameters())
-    prob4 = EquationProblem(ode, (t₀,t₁), Δt, ics, nothing)
+    prob1 = EquationProblem(ode, (t₀,t₁), Δt, ode_ics)
+    prob2 = EquationProblem(ode, (t₀,t₁), Δt, ode_ics; parameters = NullParameters())
+    prob3 = EquationProblem(ode, (t₀,t₁), Δt, ode_ics, NullParameters())
+    prob4 = EquationProblem(ode, (t₀,t₁), Δt, ode_ics, nothing)
 
     @test prob == prob1
     @test prob == prob2
@@ -46,12 +45,12 @@ include("initial_conditions.jl")
     @test prob == similar(prob)
     @test prob == similar(prob, (t₀,t₁))
     @test prob == similar(prob, (t₀,t₁), Δt)
-    @test prob == similar(prob, (t₀,t₁), Δt, ics)
-    @test prob == similar(prob, (t₀,t₁), Δt, ics, NullParameters())
-    @test prob == similar(prob; tspan=(t₀,t₁))
-    @test prob == similar(prob; tstep=Δt)
-    @test prob == similar(prob; ics=ics)
-    @test prob == similar(prob; parameters=NullParameters())
+    @test prob == similar(prob, (t₀,t₁), Δt, ode_ics)
+    @test prob == similar(prob, (t₀,t₁), Δt, ode_ics, NullParameters())
+    @test prob == similar(prob; tspan = (t₀,t₁))
+    @test prob == similar(prob; tstep = Δt)
+    @test prob == similar(prob; ics = ode_ics)
+    @test prob == similar(prob; parameters = NullParameters())
 
 end
 
@@ -69,14 +68,18 @@ end
     @test periodicity(prob).q == periodicity(equation(prob))
 
     prob1 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics)
-    prob2 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics...)
-    prob4 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics_raw...)
+    prob6 = ODEProblem(ode_eqs..., (t₀,t₁), Δt, ode_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
     
 end
 
@@ -93,14 +96,18 @@ end
     @test periodicity(prob).q == periodicity(equation(prob))
 
     prob1 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics)
-    prob2 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics...)
-    prob4 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics_raw...)
+    prob6 = SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
     
 
     sode = SODE(sode_eqs, sode_sols)
@@ -111,14 +118,18 @@ end
     @test equtype(prob) == SODE
 
     prob1 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics)
-    prob2 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics...)
-    prob4 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_raw...)
+    prob6 = SODEProblem(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
     
 
     prob1 = SubstepProblem(prob, one(timestep(prob))/2, 1)
@@ -168,14 +179,18 @@ end
     @test periodicity(prob).p == NullPeriodicity()
 
     prob1 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics)
-    prob2 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics...)
-    prob4 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics_raw...)
+    prob6 = PODEProblem(pode_eqs..., (t₀,t₁), Δt, pode_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
     
 end
 
@@ -195,14 +210,18 @@ end
     @test periodicity(prob).λ == NullPeriodicity()
 
     prob1 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics)
-    prob2 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics...)
-    prob4 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...)
+    prob6 = IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
     
 end
 
@@ -222,14 +241,18 @@ end
     @test periodicity(prob).p == NullPeriodicity()
 
     prob1 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics)
-    prob2 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics...)
-    prob4 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics_raw...)
+    prob6 = HODEProblem(hode_eqs..., (t₀,t₁), Δt, hode_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
     
 end
 
@@ -250,14 +273,18 @@ end
     @test periodicity(prob).λ == NullPeriodicity()
 
     prob1 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics)
-    prob2 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics...)
-    prob4 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...)
+    prob6 = LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
     
 end
 
@@ -265,7 +292,7 @@ end
 @testset "$(rpad("DAE Problem",80))" begin
 
     dae  = DAE(dae_eqs...)
-    prob = EquationProblem(dae, (t₀,t₁), Δt, dae_ics)
+    prob = EquationProblem(dae, (t₀,t₁), Δt, dae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: DAEProblem
@@ -274,14 +301,26 @@ end
     @test equtype(prob) == DAE
 
     prob1 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics)
-    prob2 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics...)
-    prob4 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics_full)
+    prob4 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics...)
+    prob6 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics_full...)
+    prob8 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics_raw...)
+    prob10= DAEProblem(dae_eqs..., (t₀,t₁), Δt, dae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
 
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
@@ -292,23 +331,34 @@ end
     # @test nconstraints(dae) == 1
 
 
-    ics  = (q=x₀, λ=λ₀, μ=λ₀)
     dae  = DAE(dae_eqs_full...)
-    prob = EquationProblem(dae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(dae, (t₀,t₁), Δt, dae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: DAEProblem
     @test equtype(prob) == DAE
 
-    prob1 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, ics)
-    prob2 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, ics...)
-    prob4 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics)
+    prob2 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics_full)
+    prob4 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics...)
+    prob6 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics_full...)
+    prob8 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics_raw...)
+    prob10= DAEProblem(dae_eqs_full..., (t₀,t₁), Δt, dae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
     
 end
 
@@ -316,7 +366,7 @@ end
 @testset "$(rpad("PDAE Problem",80))" begin
 
     pdae = PDAE(pdae_eqs...)
-    prob = EquationProblem(pdae, (t₀,t₁), Δt, pdae_ics)
+    prob = EquationProblem(pdae, (t₀,t₁), Δt, pdae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PDAEProblem
@@ -325,14 +375,26 @@ end
     @test equtype(prob) == PDAE
 
     prob1 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics)
-    prob2 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics...)
-    prob4 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics_full)
+    prob4 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics...)
+    prob6 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics_full...)
+    prob8 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics_raw...)
+    prob10= PDAEProblem(pdae_eqs..., (t₀,t₁), Δt, pdae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
 
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
@@ -343,23 +405,34 @@ end
     # @test nconstraints(dae) == 1
 
 
-    ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     pdae = PDAE(pdae_eqs_full...)
-    prob = EquationProblem(pdae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(pdae, (t₀,t₁), Δt, pdae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: PDAEProblem
     @test equtype(prob) == PDAE
 
-    prob1 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, ics)
-    prob2 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, ics...)
-    prob4 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics)
+    prob2 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics_full)
+    prob4 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics...)
+    prob6 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics_full...)
+    prob8 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics_raw...)
+    prob10= PDAEProblem(pdae_eqs_full..., (t₀,t₁), Δt, pdae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
     
 end
 
@@ -367,7 +440,7 @@ end
 @testset "$(rpad("HDAE Problem",80))" begin
 
     hdae = HDAE(hdae_eqs...)
-    prob = EquationProblem(hdae, (t₀,t₁), Δt, hdae_ics)
+    prob = EquationProblem(hdae, (t₀,t₁), Δt, hdae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: HDAEProblem
@@ -377,14 +450,26 @@ end
     @test equtype(prob) == HDAE
 
     prob1 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics)
-    prob2 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics...)
-    prob4 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics_full)
+    prob4 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics...)
+    prob6 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics_full...)
+    prob8 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics_raw...)
+    prob10= HDAEProblem(hdae_eqs..., (t₀,t₁), Δt, hdae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
 
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
@@ -395,23 +480,34 @@ end
     # @test nconstraints(dae) == 1
 
 
-    ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     hdae = HDAE(hdae_eqs_full...)
-    prob = EquationProblem(hdae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(hdae, (t₀,t₁), Δt, hdae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: HDAEProblem
     @test equtype(prob) == HDAE
 
-    prob1 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, ics)
-    prob2 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, ics...)
-    prob4 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics)
+    prob2 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics_full)
+    prob4 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics...)
+    prob6 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics_full...)
+    prob8 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics_raw...)
+    prob10= HDAEProblem(hdae_eqs_full..., (t₀,t₁), Δt, hdae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
     
 end
 
@@ -419,7 +515,7 @@ end
 @testset "$(rpad("IDAE Problem",80))" begin
 
     idae = IDAE(idae_eqs...; v̄=idae_v, f̄=idae_f)
-    prob = EquationProblem(idae, (t₀,t₁), Δt, idae_ics)
+    prob = EquationProblem(idae, (t₀,t₁), Δt, idae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: IDAEProblem
@@ -428,14 +524,26 @@ end
     @test equtype(prob) == IDAE
 
     prob1 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics)
-    prob2 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics...)
-    prob4 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics_full)
+    prob4 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics...)
+    prob6 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics_full...)
+    prob8 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics_raw...)
+    prob10= IDAEProblem(idae_eqs..., (t₀,t₁), Δt, idae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
 
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
@@ -446,23 +554,34 @@ end
     # @test nconstraints(dae) == 1
 
 
-    ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     idae = IDAE(idae_eqs_full...)
-    prob = EquationProblem(idae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(idae, (t₀,t₁), Δt, idae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: IDAEProblem
     @test equtype(prob) == IDAE
 
-    prob1 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, ics)
-    prob2 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, ics...)
-    prob4 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics)
+    prob2 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics_full)
+    prob4 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics)
+    prob6 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics_full)
+    prob8 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics_raw...)
+    prob10= IDAEProblem(idae_eqs_full..., (t₀,t₁), Δt, idae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
     
 end
 
@@ -470,7 +589,7 @@ end
 @testset "$(rpad("LDAE Problem",80))" begin
 
     ldae = LDAE(ldae_eqs...)
-    prob = EquationProblem(ldae, (t₀,t₁), Δt, ldae_ics)
+    prob = EquationProblem(ldae, (t₀,t₁), Δt, ldae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: LDAEProblem
@@ -480,14 +599,26 @@ end
     @test equtype(prob) == LDAE
 
     prob1 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics)
-    prob2 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics...)
-    prob4 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics_full)
+    prob4 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics...)
+    prob6 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics_full...)
+    prob8 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics_raw...)
+    prob10= LDAEProblem(ldae_eqs..., (t₀,t₁), Δt, ldae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
 
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
@@ -498,23 +629,34 @@ end
     # @test nconstraints(dae) == 1
 
 
-    ics  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
     ldae = LDAE(ldae_eqs_full...)
-    prob = EquationProblem(ldae, (t₀,t₁), Δt, ics)
+    prob = EquationProblem(ldae, (t₀,t₁), Δt, ldae_ics_full)
 
     @test typeof(prob) <: EquationProblem
     @test typeof(prob) <: LDAEProblem
     @test equtype(prob) == LDAE
 
-    prob1 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ics)
-    prob2 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
-    prob3 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ics...)
-    prob4 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob1 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics)
+    prob2 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob3 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_full)
+    prob4 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_full; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob5 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics...)
+    prob6 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob7 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_full...)
+    prob8 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+    prob9 = LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_raw...)
+    prob10= LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
     @test prob3 == prob
     @test prob4 == prob
+    @test prob5 == prob
+    @test prob6 == prob
+    @test prob7 == prob
+    @test prob8 == prob
+    @test prob9 == prob
+    @test prob10 == prob
     
 end
 
@@ -532,9 +674,9 @@ end
     @test periodicity(prob).q == periodicity(equation(prob))
 
     prob1 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics)
-    prob2 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics...)
-    prob4 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
@@ -558,9 +700,9 @@ end
     @test periodicity(prob).p == NullPeriodicity()
 
     prob1 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics)
-    prob2 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics...)
-    prob4 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀,t₁), Δt, psde_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob
@@ -584,9 +726,9 @@ end
     @test periodicity(prob).p == NullPeriodicity()
 
     prob1 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics)
-    prob2 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob2 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     prob3 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics...)
-    prob4 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics...; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity())
+    prob4 = SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 
     @test prob1 == prob
     @test prob2 == prob

@@ -213,8 +213,10 @@ function check_initial_conditions(::LODE, ics::NamedTuple)
     haskey(ics, :v) || haskey(ics, :p) || return false
     haskey(ics, :λ) || return false
     eltype(ics.q) == eltype(ics.p) == eltype(ics.λ) || return false
-    typeof(ics.q) == typeof(ics.p) == typeof(ics.λ) || return false
     axes(ics.q) == axes(ics.p) == axes(ics.λ) || return false
+    typeof(ics.q) <: StateVariable || return false
+    typeof(ics.p) <: StateVariable || return false
+    typeof(ics.λ) <: AlgebraicVariable || return false
     return true
 end
 
@@ -222,7 +224,7 @@ function check_methods(equ::LODE, tspan, ics, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
-    # TODO add missing methods
+    # TODO add missing methods (namely ω)
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
@@ -312,14 +314,18 @@ function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple; k
 end
 
 function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, q₀::StateVariable, p₀::StateVariable,
-                     λ₀::StateVariable = zero(q₀); kwargs...)
-    ics = (q = q₀, p = p₀, λ = λ₀)
-    LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
+    λ₀::AlgebraicVariable = zero(q₀); kwargs...)
+    ics = (q = q₀, p = p₀, λ = λ₀ )
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
 end
 
-function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀);
-    kwargs...)
-    LODEProblem(ϑ, f, _lode_default_g, ω, l, tspan, tstep, q₀, p₀, λ₀; kwargs...)
+function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, q₀::AbstractArray, p₀::AbstractArray,
+    λ₀::AbstractArray = zero(q₀); kwargs...)
+    LODEProblem(ϑ, f, g, ω, l, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀); kwargs...)
+end
+
+function LODEProblem(ϑ, f, ω, l, args...; kwargs...)
+    LODEProblem(ϑ, f, _lode_default_g, ω, l, args...; kwargs...)
 end
 
 
@@ -336,11 +342,13 @@ function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::AbstractVector{<:Named
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
-        v̄ = _lode_default_v̄, f̄ = f)
+        v̄ = _lode_default_v̄,
+        f̄ = f
+    )
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function LODEEnsemble(ϑ, f, ω, l, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
-    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, tspan, tstep, ics; kwargs...)
+function LODEEnsemble(ϑ, f, ω, l, args...; kwargs...)
+    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, args...; kwargs...)
 end

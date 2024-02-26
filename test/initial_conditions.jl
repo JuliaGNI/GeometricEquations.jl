@@ -1,5 +1,5 @@
-
 using GeometricEquations: parameter_types
+using GeometricEquations: AlgebraicVariable, StateVariable
 using Random
 
 
@@ -10,32 +10,49 @@ q₀ = [1.]
 p₀ = [1.]
 x₀ = [1., 1.]
 λ₀ = [0.]
+μ₀ = zero(λ₀)
 
 qₛ = rand(1,3,3)
 pₛ = rand(1,3,3)
 xₛ = rand(2,3,3)
 
-ode_ics   = (q=x₀,)
-pode_ics  = (q=q₀, p=p₀)
-iode_ics  = (q=q₀, p=p₀, λ=λ₀)
-hode_ics  = (q=q₀, p=p₀)
-lode_ics  = (q=q₀, p=p₀, λ=λ₀)
+ode_ics   = (q = StateVariable(x₀),)
+pode_ics  = (q = StateVariable(q₀), p = StateVariable(p₀))
+iode_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))
+hode_ics  = (q = StateVariable(q₀), p = StateVariable(p₀))
+lode_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))
 
-dae_ics   = (q=x₀, λ=λ₀)
-pdae_ics  = (q=q₀, p=p₀, λ=λ₀)
-hdae_ics  = (q=q₀, p=p₀, λ=λ₀)
-idae_ics  = (q=q₀, p=p₀, λ=λ₀)
-ldae_ics  = (q=q₀, p=p₀, λ=λ₀)
+ode_ics_raw   = (q = x₀,)
+pode_ics_raw  = (q = q₀, p = p₀)
+iode_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
+hode_ics_raw  = (q = q₀, p = p₀)
+lode_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
 
-dae_ics_full   = (q=x₀, λ=λ₀, μ=λ₀)
-pdae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
-hdae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
-idae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
-ldae_ics_full  = (q=q₀, p=p₀, λ=λ₀, μ=λ₀)
+dae_ics   = (q = StateVariable(x₀), λ = AlgebraicVariable(λ₀))
+pdae_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))
+hdae_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))
+idae_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))
+ldae_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))
 
-sde_ics   = (q=x₀,)
-psde_ics  = (q=q₀, p=p₀)
-spsde_ics = (q=q₀, p=p₀)
+dae_ics_raw   = (q = x₀, λ = λ₀)
+pdae_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
+hdae_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
+idae_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
+ldae_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
+
+dae_ics_full   = (q = StateVariable(x₀), λ = AlgebraicVariable(λ₀), μ = AlgebraicVariable(μ₀))
+pdae_ics_full  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀), μ = AlgebraicVariable(μ₀))
+hdae_ics_full  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀), μ = AlgebraicVariable(μ₀))
+idae_ics_full  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀), μ = AlgebraicVariable(μ₀))
+ldae_ics_full  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀), μ = AlgebraicVariable(μ₀))
+
+sde_ics   = (q = StateVariable(x₀),)
+psde_ics  = (q = StateVariable(q₀), p = StateVariable(p₀))
+spsde_ics = (q = StateVariable(q₀), p = StateVariable(p₀))
+
+sde_ics_raw   = (q = x₀,)
+psde_ics_raw  = (q = q₀, p = p₀)
+spsde_ics_raw = (q = q₀, p = p₀)
 
 ode_params = (α=1,)
 ode_param_types = parameter_types(ode_params)

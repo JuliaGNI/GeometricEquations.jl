@@ -182,8 +182,10 @@ function check_initial_conditions(::IODE, ics::NamedTuple)
     haskey(ics, :p) || return false
     haskey(ics, :λ) || return false
     eltype(ics.q) == eltype(ics.p) == eltype(ics.λ) || return false
-    typeof(ics.q) == typeof(ics.p) == typeof(ics.λ) || return false
     axes(ics.q) == axes(ics.p) == axes(ics.λ) || return false
+    typeof(ics.q) <: StateVariable || return false
+    typeof(ics.p) <: StateVariable || return false
+    typeof(ics.λ) <: AlgebraicVariable || return false
     return true
 end
 
@@ -272,19 +274,17 @@ function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function IODEProblem(ϑ, f, tspan, tstep, ics::NamedTuple; kwargs...)
-    IODEProblem(ϑ, f, _iode_default_g, tspan, tstep, ics; kwargs...)
-end
-
-function IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀);
-                     kwargs...)
+function IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀)
     IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
 end
 
-function IODEProblem(ϑ, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀);
-    kwargs...)
-    IODEProblem(ϑ, f, _iode_default_g, tspan, tstep, q₀, p₀, λ₀; kwargs...)
+function IODEProblem(ϑ, f, g, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+    IODEProblem(ϑ, f, g, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀); kwargs...)
+end
+
+function IODEProblem(ϑ, f, args...; kwargs...)
+    IODEProblem(ϑ, f, _iode_default_g, args...; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::IODEProblem)
@@ -300,7 +300,9 @@ function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
-        v̄ = _iode_default_v̄, f̄ = f)
+        v̄ = _iode_default_v̄,
+        f̄ = f
+    )
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end

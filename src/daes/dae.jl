@@ -156,8 +156,6 @@ struct DAE{vType <: Callable,
     end
 end
 
-
-
 DAE(v, u, ϕ, ū, ψ, v̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
 DAE(v, u, ϕ, ū, ψ; v̄=v, kwargs...) = DAE(v, u, ϕ, ū, ψ, v̄; kwargs...)
 DAE(v, u, ϕ; kwargs...) = DAE(v, u, ϕ, nothing, nothing; kwargs...)
@@ -306,25 +304,27 @@ prob = DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀, λ₀, μ₀)
 const DAEProblem = EquationProblem{DAE}
 
 function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
-                    invariants = NullInvariants(), parameters = NullParameters(),
+                    invariants = NullInvariants(),
+                    parameters = NullParameters(),
                     periodicity = NullPeriodicity())
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zero(ics.λ),))
     equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable,
-                    μ₀::StateVariable = zero(λ₀); kwargs...)
+function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::StateVariable, λ₀::AlgebraicVariable,
+        μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, λ = λ₀, μ = μ₀)
     DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics; kwargs...)
 end
 
-function DAEProblem(v, u, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
-    DAEProblem(v, u, ϕ, nothing, nothing, tspan, tstep, ics; kwargs...)
+function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::AbstractArray, λ₀::AbstractArray,
+        μ₀::AbstractArray = zero(λ₀); kwargs...)
+    DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, StateVariable(q₀), AlgebraicVariable(λ₀), AlgebraicVariable(μ₀); kwargs...)
 end
 
-function DAEProblem(v, u, ϕ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable; kwargs...)
-    ics = (q = q₀, λ = λ₀)
-    DAEProblem(v, u, ϕ, tspan, tstep, ics; kwargs...)
+function DAEProblem(v, u, ϕ, args...; kwargs...)
+    DAEProblem(v, u, ϕ, nothing, nothing, args...; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::DAEProblem)
@@ -334,7 +334,7 @@ end
 @inline GeometricBase.nconstraints(prob::DAEProblem) = length(initial_conditions(prob).λ)
 
 
-const DAEEnsemble   = EnsembleProblem{DAE}
+const DAEEnsemble = EnsembleProblem{DAE}
 
 function DAEEnsemble(v, u, ϕ, ū, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v,
         invariants = NullInvariants(),

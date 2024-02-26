@@ -408,26 +408,27 @@ const LDAEProblem = EquationProblem{LDAE}
 function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::NamedTuple;
                      v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zero(ics.λ),))
     equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants,
                parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, q₀::StateVariable,
-                     p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep,
+                     q₀::StateVariable, p₀::StateVariable,
+                     λ₀::AlgebraicVariable, μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics; kwargs...)
 end
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics::NamedTuple; kwargs...)
-    LDAEProblem(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian, tspan, tstep, ics;
-                kwargs...)
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep,
+                     q₀::AbstractArray, p₀::AbstractArray,
+                     λ₀::AbstractArray, μ₀::AbstractArray = zero(λ₀); kwargs...)
+    LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀), AlgebraicVariable(μ₀); kwargs...)
 end
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, q₀::StateVariable, p₀::StateVariable,
-                     λ₀::StateVariable; kwargs...)
-    ics = (q = q₀, p = p₀, λ = λ₀)
-    LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics; kwargs...)
+function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, args...; kwargs...)
+    LDAEProblem(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian, args...; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::LDAEProblem)

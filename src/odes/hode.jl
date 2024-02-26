@@ -211,12 +211,16 @@ function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::StateVariable, p₀:
     HODEProblem(v, f, hamiltonian, tspan, tstep, ics; kwargs...)
 end
 
+function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+    HODEProblem(v, f, hamiltonian, tspan, tstep, StateVariable(q₀), StateVariable(p₀); kwargs...)
+end
+
 function GeometricBase.periodicity(prob::HODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
 
 
-const HODEEnsemble  = EnsembleProblem{HODE}
+const HODEEnsemble = EnsembleProblem{HODE}
 
 function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
