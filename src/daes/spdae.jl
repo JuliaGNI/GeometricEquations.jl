@@ -41,8 +41,8 @@ the algebraic variables ``(\lambda, \gamma)`` taking values in
 ### Constructors
 
 ```julia
-SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector; kwargs...)
-SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector; kwargs...)
+SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable; kwargs...)
+SPDAE(v, f, ϕ, ψ, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable; kwargs...)
 SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 SPDAE(v, f, ϕ, ψ, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
@@ -55,7 +55,7 @@ SPDAE(v, f, ϕ, ψ, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariab
 
 """
 struct SPDAE{dType <: Number, tType <: Real, arrayType <: AbstractArray{dType},
-             vType <: Tuple, fType <: Tuple, ϕType <: Function, ψType <: OptionalFunction,
+             vType <: Tuple, fType <: Tuple, ϕType <: Callable, ψType <: OptionalCallable,
              invType <: OptionalInvariants,
              parType <: OptionalParameters,
              perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
@@ -108,8 +108,8 @@ end
 
 _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀, invariants, parameters, periodicity)
 
-SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector = zero(λ₀); kwargs...) = _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
-SPDAE(v, f, ϕ, ψ, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector = zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
+# SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...) = _SPDAE(v, f, ϕ, ψ, t₀, q₀, p₀, λ₀, μ₀; kwargs...)
+# SPDAE(v, f, ϕ, ψ, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
 SPDAE(v, f, ϕ, ψ, t₀, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, t₀, [q₀], [p₀], [λ₀], [μ₀]; kwargs...)
 SPDAE(v, f, ϕ, ψ, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...) = SPDAE(v, f, ϕ, ψ, 0.0, q₀, p₀, λ₀, μ₀; kwargs...)
 
@@ -134,7 +134,7 @@ Base.:(==)(dae1::SPDAE, dae2::SPDAE) = (
                              && dae1.parameters  == dae2.parameters
                              && dae1.periodicity == dae2.periodicity)
 
-function Base.similar(equ::SPDAE, t₀::Real, q₀::StateVector, p₀::StateVector, λ₀::StateVector, μ₀::StateVector = initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
+function Base.similar(equ::SPDAE, t₀::Real, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = initial_multiplier(q₀, equ.μ₀); parameters=equ.parameters)
     @assert all([length(q) == equ.d for q in q₀])
     @assert all([length(p) == equ.d for p in p₀])
     @assert all([length(λ) == equ.m for λ in λ₀])

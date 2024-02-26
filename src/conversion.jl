@@ -101,7 +101,7 @@ function get_invariants(equ::Union{IODE,LODE,IDAE,LDAE})
     end
 end
 
-function get_invariants(equ::Union{PODE,HODE,PDAE,PDAE,SPDAE})
+function get_invariants(equ::Union{PODE,HODE,PDAE,PDAE})#,SPDAE
     if hasinvariants(equ)
         keys = ()
         invs = ()

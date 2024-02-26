@@ -35,7 +35,6 @@ SODEProblem
 - [`HDAEProblem`](@ref)
 - [`IDAEProblem`](@ref)
 - [`LDAEProblem`](@ref)
-- [`SPDAEProblem`](@ref)
 
 ```@docs
 DAEProblem
@@ -43,7 +42,6 @@ PDAEProblem
 HDAEProblem
 IDAEProblem
 LDAEProblem
-SPDAEProblem
 ```
 
 

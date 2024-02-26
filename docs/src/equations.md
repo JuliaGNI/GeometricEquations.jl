@@ -69,7 +69,6 @@ PDAE
 HDAE
 IDAE
 LDAE
-SPDAE
 ```
 
 

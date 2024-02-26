@@ -32,19 +32,19 @@ module GeometricEquations
            AbstractProblemSDE, AbstractProblemPSDE, AbstractProblemSPSDE
 
     export ODE, IODE, PODE, HODE, LODE, SODE
-    export DAE, IDAE, PDAE, HDAE, LDAE, SPDAE
+    export DAE, IDAE, PDAE, HDAE, LDAE#, SPDAE
     export SDE, PSDE, SPSDE
 
     export ODEProblem,  IODEProblem, PODEProblem,
            HODEProblem, LODEProblem, SODEProblem
     export DAEProblem,  IDAEProblem, PDAEProblem,
-           HDAEProblem, LDAEProblem, SPDAEProblem
+           HDAEProblem, LDAEProblem#, SPDAEProblem
     export SDEProblem,  PSDEProblem, SPSDEProblem
 
     export ODEEnsemble,  IODEEnsemble, PODEEnsemble,
            HODEEnsemble, LODEEnsemble, SODEEnsemble
     export DAEEnsemble,  IDAEEnsemble, PDAEEnsemble,
-           HDAEEnsemble, LDAEEnsemble, SPDAEEnsemble
+           HDAEEnsemble, LDAEEnsemble#, SPDAEEnsemble
     export SDEEnsemble,  PSDEEnsemble, SPSDEEnsemble
 
     export datatype, timetype, arrtype, equtype
@@ -80,7 +80,7 @@ module GeometricEquations
     include("daes/pdae.jl")
 
     include("odes/sode.jl")
-    include("daes/spdae.jl")
+    # include("daes/spdae.jl")
 
     include("sdes/sde.jl")
     include("sdes/psde.jl")

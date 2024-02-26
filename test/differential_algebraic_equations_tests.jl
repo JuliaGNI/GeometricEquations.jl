@@ -500,60 +500,60 @@ end
 end
 
 
-@testset "$(rpad("Split Partitioned Differential Algebraic Equations (SPDAE)",80))" begin
+# @testset "$(rpad("Split Partitioned Differential Algebraic Equations (SPDAE)",80))" begin
 
-    spdae_v = (pdae_v, pdae_u, pdae_u)
-    spdae_f = (pdae_f, pdae_g, pdae_g)
-    spdae_eqs = (spdae_v, spdae_f, pdae_ϕ, pdae_ψ)
+#     spdae_v = (pdae_v, pdae_u, pdae_u)
+#     spdae_f = (pdae_f, pdae_g, pdae_g)
+#     spdae_eqs = (spdae_v, spdae_f, pdae_ϕ, pdae_ψ)
 
-    spdae = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], NullInvariants(), NullParameters(), NullPeriodicity())
+#     spdae = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀], NullInvariants(), NullParameters(), NullPeriodicity())
 
-    @test ndims(spdae) == 1
-    @test nsamples(spdae) == 1
-    @test nconstraints(spdae) == 1
+#     @test ndims(spdae) == 1
+#     @test nsamples(spdae) == 1
+#     @test nconstraints(spdae) == 1
 
-    @test periodicity(spdae) == zero(q₀)
-    @test initial_conditions(spdae) == (t₀, [q₀], [p₀], [λ₀], [λ₀])
+#     @test periodicity(spdae) == zero(q₀)
+#     @test initial_conditions(spdae) == (t₀, [q₀], [p₀], [λ₀], [λ₀])
 
-    @test hasinvariants(spdae) == false
-    @test hasparameters(spdae) == false
-    @test hasperiodicity(spdae) == false
+#     @test hasinvariants(spdae) == false
+#     @test hasparameters(spdae) == false
+#     @test hasperiodicity(spdae) == false
 
-    funcs = functions(spdae)
-    @test funcs.v == spdae_v == spdae.v
-    @test funcs.f == spdae_f == spdae.f
-    @test funcs.ϕ ==  pdae_ϕ == spdae.ϕ
-    @test funcs.ψ ==  pdae_ψ == spdae.ψ
+#     funcs = functions(spdae)
+#     @test funcs.v == spdae_v == spdae.v
+#     @test funcs.f == spdae_f == spdae.f
+#     @test funcs.ϕ ==  pdae_ϕ == spdae.ϕ
+#     @test funcs.ψ ==  pdae_ψ == spdae.ψ
 
-    @test spdae == similar(spdae, t₀, q₀, p₀, λ₀)
-    @test spdae == similar(spdae, t₀, q₀, p₀)
-    @test spdae == similar(spdae, q₀, p₀)
+#     @test spdae == similar(spdae, t₀, q₀, p₀, λ₀)
+#     @test spdae == similar(spdae, t₀, q₀, p₀)
+#     @test spdae == similar(spdae, q₀, p₀)
 
-    # spdae1 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀])
-    # spdae2 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀])
-    # spdae3 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀], [λ₀])
-    # spdae4 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀])
-    spdae5 = SPDAE(spdae_eqs..., t₀, q₀, p₀, λ₀, λ₀)
-    spdae6 = SPDAE(spdae_eqs..., t₀, q₀, p₀, λ₀)
-    spdae7 = SPDAE(spdae_eqs..., q₀, p₀, λ₀, λ₀)
-    spdae8 = SPDAE(spdae_eqs..., q₀, p₀, λ₀)
+#     # spdae1 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀], [λ₀])
+#     # spdae2 = SPDAE(spdae_eqs..., t₀, [q₀], [p₀], [λ₀])
+#     # spdae3 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀], [λ₀])
+#     # spdae4 = SPDAE(spdae_eqs..., [q₀], [p₀], [λ₀])
+#     spdae5 = SPDAE(spdae_eqs..., t₀, q₀, p₀, λ₀, λ₀)
+#     spdae6 = SPDAE(spdae_eqs..., t₀, q₀, p₀, λ₀)
+#     spdae7 = SPDAE(spdae_eqs..., q₀, p₀, λ₀, λ₀)
+#     spdae8 = SPDAE(spdae_eqs..., q₀, p₀, λ₀)
 
-    # @test spdae == spdae1
-    # @test spdae == spdae2
-    # @test spdae == spdae3
-    # @test spdae == spdae4
-    @test spdae == spdae5
-    @test spdae == spdae6
-    @test spdae == spdae7
-    @test spdae == spdae8
+#     # @test spdae == spdae1
+#     # @test spdae == spdae2
+#     # @test spdae == spdae3
+#     # @test spdae == spdae4
+#     @test spdae == spdae5
+#     @test spdae == spdae6
+#     @test spdae == spdae7
+#     @test spdae == spdae8
 
-    # @test hash(spdae) == hash(spdae1)
-    # @test hash(spdae) == hash(spdae2)
-    # @test hash(spdae) == hash(spdae3)
-    # @test hash(spdae) == hash(spdae4)
-    @test hash(spdae) == hash(spdae5)
-    @test hash(spdae) == hash(spdae6)
-    @test hash(spdae) == hash(spdae7)
-    @test hash(spdae) == hash(spdae8)
+#     # @test hash(spdae) == hash(spdae1)
+#     # @test hash(spdae) == hash(spdae2)
+#     # @test hash(spdae) == hash(spdae3)
+#     # @test hash(spdae) == hash(spdae4)
+#     @test hash(spdae) == hash(spdae5)
+#     @test hash(spdae) == hash(spdae6)
+#     @test hash(spdae) == hash(spdae7)
+#     @test hash(spdae) == hash(spdae8)
 
-end
+# end

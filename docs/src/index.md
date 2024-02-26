@@ -17,7 +17,7 @@ For each type, there are several subtypes
 * partitioned equations ([`PODE`](@ref), [`PDAE`](@ref), [`PSDE`](@ref)),
 * Hamiltonian equations ([`HODE`](@ref), [`HDAE`](@ref)),
 * Lagrangian equations ([`LODE`](@ref), [`LDAE`](@ref)),
-* split equations ([`SODE`](@ref), [`SPDAE`](@ref), [`SPSDE`](@ref)).
+* split equations ([`SODE`](@ref), [`SPSDE`](@ref)).
 
 Each equation holds a number of functions determining the vector field, constraints, and possibly additional information like periodicity, invariants and the Hamiltonian or Lagrangian.
 In addition to each equation type, *GeometricEquations.jl* implements a corresponding problem type.
