@@ -48,6 +48,8 @@ sode_equations_compatibility(v::Tuple, q::Tuple) = length(q) == length(v)
 
 $(sode_equations)
 
+The dynamical variables ``q`` with initial condition ``q_{0}`` take values in ``\\mathbb{R}^{d}``.
+
 ### Parameters
 
 * `vType <: Union{Tuple,Nothing}`: type of `v`
@@ -182,13 +184,17 @@ _solutions(equ::SODE, params::OptionalParameters) = (q = _get_q(equ, params),)
 
 $(sode_equations)
 
+The dynamical variables ``q`` with initial condition ``q_{0}`` take values in ``\\mathbb{R}^{d}``.
+
 ### Constructors
 
 ```julia
 SODEProblem(v, q, tspan, tstep, ics::NamedTuple; kwargs...)
 SODEProblem(v, q, tspan, tstep, q₀::StateVariable; kwargs...)
+SODEProblem(v, q, tspan, tstep, q₀::AbstractArray; kwargs...)
 SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
 SODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
+SODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
 ```
 
 where `v` is a tuple of functions computing the vector fields for each substep, 

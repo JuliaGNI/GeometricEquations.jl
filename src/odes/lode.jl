@@ -276,9 +276,11 @@ with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}`
 
 ```julia
 LODEProblem(ϑ, f, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
 LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
 ```
 where `ϑ`, `f` and `g` are the functions computing the momentum and the vector fields, respectively,
 `ω` determines the symplectic matrix, and `l` returns the Lagrangian,
@@ -292,10 +294,6 @@ For the interfaces of the functions `ϑ`, `f`, `g`, `ω` and `l` see [`LODE`](@r
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _lode_default_v̄` and `f̄ = f`.
-
-### Function Definitions
-
-$(lode_functions)
 
 """
 const LODEProblem = EquationProblem{LODE}

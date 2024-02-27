@@ -240,9 +240,11 @@ with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}`
 
 ```julia
 IODEProblem(ϑ, f, tspan, tstep, ics; kwargs...)
-IODEProblem(ϑ, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
+IODEProblem(ϑ, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+IODEProblem(ϑ, f, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
 IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
-IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
+IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+IODEProblem(ϑ, f, g, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
 ```
 
 $(iode_constructors)
@@ -257,10 +259,6 @@ For the interfaces of the functions `ϑ`, `f` and `g` see [`IODE`](@ref).
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 an `IODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _iode_default_v̄` and `f̄ = f`.
-
-### Function Definitions
-
-$(iode_functions)
 
 """
 const IODEProblem = EquationProblem{IODE}

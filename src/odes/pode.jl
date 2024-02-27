@@ -150,6 +150,7 @@ take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
 ```julia
 PODEProblem(v, f, tspan, tstep, ics; kwargs...)
 PODEProblem(v, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
+PODEProblem(v, f, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
 ```
 where `v` and `f` are the function computing the vector fields, 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,

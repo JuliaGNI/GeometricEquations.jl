@@ -179,6 +179,7 @@ take values in ``T^{*} Q \\simeq \\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
 ```julia
 HODEProblem(v, f, hamiltonian, tspan, tstep, ics; kwargs...)
 HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
+HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
 ```
 where `v` and `f` are the function computing the vector fields, 
 `hamiltonian` returns the value of the Hamiltonian (i.e. the total energy),
@@ -187,7 +188,7 @@ where `v` and `f` are the function computing the vector fields,
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`.
-For the interfaces of the functions `v`, `f`, `poisson` and `hamiltonian` see [`HODE`](@ref).
+For the interfaces of the functions `v`, `f` and `hamiltonian` see [`HODE`](@ref).
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
 

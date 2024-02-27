@@ -370,7 +370,8 @@ function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::StateVariable, p₀::StateVariable,
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep,
+                     q₀::StateVariable, p₀::StateVariable,
                      λ₀::AlgebraicVariable, μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
     ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
     PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
