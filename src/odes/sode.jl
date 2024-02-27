@@ -242,6 +242,36 @@ GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))
 GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)
 
 
+@doc """
+`SODEEnsemble`: Split Ordinary Differential Equation Ensemble
+
+$(sode_equations)
+
+The dynamical variables ``q`` take values in ``\\mathbb{R}^{d}``.
+
+### Constructors
+
+```julia
+SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
+SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
+SODEEnsemble(v, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+SODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
+SODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
+```
+where `v` is a tuple of functions computing the vector fields for each substep, 
+`q` is an optional tuple of functions computing the solution for each substep,
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is an `AbstractVector` of `NamedTuple`, each with an entry `q`
+of type `StateVariable`.
+The initial condition `q₀` can also be prescribed as an `AbstractVector`
+of `StateVariable` or `AbstractArray{<:Number}`.
+For the interface of the functions `v` and `q` see [`SODE`](@ref).
+
+For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref GeometricEquations.EnsembleProblem) subtypes.
+
+"""
 const SODEEnsemble  = EnsembleProblem{SODE}
 
 function SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<:NamedTuple};
@@ -252,6 +282,16 @@ function SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<:NamedTuple};
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
-    SODEEnsemble(v, nothing, tspan, tstep, ics; kwargs...)
+function SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<:StateVariable}; kwargs...)
+    _ics = [(q = q,) for q in q₀]
+    SODEEnsemble(v, q, tspan, tstep, _ics; kwargs...)
+end
+
+function SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<:AbstractArray}; kwargs...)
+    _q₀ = [StateVariable(q) for q in q₀]
+    SODEEnsemble(v, q, tspan, tstep, _q₀; kwargs...)
+end
+
+function SODEEnsemble(v, args...; kwargs...)
+    SODEEnsemble(v, nothing, args...; kwargs...)
 end

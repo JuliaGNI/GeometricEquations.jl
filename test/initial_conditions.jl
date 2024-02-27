@@ -16,6 +16,16 @@ qₛ = rand(1,3,3)
 pₛ = rand(1,3,3)
 xₛ = rand(2,3,3)
 
+x_arr = [x₀, rand(length(x₀))]
+q_arr = [q₀, rand(length(q₀))]
+p_arr = [p₀, rand(length(p₀))]
+λ_arr = [λ₀, zero(λ₀)]
+
+x_sva = [StateVariable(x_arr[1]), StateVariable(x_arr[2])]
+q_sva = [StateVariable(q_arr[1]), StateVariable(q_arr[2])]
+p_sva = [StateVariable(p_arr[1]), StateVariable(p_arr[2])]
+λ_sva = [StateVariable(λ_arr[1]), StateVariable(λ_arr[2])]
+
 ode_ics   = (q = StateVariable(x₀),)
 pode_ics  = (q = StateVariable(q₀), p = StateVariable(p₀))
 iode_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))
@@ -27,6 +37,28 @@ pode_ics_raw  = (q = q₀, p = p₀)
 iode_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
 hode_ics_raw  = (q = q₀, p = p₀)
 lode_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
+
+ode_ics_tpl = [(q=StateVariable(x_arr[1]),), (q=StateVariable(x_arr[2]),)]
+
+pode_ics_tpl = [
+    (q = StateVariable(q_arr[1]), p = StateVariable(p_arr[1])),
+    (q = StateVariable(q_arr[2]), p = StateVariable(p_arr[2])),
+]
+
+iode_ics_tpl = [
+    (q = StateVariable(q_arr[1]), p = StateVariable(p_arr[1]), λ = AlgebraicVariable(λ_arr[1])),
+    (q = StateVariable(q_arr[2]), p = StateVariable(p_arr[2]), λ = AlgebraicVariable(λ_arr[2])),
+]
+
+hode_ics_tpl = [
+    (q = StateVariable(q_arr[1]), p = StateVariable(p_arr[1])),
+    (q = StateVariable(q_arr[2]), p = StateVariable(p_arr[2])),
+]
+
+lode_ics_tpl = [
+    (q = StateVariable(q_arr[1]), p = StateVariable(p_arr[1]), λ = AlgebraicVariable(λ_arr[1])),
+    (q = StateVariable(q_arr[2]), p = StateVariable(p_arr[2]), λ = AlgebraicVariable(λ_arr[2])),
+]
 
 dae_ics   = (q = StateVariable(x₀), λ = AlgebraicVariable(λ₀))
 pdae_ics  = (q = StateVariable(q₀), p = StateVariable(p₀), λ = AlgebraicVariable(λ₀))

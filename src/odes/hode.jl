@@ -220,6 +220,32 @@ function GeometricBase.periodicity(prob::HODEProblem)
 end
 
 
+@doc """
+`HODEEnsemble`: Hamiltonian Ordinary Differential Equation Ensemble
+
+$(hode_equations)
+
+The dynamical variables ``(q,p)`` take values in ``T^{*} Q \\simeq \\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
+
+### Constructors
+
+```julia
+HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
+HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
+```
+where `v` and `f` are the function computing the vector fields, 
+`hamiltonian` returns the value of the Hamiltonian (i.e. the total energy),
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is an `AbstractVector` of `NamedTuple`, each with entries `q` and `p`.
+The initial conditions `q₀` and `p₀` can also be prescribed, each as an
+`AbstractVector` of `StateVariable` or `AbstractArray{<:Number}`.
+For the interfaces of the functions `v`, `f` and `hamiltonian` see [`HODE`](@ref).
+
+For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref GeometricEquations.EnsembleProblem) subtypes.
+
+"""
 const HODEEnsemble = EnsembleProblem{HODE}
 
 function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple};
@@ -228,4 +254,15 @@ function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<:Nam
         periodicity = NullPeriodicity())
     equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<:StateVariable}, p₀::AbstractVector{<:StateVariable}; kwargs...)
+    _ics = [(q = q, p = p) for (q,p) in zip(q₀,p₀)]
+    HODEEnsemble(v, f, hamiltonian, tspan, tstep, _ics; kwargs...)
+end
+
+function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}; kwargs...)
+    _q₀ = [StateVariable(q) for q in q₀]
+    _p₀ = [StateVariable(p) for p in p₀]
+    HODEEnsemble(v, f, hamiltonian, tspan, tstep, _q₀, _p₀; kwargs...)
 end

@@ -2,6 +2,7 @@
 using Parameters: @unpack
 
 import GeometricBase: AbstractStochasticProcess
+import GeometricEquations: _iode_default_g, _lode_default_g
 import GeometricEquations: _idae_default_v̄, _ldae_default_v̄
 
 struct TestNoise <: AbstractStochasticProcess end
@@ -90,6 +91,8 @@ function iode_h(t, q, v, params)
     v[1]^2/2 + cos(q[1])
 end
 
+const iode_eqs_without_g = (iode_ϑ, iode_f)
+const iode_eqs_default_g = (iode_ϑ, iode_f, _iode_default_g)
 const iode_eqs = (iode_ϑ, iode_f, iode_g)
 
 
@@ -104,6 +107,8 @@ function lode_ω(ω, t, q, v, params)
     ω[2,2] = v[1]
 end
 
+const lode_eqs_without_g = (iode_ϑ, iode_f, lode_ω, lode_l)
+const lode_eqs_default_g = (iode_ϑ, iode_f, _lode_default_g, lode_ω, lode_l)
 const lode_eqs = (iode_ϑ, iode_f, iode_g, lode_ω, lode_l)
 
 

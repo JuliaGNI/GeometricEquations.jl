@@ -121,27 +121,14 @@ end
     @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, _copy(ode_ics, 3))
     @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
 
+    ens = EnsembleProblem(ODE(ode_eqs...), (t₀,t₁), Δt, ode_ics_tpl)
 
-
-    ics_arr = [x₀, rand(length(x₀))]
-    ics_sva = [StateVariable(ics_arr[1]), StateVariable(ics_arr[2])]
-    ics_tpl = [(q=StateVariable(ics_arr[1]),), (q=StateVariable(ics_arr[2]),)]
-    
-    ens  = EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics_tpl)
-
-    ens1 = ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ics_tpl)
-    ens2 = ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ics_tpl; parameters = NullParameters())
-    ens3 = ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ics_sva)
-    ens4 = ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ics_sva; parameters = NullParameters())
-    ens5 = ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ics_arr)
-    ens6 = ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ics_arr; parameters = NullParameters())
-
-    @test ens1 == ens
-    @test ens2 == ens
-    @test ens3 == ens
-    @test ens4 == ens
-    @test ens5 == ens
-    @test ens6 == ens
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl)
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl; parameters = NullParameters())
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_sva)
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_sva; parameters = NullParameters())
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_arr)
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_arr; parameters = NullParameters())
 
 end
 
@@ -152,6 +139,24 @@ end
     @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
     @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, _copy(ode_ics, 3))
     @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
+    
+    ens = EnsembleProblem(SODE(sode_eqs), (t₀,t₁), Δt, ode_ics_tpl)
+
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_tpl)
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_tpl; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_sva)
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_sva; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_arr)
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_arr; parameters = NullParameters())
+
+    ens = EnsembleProblem(SODE(sode_eqs, sode_sols), (t₀,t₁), Δt, ode_ics_tpl)
+
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_tpl)
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_tpl; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_sva)
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_sva; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_arr)
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_arr; parameters = NullParameters())
 
 end
 
@@ -161,6 +166,15 @@ end
     @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, _copy(pode_ics, 3))
     @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, _copy(pode_ics, 3); parameters = _copy((α=1,), 3))
 
+    ens = EnsembleProblem(PODE(pode_eqs...), (t₀,t₁), Δt, pode_ics_tpl)
+
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl)
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl; parameters = NullParameters())
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_sva, p_sva)
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_sva, p_sva; parameters = NullParameters())
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_arr, p_arr)
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_arr, p_arr; parameters = NullParameters())
+
 end
 
 
@@ -168,6 +182,32 @@ end
 
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, _copy(iode_ics, 3))
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, _copy(iode_ics, 3); parameters = _copy((α=1,), 3))
+
+    ens = EnsembleProblem(IODE(iode_eqs...), (t₀,t₁), Δt, iode_ics_tpl)
+
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl)
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva)
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr)
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_sva, p_sva)
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_sva, p_sva; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_arr, p_arr)
+    @test ens == IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, q_arr, p_arr; parameters = NullParameters())
+
+    ens = EnsembleProblem(IODE(iode_eqs_default_g...), (t₀,t₁), Δt, iode_ics_tpl)
+
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, iode_ics_tpl)
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, iode_ics_tpl; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva)
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr)
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva)
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva; parameters = NullParameters())
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr)
+    @test ens == IODEEnsemble(iode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr; parameters = NullParameters())
 
 end
 
@@ -177,6 +217,15 @@ end
     @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, _copy(hode_ics, 3))
     @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, _copy(hode_ics, 3); parameters = _copy((α=1,), 3))
 
+    ens = EnsembleProblem(HODE(hode_eqs...), (t₀,t₁), Δt, hode_ics_tpl)
+
+    @test ens == HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_tpl)
+    @test ens == HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_tpl; parameters = NullParameters())
+    @test ens == HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, q_sva, p_sva)
+    @test ens == HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, q_sva, p_sva; parameters = NullParameters())
+    @test ens == HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, q_arr, p_arr)
+    @test ens == HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, q_arr, p_arr; parameters = NullParameters())
+
 end
 
 
@@ -184,6 +233,32 @@ end
 
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3))
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3); parameters = _copy((α=1,), 3))
+
+    ens = EnsembleProblem(LODE(lode_eqs...), (t₀,t₁), Δt, lode_ics_tpl)
+
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl)
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva)
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr)
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_sva, p_sva)
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_sva, p_sva; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_arr, p_arr)
+    @test ens == LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, q_arr, p_arr; parameters = NullParameters())
+
+    ens = EnsembleProblem(LODE(lode_eqs_default_g...), (t₀,t₁), Δt, lode_ics_tpl)
+
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, lode_ics_tpl)
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, lode_ics_tpl; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva)
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva, λ_sva; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr)
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr, λ_arr; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva)
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_sva, p_sva; parameters = NullParameters())
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr)
+    @test ens == LODEEnsemble(lode_eqs_without_g..., (t₀,t₁), Δt, q_arr, p_arr; parameters = NullParameters())
 
 end
 

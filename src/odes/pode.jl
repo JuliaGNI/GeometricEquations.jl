@@ -190,6 +190,31 @@ function GeometricBase.periodicity(prob::PODEProblem)
 end
 
 
+@doc """
+`PODEEnsemble`: Partitioned Ordinary Differential Equation Ensemble
+
+$(pode_equations)
+
+The dynamical variables ``(q,p)`` take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
+
+### Constructors
+
+```julia
+PODEEnsemble(v, f, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
+PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
+```
+where `v` and `f` are the function computing the vector fields, 
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is an `AbstractVector` of `NamedTuple`, each with entries `q` and `p`.
+The initial conditions `q₀` and `p₀` can also be prescribed, each as an
+`AbstractVector` of `StateVariable` or `AbstractArray{<:Number}`.
+For the interfaces of the functions `v` and `f` see [`PODE`](@ref).
+
+For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref GeometricEquations.EnsembleProblem) subtypes.
+
+"""
 const PODEEnsemble  = EnsembleProblem{PODE}
 
 function PODEEnsemble(v, f, tspan, tstep, ics::AbstractVector{<:NamedTuple};
@@ -198,4 +223,15 @@ function PODEEnsemble(v, f, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         periodicity = NullPeriodicity())
     equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
+end
+
+function PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<:StateVariable}, p₀::AbstractVector{<:StateVariable}; kwargs...)
+    _ics = [(q = q, p = p) for (q,p) in zip(q₀,p₀)]
+    PODEEnsemble(v, f, tspan, tstep, _ics; kwargs...)
+end
+
+function PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}; kwargs...)
+    _q₀ = [StateVariable(q) for q in q₀]
+    _p₀ = [StateVariable(p) for p in p₀]
+    PODEEnsemble(v, f, tspan, tstep, _q₀, _p₀; kwargs...)
 end

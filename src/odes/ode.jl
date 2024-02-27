@@ -176,6 +176,32 @@ end
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
 
 
+@doc """
+`ODEEnsemble`: Ordinary Differential Equation Ensemble
+
+$(ode_equations)
+
+The dynamical variables ``q`` take values in ``\\mathbb{R}^{d}``.
+
+### Constructors
+
+```julia
+ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
+ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
+```
+where `v` is the function computing the vector field, 
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is an `AbstractVector` of `NamedTuple`, each with an entry `q`
+of type `StateVariable`.
+The initial condition `q₀` can also be prescribed as an `AbstractVector`
+of `StateVariable` or `AbstractArray{<:Number}`.
+For the interface of the function `v` see [`ODE`](@ref).
+
+For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref GeometricEquations.EnsembleProblem) subtypes.
+
+"""
 const ODEEnsemble = EnsembleProblem{ODE}
 
 function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple};
@@ -192,6 +218,6 @@ function ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<:StateVariable}; kwa
 end
 
 function ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<:AbstractArray}; kwargs...)
-    _ics = [StateVariable(q) for q in q₀]
-    ODEEnsemble(v, tspan, tstep, _ics; kwargs...)
+    _q₀ = [StateVariable(q) for q in q₀]
+    ODEEnsemble(v, tspan, tstep, _q₀; kwargs...)
 end

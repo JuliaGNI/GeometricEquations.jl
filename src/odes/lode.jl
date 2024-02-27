@@ -336,7 +336,39 @@ end
 @inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
 
 
-const LODEEnsemble  = EnsembleProblem{LODE}
+@doc """
+`LODEEnsemble`: Lagrangian Ordinary Differential Equation Ensemble
+
+$(lode_equations)
+
+The dynamical variables ``(q,p)`` take values in ``T^{*} Q \\simeq \\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
+The algebraic variable ``λ`` takes values in ``\\mathbb{R}^{m}``.
+
+### Constructors
+
+```julia
+LODEProblem(ϑ, f, ω, l, tspan, tstep, ics; kwargs...)
+LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+```
+where `ϑ`, `f` and `g` are the functions computing the momentum and the vector fields, respectively,
+`ω` determines the symplectic matrix, and `l` returns the Lagrangian,
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
+The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed
+directly, with `StateVariable` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
+For the interfaces of the functions `ϑ`, `f`, `g`, `ω` and `l` see [`LODE`](@ref).
+
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
+a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
+values `v̄ = _lode_default_v̄` and `f̄ = f`.
+
+"""
+const LODEEnsemble = EnsembleProblem{LODE}
 
 function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
@@ -349,6 +381,22 @@ function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::AbstractVector{<:Named
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function LODEEnsemble(ϑ, f, ω, l, args...; kwargs...)
-    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, args...; kwargs...)
+function LODEEnsemble(ϑ, f, ω, l, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, tspan, tstep, ics; kwargs...)
+end
+
+function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, q₀::AbstractVector{<:StateVariable}, p₀::AbstractVector{<:StateVariable}, λ₀::AbstractVector{<:AlgebraicVariable}; kwargs...)
+    _ics = [(q = q, p = p, λ = λ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+    LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, _ics; kwargs...)
+end
+
+function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}, λ₀::AbstractVector{<:AbstractArray} = zerovector(q₀); kwargs...)
+    _q₀ = [StateVariable(q) for q in q₀]
+    _p₀ = [StateVariable(p) for p in p₀]
+    _λ₀ = [AlgebraicVariable(λ) for λ in λ₀]
+    LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, _q₀, _p₀, _λ₀; kwargs...)
+end
+
+function LODEEnsemble(ϑ, f, ω, l, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}, λ₀::AbstractVector{<:AbstractArray} = zerovector(q₀); kwargs...)
+    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, tspan, tstep, q₀, p₀, λ₀; kwargs...)
 end

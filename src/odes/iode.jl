@@ -294,7 +294,43 @@ end
 @inline GeometricBase.nconstraints(prob::IODEProblem) = ndims(prob)
 
 
-const IODEEnsemble  = EnsembleProblem{IODE}
+@doc """
+`IODEEnsemble`: Implicit Ordinary Differential Equation Ensemble
+ 
+$(iode_equations)
+
+The dynamical variables ``(q,p)`` take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
+The algebraic variable ``λ`` takes values in ``\\mathbb{R}^{m}``.
+
+### Constructors
+
+```julia
+IODEEnsemble(ϑ, f, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+IODEEnsemble(ϑ, f, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}, λ₀::AbstractVector{<: AlgebraicVariable}; kwargs...)
+IODEEnsemble(ϑ, f, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}, λ₀::AbstractVector{<: AbstractArray}; kwargs...)
+IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}, λ₀::AbstractVector{<: AlgebraicVariable}; kwargs...)
+IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}, λ₀::AbstractVector{<: AbstractArray}; kwargs...)
+```
+
+$(iode_constructors)
+
+`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`tstep` is the time step to be used in the simulation, and
+`ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
+`ics` is an `AbstractVector` of `NamedTuple`, each with entries `q`, `p` and `λ`.
+The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed, each as an
+`AbstractVector` of `StateVariable` or `AbstractArray{<:Number}`.
+For the interfaces of the functions `ϑ`, `f` and `g` see [`IODE`](@ref).
+
+In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
+an `IODEEnsemble` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
+values `v̄ = _iode_default_v̄` and `f̄ = f`.
+
+For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref GeometricEquations.EnsembleProblem) subtypes.
+
+"""
+const IODEEnsemble = EnsembleProblem{IODE}
 
 function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<:NamedTuple};
         invariants = NullInvariants(),
@@ -310,3 +346,20 @@ end
 function IODEEnsemble(ϑ, f, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
     IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, ics; kwargs...)
 end
+
+function IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<:StateVariable}, p₀::AbstractVector{<:StateVariable}, λ₀::AbstractVector{<:AlgebraicVariable}; kwargs...)
+    _ics = [(q = q, p = p, λ = λ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+    IODEEnsemble(ϑ, f, g, tspan, tstep, _ics; kwargs...)
+end
+
+function IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}, λ₀::AbstractVector{<:AbstractArray} = zerovector(q₀); kwargs...)
+    _q₀ = [StateVariable(q) for q in q₀]
+    _p₀ = [StateVariable(p) for p in p₀]
+    _λ₀ = [AlgebraicVariable(λ) for λ in λ₀]
+    IODEEnsemble(ϑ, f, g, tspan, tstep, _q₀, _p₀, _λ₀; kwargs...)
+end
+
+function IODEEnsemble(ϑ, f, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}, λ₀::AbstractVector{<:AbstractArray} = zerovector(q₀); kwargs...)
+    IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, q₀, p₀, λ₀; kwargs...)
+end
+
