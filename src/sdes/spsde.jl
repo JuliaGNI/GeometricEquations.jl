@@ -237,8 +237,8 @@ function SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, ics::NamedTuple
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
-    ics = (q = q₀, p = p₀)
+function SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+    ics = (q = StateVariable(q₀), p = StateVariable(p₀))
     SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, ics; kwargs...)
 end
 

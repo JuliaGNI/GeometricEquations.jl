@@ -205,8 +205,8 @@ function PSDEProblem(v, f, B, G, noise, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function PSDEProblem(v, f, B, G, noise, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
-    ics = (q = q₀, p = p₀)
+function PSDEProblem(v, f, B, G, noise, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+    ics = (q = StateVariable(q₀), p = StateVariable(p₀))
     PSDEProblem(v, f, B, G, noise, tspan, tstep, ics; kwargs...)
 end
 

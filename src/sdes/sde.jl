@@ -173,8 +173,8 @@ function SDEProblem(v, B, noise, tspan, tstep, ics::NamedTuple; invariants = Nul
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SDEProblem(v, B, noise, tspan, tstep, q₀::StateVariable; kwargs...)
-    ics = (q = q₀,)
+function SDEProblem(v, B, noise, tspan, tstep, q₀::AbstractArray; kwargs...)
+    ics = (q = StateVariable(q₀),)
     SDEProblem(v, B, noise, tspan, tstep, ics; kwargs...)
 end
 
