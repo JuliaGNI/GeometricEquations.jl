@@ -1,5 +1,5 @@
 using GeometricEquations: parameter_types
-using GeometricEquations: AlgebraicVariable, StateVariable
+using GeometricEquations: AlgebraicVariable, StateVariable, TimeVariable
 using Random
 
 
