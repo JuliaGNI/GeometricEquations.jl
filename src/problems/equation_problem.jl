@@ -58,7 +58,7 @@ struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <:
                         functionsType <: NamedTuple,
                         solutionsType <: NamedTuple,
                         icsType <: NamedTuple,
-                        paramsType <: OptionalParameters} <: GeometricProblem
+                        paramsType <: OptionalParameters} <: GeometricProblem{superType}
     equation::equType
     functions::functionsType
     solutions::solutionsType

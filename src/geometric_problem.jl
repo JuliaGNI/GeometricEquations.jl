@@ -1,7 +1,7 @@
 """
 Abstract type that describes a generic interface for different problem types.
 """
-abstract type GeometricProblem <: AbstractProblem end
+abstract type GeometricProblem{superType} <: AbstractProblem end
 
 "Returns the parent equation object of the problem."
 GeometricBase.equation(prob::GeometricProblem) = error("equation() not implemented for ", typeof(prob), ".")

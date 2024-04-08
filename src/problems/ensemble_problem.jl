@@ -92,7 +92,7 @@ struct EnsembleProblem{superType <: GeometricEquation, dType <: Number, tType <:
                  functionsType <: NamedTuple,
                  solutionsType <: NamedTuple,
                  icsType <: AbstractVector{<:NamedTuple},
-                 paramsType <: AbstractVector{<:OptionalParameters}} <: GeometricProblem
+                 paramsType <: AbstractVector{<:OptionalParameters}} <: GeometricProblem{superType}
     equation::equType
     functions::functionsType
     solutions::solutionsType

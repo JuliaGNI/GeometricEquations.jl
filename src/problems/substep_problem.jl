@@ -1,11 +1,11 @@
 
-struct SubstepProblem{DT, TT,
-        superType <: EquationProblem, 
+struct SubstepProblem{superType <: GeometricEquation, dType <: Number, tType <: Real,
+        problemType <: EquationProblem,
         functionsType <: NamedTuple,
         solutionsType <: NamedTuple,
-        cType <: Real} <: GeometricProblem
+        cType <: Real} <: GeometricProblem{superType}
 
-    problem::superType
+    problem::problemType
     functions::functionsType
     solutions::solutionsType
     coefficient::cType
@@ -28,7 +28,7 @@ struct SubstepProblem{DT, TT,
         end
         sol_tuple = NamedTuple{keys}(sols)
 
-        new{datatype(problem), timetype(problem), typeof(problem), typeof(fnc_tuple), typeof(sol_tuple), typeof(c)}(problem, fnc_tuple, sol_tuple, c, i)
+        new{SODE, datatype(problem), timetype(problem), typeof(problem), typeof(fnc_tuple), typeof(sol_tuple), typeof(c)}(problem, fnc_tuple, sol_tuple, c, i)
     end
 end
 
