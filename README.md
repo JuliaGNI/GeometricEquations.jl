@@ -7,3 +7,12 @@
 [![Coverage](https://codecov.io/gh/JuliaGNI/GeometricEquations.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaGNI/GeometricEquations.jl)
 
 *GeometricEquations.jl* define different types of ordinary differential equations, differential algebraic and stochastic equations, that hold a number of functions determining the vector field, constraints, initial conditions, and possibly additional information like parameters, periodicity, invariants and the Hamiltonian or Lagrangian.
+
+
+## Development
+
+We are using git hooks, e.g., to enforce that all tests pass before pushing.
+In order to activate these hooks, the following command must be executed once:
+```
+git config core.hooksPath .githooks
+```
