@@ -17,7 +17,7 @@ include("initial_conditions.jl")
 
     @test datatype(prob) == eltype(x₀)
     @test timetype(prob) == typeof(t₀)
-    @test arrtype(prob) == StateVariable{eltype(x₀), ndims(x₀), typeof(x₀)}
+    @test arrtype(prob) == StateVariable{eltype(x₀), ndims(x₀), typeof(x₀), Tuple{eltype(x₀),eltype(x₀)}, Missing}
     @test equtype(prob) == ODE
 
     @test tspan(prob) == (t₀,t₁)
