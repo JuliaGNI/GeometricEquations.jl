@@ -177,6 +177,22 @@ function Base.show(io::IO, equation::IODE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::IODE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic = zeroalgebraic(q₀))
+    (
+        q = _statevariable(q₀),
+        p = _statevariable(p₀),
+        λ = _algebraicvariable(λ₀),
+    )
+end
+
+function initialstate(::IODE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀))
+    [(
+        q = _statevariable(q),
+        p = _statevariable(p),
+        λ = _algebraicvariable(λ)
+    ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+end
+
 function check_initial_conditions(::IODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
@@ -263,18 +279,13 @@ values `v̄ = _iode_default_v̄` and `f̄ = f`.
 """
 const IODEProblem = EquationProblem{IODE}
 
-function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple;
+function IODEProblem(ϑ, f, g, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = _iode_default_v̄, f̄ = f)
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function IODEProblem(ϑ, f, g, tspan, tstep, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic = zeroalgebraic(q₀); kwargs...)
-    ics = (q = _statevariable(q₀), p = _statevariable(p₀), λ = _algebraicvariable(λ₀))
-    IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function IODEProblem(ϑ, f, args...; kwargs...)
@@ -326,7 +337,7 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const IODEEnsemble = EnsembleProblem{IODE}
 
-function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::InitialConditions;
+function IODEEnsemble(ϑ, f, g, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
@@ -334,18 +345,9 @@ function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::InitialConditions;
         f̄ = f
     )
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
-function IODEEnsemble(ϑ, f, tspan::Tuple, tstep::Real, ics::InitialConditions; kwargs...)
-    IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, ics; kwargs...)
-end
-
-function IODEEnsemble(ϑ, f, g, tspan::Tuple, tstep::Real, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀); kwargs...)
-    _ics = [(q = _statevariable(q), p = _statevariable(p), λ = _algebraicvariable(λ)) for (q,p,λ) in zip(q₀,p₀,λ₀)]
-    IODEEnsemble(ϑ, f, g, tspan, tstep, _ics; kwargs...)
-end
-
-function IODEEnsemble(ϑ, f, tspan::Tuple, tstep::Real, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀); kwargs...)
-    IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector; kwargs...)
+function IODEEnsemble(ϑ, f, args...; kwargs...)
+    IODEEnsemble(ϑ, f, _iode_default_g, args...; kwargs...)
 end

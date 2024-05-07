@@ -102,6 +102,20 @@ function Base.show(io::IO, equation::PODE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::PODE, q₀::InitialState, p₀::InitialState)
+    (
+        q = _statevariable(q₀),
+        p = _statevariable(p₀),
+    )
+end
+
+function initialstate(::PODE, q₀::InitialStateVector, p₀::InitialStateVector)
+    [(
+        q = _statevariable(q),
+        p = _statevariable(p),
+    ) for (q,p) in zip(q₀,p₀)]
+end
+
 function check_initial_conditions(::PODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
@@ -169,17 +183,12 @@ $(pode_functions)
 """
 const PODEProblem = EquationProblem{PODE}
 
-function PODEProblem(v, f, tspan, tstep, ics::NamedTuple;
+function PODEProblem(v, f, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function PODEProblem(v, f, tspan, tstep, q₀::InitialState, p₀::InitialState; kwargs...)
-    ics = (q = _statevariable(q₀), p = _statevariable(p₀))
-    PODEProblem(v, f, tspan, tstep, ics; kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function GeometricBase.periodicity(prob::PODEProblem)
@@ -214,19 +223,10 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const PODEEnsemble  = EnsembleProblem{PODE}
 
-function PODEEnsemble(v, f, tspan, tstep, ics::InitialConditions;
+function PODEEnsemble(v, f, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function PODEEnsemble(v, f, tspan, tstep, q₀::ISV, p₀::ISV; kwargs...) where {ISV <: InitialStateVector}
-    _ics = [(q = _statevariable(q), p = _statevariable(p)) for (q,p) in zip(q₀,p₀)]
-    PODEEnsemble(v, f, tspan, tstep, _ics; kwargs...)
-end
-
-function PODEEnsemble(v, f, tspan, tstep, q₀::IS, p₀::IS; kwargs...) where {IS <: InitialState}
-    PODEEnsemble(v, f, tspan, tstep, (q = _statevariable(q₀), p = _statevariable(p₀)); kwargs...)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end

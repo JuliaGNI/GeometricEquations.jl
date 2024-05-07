@@ -97,6 +97,18 @@ function Base.show(io::IO, equation::ODE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::ODE, q₀::InitialState)
+    (
+        q = _statevariable(q₀),
+    )
+end
+
+function initialstate(::ODE, q₀::InitialStateVector)
+    [(
+        q = _statevariable(q),
+    ) for q in q₀]
+end
+
 function check_initial_conditions(::ODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     typeof(ics.q) <: StateVariable || return false
@@ -156,17 +168,12 @@ $(ode_functions)
 """
 const ODEProblem = EquationProblem{ODE}
 
-function ODEProblem(v, tspan, tstep, ics::NamedTuple;
+function ODEProblem(v, tspan, tstep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = ODE(v, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function ODEProblem(v, tspan, tstep, q₀::InitialState; kwargs...)
-    ics = (q = _statevariable(q₀),)
-    ODEProblem(v, tspan, tstep, ics; kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
@@ -200,19 +207,10 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const ODEEnsemble = EnsembleProblem{ODE}
 
-function ODEEnsemble(v, tspan, tstep, ics::InitialConditions;
+function ODEEnsemble(v, tspan, tstep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = ODE(v, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function ODEEnsemble(v, tspan, tstep, q₀::InitialStateVector; kwargs...)
-    _ics = [(q = _statevariable(q),) for q in q₀]
-    ODEEnsemble(v, tspan, tstep, _ics; kwargs...)
-end
-
-function ODEEnsemble(v, tspan, tstep, q₀::InitialState; kwargs...)
-    ODEEnsemble(v, tspan, tstep, (q = _statevariable(q₀),); kwargs...)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
