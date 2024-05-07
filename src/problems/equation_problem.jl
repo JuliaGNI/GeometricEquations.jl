@@ -148,10 +148,10 @@ end
 
 function Base.similar(prob::EquationProblem, tspan, tstep = tstep(prob), ics = prob.ics,
                       parameters = parameters(prob))
-    EquationProblem(equation(prob), tspan, tstep, ics, parameters)
+    EquationProblem(equation(prob), tspan, tstep, initialstate(equation(prob), ics...), parameters)
 end
 
 function Base.similar(prob::EquationProblem; tspan = tspan(prob), tstep = tstep(prob),
                       ics = prob.ics, parameters = parameters(prob))
-    similar(prob, tspan, tstep, ics, parameters)
+    similar(prob, tspan, tstep, initialstate(equation(prob), ics...), parameters)
 end

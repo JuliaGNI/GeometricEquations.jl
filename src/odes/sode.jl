@@ -143,6 +143,18 @@ function check_initial_conditions(::SODE, ics::NamedTuple)
     return true
 end
 
+function initialstate(::SODE, q₀::InitialState)
+    (
+        q = _statevariable(q₀),
+    )
+end
+
+function initialstate(::SODE, q₀::InitialStateVector)
+    [(
+        q = _statevariable(q),
+    ) for q in q₀]
+end
+
 function check_methods(equ::SODE, tspan, ics, params)
     if hasvectorfield(equ)
         for v in equ.v
@@ -214,21 +226,16 @@ $(sode_functions)
 """
 const SODEProblem = EquationProblem{SODE}
 
-function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, ics::NamedTuple;
+function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
-function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::InitialState; kwargs...)
-    ics = (q = _statevariable(q₀),)
-    SODEProblem(v, q, tspan, tstep, ics; kwargs...)
-end
-
-function SODEProblem(v, tspan, tstep, q₀::InitialState; kwargs...)
-    SODEProblem(v, nothing, tspan, tstep, q₀; kwargs...)
+function SODEProblem(v, args...; kwargs...)
+    SODEProblem(v, nothing, args...; kwargs...)
 end
 
 GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))
@@ -267,21 +274,12 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const SODEEnsemble  = EnsembleProblem{SODE}
 
-function SODEEnsemble(v, q, tspan, tstep, ics::InitialConditions;
+function SODEEnsemble(v, q, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function SODEEnsemble(v, q, tspan, tstep, q₀::InitialStateVector; kwargs...)
-    _ics = [(q = _statevariable(q),) for q in q₀]
-    SODEEnsemble(v, q, tspan, tstep, _ics; kwargs...)
-end
-
-function SODEEnsemble(v, q, tspan, tstep, q₀::InitialState; kwargs...)
-    SODEEnsemble(v, q, tspan, tstep, (q = _statevariable(q₀),); kwargs...)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function SODEEnsemble(v, args...; kwargs...)

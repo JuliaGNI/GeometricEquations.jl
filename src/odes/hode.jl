@@ -126,6 +126,20 @@ function Base.show(io::IO, equation::HODE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::HODE, q₀::InitialState, p₀::InitialState)
+    (
+        q = _statevariable(q₀),
+        p = _statevariable(p₀),
+    )
+end
+
+function initialstate(::HODE, q₀::InitialStateVector, p₀::InitialStateVector)
+    [(
+        q = _statevariable(q),
+        p = _statevariable(p),
+    ) for (q,p) in zip(q₀,p₀)]
+end
+
 function check_initial_conditions(::HODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
@@ -199,17 +213,12 @@ $(hode_functions)
 """
 const HODEProblem = EquationProblem{HODE}
 
-function HODEProblem(v, f, hamiltonian, tspan, tstep, ics::NamedTuple;
+function HODEProblem(v, f, hamiltonian, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::InitialState, p₀::InitialState; kwargs...)
-    ics = (q = _statevariable(q₀), p = _statevariable(p₀))
-    HODEProblem(v, f, hamiltonian, tspan, tstep, ics; kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function GeometricBase.periodicity(prob::HODEProblem)
@@ -245,19 +254,10 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const HODEEnsemble = EnsembleProblem{HODE}
 
-function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::InitialConditions;
+function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::ISV, p₀::ISV; kwargs...) where {ISV <: InitialStateVector}
-    _ics = [(q = _statevariable(q), p = _statevariable(p)) for (q,p) in zip(q₀,p₀)]
-    HODEEnsemble(v, f, hamiltonian, tspan, tstep, _ics; kwargs...)
-end
-
-function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::IS, p₀::IS; kwargs...) where {IS <: InitialState}
-    HODEEnsemble(v, f, hamiltonian, tspan, tstep, (q = _statevariable(q₀), p = _statevariable(p₀)); kwargs...)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end

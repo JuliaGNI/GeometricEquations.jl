@@ -208,6 +208,22 @@ function Base.show(io::IO, equation::LODE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::LODE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic = zeroalgebraic(q₀))
+    (
+        q = _statevariable(q₀),
+        p = _statevariable(p₀),
+        λ = _algebraicvariable(λ₀),
+    )
+end
+
+function initialstate(::LODE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀))
+    [(
+        q = _statevariable(q),
+        p = _statevariable(p),
+        λ = _algebraicvariable(λ)
+    ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+end
+
 function check_initial_conditions(::LODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :v) || haskey(ics, :p) || return false
@@ -298,22 +314,13 @@ values `v̄ = _lode_default_v̄` and `f̄ = f`.
 """
 const LODEProblem = EquationProblem{LODE}
 
-function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple;
+function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = _lode_default_v̄, f̄ = f)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function LODEProblem(ϑ, f, ω, l, tspan::Tuple, tstep::Real, ics::NamedTuple; kwargs...)
-    LODEProblem(ϑ, f, _lode_default_g, ω, l, tspan, tstep, ics; kwargs...)
-end
-
-function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic = zeroalgebraic(q₀); kwargs...)
-    ics = (q = _statevariable(q₀), p = _statevariable(p₀), λ = _algebraicvariable(λ₀))
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function LODEProblem(ϑ, f, ω, l, args...; kwargs...)
@@ -362,7 +369,7 @@ values `v̄ = _lode_default_v̄` and `f̄ = f`.
 """
 const LODEEnsemble = EnsembleProblem{LODE}
 
-function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::InitialConditions;
+function LODEEnsemble(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
@@ -370,18 +377,9 @@ function LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, ics::InitialConditions;
         f̄ = f
     )
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
-function LODEEnsemble(ϑ, f, ω, l, tspan::Tuple, tstep::Real, ics::InitialConditions; kwargs...)
-    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, tspan, tstep, ics; kwargs...)
-end
-
-function LODEEnsemble(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀); kwargs...)
-    _ics = [(q = _statevariable(q), p = _statevariable(p), λ = _algebraicvariable(λ)) for (q,p,λ) in zip(q₀,p₀,λ₀)]
-    LODEEnsemble(ϑ, f, g, ω, l, tspan, tstep, _ics; kwargs...)
-end
-
-function LODEEnsemble(ϑ, f, ω, l, tspan::Tuple, tstep::Real, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀); kwargs...)
-    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, tspan, tstep, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector; kwargs...)
+function LODEEnsemble(ϑ, f, ω, l, args...; kwargs...)
+    LODEEnsemble(ϑ, f, _lode_default_g, ω, l, args...; kwargs...)
 end
