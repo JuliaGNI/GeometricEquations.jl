@@ -38,6 +38,18 @@ iode_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
 hode_ics_raw  = (q = q₀, p = p₀)
 lode_ics_raw  = (q = q₀, p = p₀, λ = λ₀)
 
+ode_ics_arr   = (q = x_arr,)
+pode_ics_arr  = (q = q_arr, p = p_arr)
+iode_ics_arr  = (q = q_arr, p = p_arr, λ = λ_arr)
+hode_ics_arr  = (q = q_arr, p = p_arr)
+lode_ics_arr  = (q = q_arr, p = p_arr, λ = λ_arr)
+
+ode_ics_sva   = (q = x_sva,)
+pode_ics_sva  = (q = q_sva, p = p_sva)
+iode_ics_sva  = (q = q_sva, p = p_sva, λ = λ_sva)
+hode_ics_sva  = (q = q_sva, p = p_sva)
+lode_ics_sva  = (q = q_sva, p = p_sva, λ = λ_sva)
+
 ode_ics_tpl = [(q=StateVariable(x_arr[1]),), (q=StateVariable(x_arr[2]),)]
 
 pode_ics_tpl = [

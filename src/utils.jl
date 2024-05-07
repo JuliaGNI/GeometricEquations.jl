@@ -1,4 +1,31 @@
 
+const InitialState = Union{StateVariable{<:Number}, AbstractArray{<:Number}}
+const InitialAlgebraic = Union{AlgebraicVariable{<:Number}, AbstractArray{<:Number}}
+
+const InitialStateVector = Union{AbstractVector{<:StateVariable{<:Number}}, AbstractVector{<:AbstractArray{<:Number}}}
+const InitialAlgebraicVector = Union{AbstractVector{<:AlgebraicVariable{<:Number}}, AbstractVector{<:AbstractArray{<:Number}}}
+
+const InitialConditions = Union{NamedTuple, AbstractVector{<:NamedTuple}}
+
+_statevariable(x::StateVariable) = x
+_statevariable(x::AbstractArray) = StateVariable(x)
+
+_algebraicvariable(x::AlgebraicVariable) = x
+_algebraicvariable(x::AbstractArray) = AlgebraicVariable(x)
+
+zeroalgebraic(x::AbstractArray{<:Number}) = zero(x)
+zeroalgebraic(x::AbstractStateVariable{<:Number}) = AlgebraicVariable(zero(parent(x)))
+
+function zeroalgebraic(X::InitialStateVector)
+    zeroalg = similar(X, typeof(zeroalgebraic(X[begin])))
+
+    for i in eachindex(X)
+        zeroalg[i] = zeroalgebraic(X[i])
+    end
+
+    return zeroalg
+end
+
 function_dummy_v(t, q, v) = nothing
 function_dummy_v(t, q, p, v) = nothing
 

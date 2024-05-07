@@ -114,6 +114,8 @@ function EnsembleProblem(equ::equType, tspan, tstep, ics::AbstractVector{<:Named
     @assert check_methods(equ, _tspan, ics[begin], parameters)
     @assert axes(parameters) == axes(ics)
 
+    length(ics) == 1 && @warn("You created an EnsembleProblem with a single initial condition and a single set of parameters. You probably want to create a GeometricProblem instead.")
+
     superType = eval(typeof(equ).name.name)
     tType = typeof(_tstep)
     dType = datatype(equ, ics[begin])
@@ -143,6 +145,10 @@ function EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::Abstrac
     end
 
     EnsembleProblem(equ, tspan, tstep, _ics, parameters)
+end
+
+function EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::OptionalParameters)
+    EnsembleProblem(equ, tspan, tstep, [ics], parameters)
 end
 
 function EnsembleProblem(equ, tspan, tstep, ics, ::Nothing)

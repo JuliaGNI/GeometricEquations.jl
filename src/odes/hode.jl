@@ -136,8 +136,8 @@ function check_initial_conditions(::HODE, ics::NamedTuple)
 end
 
 function check_methods(equ::HODE, tspan, ics, params)
-    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
@@ -207,13 +207,9 @@ function HODEProblem(v, f, hamiltonian, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
-    ics = (q = q₀, p = p₀)
+function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::InitialState, p₀::InitialState; kwargs...)
+    ics = (q = _statevariable(q₀), p = _statevariable(p₀))
     HODEProblem(v, f, hamiltonian, tspan, tstep, ics; kwargs...)
-end
-
-function HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
-    HODEProblem(v, f, hamiltonian, tspan, tstep, StateVariable(q₀), StateVariable(p₀); kwargs...)
 end
 
 function GeometricBase.periodicity(prob::HODEProblem)
@@ -249,7 +245,7 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const HODEEnsemble = EnsembleProblem{HODE}
 
-function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::InitialConditions;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
@@ -257,13 +253,11 @@ function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<:Nam
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<:StateVariable}, p₀::AbstractVector{<:StateVariable}; kwargs...)
-    _ics = [(q = q, p = p) for (q,p) in zip(q₀,p₀)]
+function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::ISV, p₀::ISV; kwargs...) where {ISV <: InitialStateVector}
+    _ics = [(q = _statevariable(q), p = _statevariable(p)) for (q,p) in zip(q₀,p₀)]
     HODEEnsemble(v, f, hamiltonian, tspan, tstep, _ics; kwargs...)
 end
 
-function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}; kwargs...)
-    _q₀ = [StateVariable(q) for q in q₀]
-    _p₀ = [StateVariable(p) for p in p₀]
-    HODEEnsemble(v, f, hamiltonian, tspan, tstep, _q₀, _p₀; kwargs...)
+function HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::IS, p₀::IS; kwargs...) where {IS <: InitialState}
+    HODEEnsemble(v, f, hamiltonian, tspan, tstep, (q = _statevariable(q₀), p = _statevariable(p₀)); kwargs...)
 end

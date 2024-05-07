@@ -104,7 +104,7 @@ function check_initial_conditions(::ODE, ics::NamedTuple)
 end
 
 function check_methods(equ::ODE, tspan, ics, params)
-    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
     return true
 end
 
@@ -164,13 +164,9 @@ function ODEProblem(v, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function ODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
-    ics = (q = q₀,)
+function ODEProblem(v, tspan, tstep, q₀::InitialState; kwargs...)
+    ics = (q = _statevariable(q₀),)
     ODEProblem(v, tspan, tstep, ics; kwargs...)
-end
-
-function ODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
-    ODEProblem(v, tspan, tstep, StateVariable(q₀); kwargs...)
 end
 
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
@@ -192,7 +188,7 @@ ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
 where `v` is the function computing the vector field, 
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`tstep` is the time step to be used in the simulation, and 
 `ics` is an `AbstractVector` of `NamedTuple`, each with an entry `q`
 of type `StateVariable`.
 The initial condition `q₀` can also be prescribed as an `AbstractVector`
@@ -204,7 +200,7 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const ODEEnsemble = EnsembleProblem{ODE}
 
-function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+function ODEEnsemble(v, tspan, tstep, ics::InitialConditions;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
@@ -212,12 +208,11 @@ function ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<:NamedTuple};
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<:StateVariable}; kwargs...)
-    _ics = [(q = q,) for q in q₀]
+function ODEEnsemble(v, tspan, tstep, q₀::InitialStateVector; kwargs...)
+    _ics = [(q = _statevariable(q),) for q in q₀]
     ODEEnsemble(v, tspan, tstep, _ics; kwargs...)
 end
 
-function ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<:AbstractArray}; kwargs...)
-    _q₀ = [StateVariable(q) for q in q₀]
-    ODEEnsemble(v, tspan, tstep, _q₀; kwargs...)
+function ODEEnsemble(v, tspan, tstep, q₀::InitialState; kwargs...)
+    ODEEnsemble(v, tspan, tstep, (q = _statevariable(q₀),); kwargs...)
 end

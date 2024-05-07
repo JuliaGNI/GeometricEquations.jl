@@ -146,12 +146,12 @@ end
 function check_methods(equ::SODE, tspan, ics, params)
     if hasvectorfield(equ)
         for v in equ.v
-            applicable(v, zero(ics.q), tspan[begin], ics.q, params) || return false
+            applicable(v, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
         end
     end
     if hassolution(equ)
         for q in equ.q
-            applicable(q, zero(ics.q), tspan[end], ics.q, tspan[begin], params) || return false
+            applicable(q, vectorfield(ics.q), tspan[end], ics.q, tspan[begin], params) || return false
         end
     end
     return true
@@ -222,26 +222,13 @@ function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, ics::Name
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::StateVariable; kwargs...)
-    ics = (q = q₀,)
+function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::InitialState; kwargs...)
+    ics = (q = _statevariable(q₀),)
     SODEProblem(v, q, tspan, tstep, ics; kwargs...)
 end
 
-function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan, tstep, q₀::AbstractArray; kwargs...)
-    SODEProblem(v, q, tspan, tstep, StateVariable(q₀); kwargs...)
-end
-
-function SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
-    SODEProblem(v, nothing, tspan, tstep, ics; kwargs...)
-end
-
-function SODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
-    ics = (q = q₀,)
-    SODEProblem(v, tspan, tstep, ics; kwargs...)
-end
-
-function SODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
-    SODEProblem(v, tspan, tstep, StateVariable(q₀); kwargs...)
+function SODEProblem(v, tspan, tstep, q₀::InitialState; kwargs...)
+    SODEProblem(v, nothing, tspan, tstep, q₀; kwargs...)
 end
 
 GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))
@@ -280,7 +267,7 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const SODEEnsemble  = EnsembleProblem{SODE}
 
-function SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+function SODEEnsemble(v, q, tspan, tstep, ics::InitialConditions;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
@@ -288,14 +275,13 @@ function SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<:NamedTuple};
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<:StateVariable}; kwargs...)
-    _ics = [(q = q,) for q in q₀]
+function SODEEnsemble(v, q, tspan, tstep, q₀::InitialStateVector; kwargs...)
+    _ics = [(q = _statevariable(q),) for q in q₀]
     SODEEnsemble(v, q, tspan, tstep, _ics; kwargs...)
 end
 
-function SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<:AbstractArray}; kwargs...)
-    _q₀ = [StateVariable(q) for q in q₀]
-    SODEEnsemble(v, q, tspan, tstep, _q₀; kwargs...)
+function SODEEnsemble(v, q, tspan, tstep, q₀::InitialState; kwargs...)
+    SODEEnsemble(v, q, tspan, tstep, (q = _statevariable(q₀),); kwargs...)
 end
 
 function SODEEnsemble(v, args...; kwargs...)

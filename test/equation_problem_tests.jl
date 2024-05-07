@@ -83,8 +83,6 @@ end
 
     @test periodicity(prob).q == periodicity(equation(prob))
 
-    @test prob == SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics)
-    @test prob == SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     @test prob == SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics...)
     @test prob == SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     @test prob == SODEProblem(sode_eqs, (t₀,t₁), Δt, ode_ics_raw...)

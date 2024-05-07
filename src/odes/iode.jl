@@ -191,10 +191,10 @@ end
 
 function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
-    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
+    applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
 end
 
@@ -272,13 +272,9 @@ function IODEProblem(ϑ, f, g, tspan, tstep, ics::NamedTuple;
     EquationProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
-    ics = (q = q₀, p = p₀, λ = λ₀)
+function IODEProblem(ϑ, f, g, tspan, tstep, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic = zeroalgebraic(q₀); kwargs...)
+    ics = (q = _statevariable(q₀), p = _statevariable(p₀), λ = _algebraicvariable(λ₀))
     IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
-end
-
-function IODEProblem(ϑ, f, g, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
-    IODEProblem(ϑ, f, g, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀); kwargs...)
 end
 
 function IODEProblem(ϑ, f, args...; kwargs...)
@@ -330,7 +326,7 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const IODEEnsemble = EnsembleProblem{IODE}
 
-function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<:NamedTuple};
+function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::InitialConditions;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
@@ -341,23 +337,15 @@ function IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<:NamedTuple};
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 end
 
-function IODEEnsemble(ϑ, f, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
+function IODEEnsemble(ϑ, f, tspan::Tuple, tstep::Real, ics::InitialConditions; kwargs...)
     IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, ics; kwargs...)
 end
 
-function IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<:StateVariable}, p₀::AbstractVector{<:StateVariable}, λ₀::AbstractVector{<:AlgebraicVariable}; kwargs...)
-    _ics = [(q = q, p = p, λ = λ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+function IODEEnsemble(ϑ, f, g, tspan::Tuple, tstep::Real, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀); kwargs...)
+    _ics = [(q = _statevariable(q), p = _statevariable(p), λ = _algebraicvariable(λ)) for (q,p,λ) in zip(q₀,p₀,λ₀)]
     IODEEnsemble(ϑ, f, g, tspan, tstep, _ics; kwargs...)
 end
 
-function IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}, λ₀::AbstractVector{<:AbstractArray} = zerovector(q₀); kwargs...)
-    _q₀ = [StateVariable(q) for q in q₀]
-    _p₀ = [StateVariable(p) for p in p₀]
-    _λ₀ = [AlgebraicVariable(λ) for λ in λ₀]
-    IODEEnsemble(ϑ, f, g, tspan, tstep, _q₀, _p₀, _λ₀; kwargs...)
+function IODEEnsemble(ϑ, f, tspan::Tuple, tstep::Real, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀); kwargs...)
+    IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector; kwargs...)
 end
-
-function IODEEnsemble(ϑ, f, tspan, tstep, q₀::AbstractVector{<:AbstractArray}, p₀::AbstractVector{<:AbstractArray}, λ₀::AbstractVector{<:AbstractArray} = zerovector(q₀); kwargs...)
-    IODEEnsemble(ϑ, f, _iode_default_g, tspan, tstep, q₀, p₀, λ₀; kwargs...)
-end
-

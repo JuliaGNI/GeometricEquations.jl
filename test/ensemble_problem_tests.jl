@@ -6,6 +6,8 @@ include("initial_conditions.jl")
 
 _copy(x, n) = [x for _ in 1:n]
 
+const size_one_warning = (:warn, "You created an EnsembleProblem with a single initial condition and a single set of parameters. You probably want to create a GeometricProblem instead.")
+
 
 @testset "$(rpad("Geometric Ensemble",80))" begin
 
@@ -118,70 +120,134 @@ end
 
 @testset "$(rpad("ODE Ensemble",80))" begin
 
-    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, _copy(ode_ics, 3))
-    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
+    @test_logs size_one_warning ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics)
+    @test_logs size_one_warning ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics...)
+    @test_logs size_one_warning ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_raw...)
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl)
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_sva...)
+
+    @test_logs size_one_warning ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics; parameters = ode_params)
+    @test_logs size_one_warning ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics...; parameters = ode_params)
+    @test_logs size_one_warning ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_raw...; parameters = ode_params)
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl; parameters = ode_params)
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_sva...; parameters = ode_params)
+
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics; parameters = _copy(ode_params, 3))
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics...; parameters = _copy(ode_params, 3))
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_raw...; parameters = _copy(ode_params, 3))
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl; parameters = _copy(ode_params, 2))
+    @test_nowarn ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 2))
+    @test_throws AssertionError ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl; parameters = _copy(ode_params, 3))
+    @test_throws AssertionError ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 3))
 
     ens = EnsembleProblem(ODE(ode_eqs...), (t₀,t₁), Δt, ode_ics_tpl)
 
     @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl)
     @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_tpl; parameters = NullParameters())
-    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_sva)
-    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_sva; parameters = NullParameters())
-    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_arr)
-    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, x_arr; parameters = NullParameters())
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_sva...)
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_sva...; parameters = NullParameters())
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_arr...)
+    @test ens == ODEEnsemble(ode_eqs..., (t₀,t₁), Δt, ode_ics_arr...; parameters = NullParameters())
 
 end
 
 
 @testset "$(rpad("SODE Ensemble",80))" begin
 
-    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, _copy(ode_ics, 3))
-    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
-    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, _copy(ode_ics, 3))
-    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, _copy(ode_ics, 3); parameters = _copy((α=1,), 3))
+    @test_logs size_one_warning SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics)
+    @test_logs size_one_warning SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics...)
+    @test_logs size_one_warning SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_raw...)
+    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_tpl)
+    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_sva...)
+    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_tpl; parameters = _copy(ode_params, 2))
+    @test_nowarn SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 2))
+    @test_throws AssertionError SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 3))
+
+    @test_logs size_one_warning SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics)
+    @test_logs size_one_warning SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics...)
+    @test_logs size_one_warning SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_raw...)
+    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_tpl)
+    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_sva...)
+    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_tpl; parameters = _copy(ode_params, 2))
+    @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 2))
+    @test_throws AssertionError SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 3))
     
     ens = EnsembleProblem(SODE(sode_eqs), (t₀,t₁), Δt, ode_ics_tpl)
 
     @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_tpl)
     @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_tpl; parameters = NullParameters())
-    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_sva)
-    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_sva; parameters = NullParameters())
-    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_arr)
-    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, x_arr; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_sva...)
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_sva...; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_arr...)
+    @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_arr...; parameters = NullParameters())
 
     ens = EnsembleProblem(SODE(sode_eqs, sode_sols), (t₀,t₁), Δt, ode_ics_tpl)
 
     @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_tpl)
     @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_tpl; parameters = NullParameters())
-    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_sva)
-    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_sva; parameters = NullParameters())
-    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_arr)
-    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, x_arr; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_sva...)
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_sva...; parameters = NullParameters())
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_arr...)
+    @test ens == SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_arr...; parameters = NullParameters())
 
 end
 
 
 @testset "$(rpad("PODE Ensemble",80))" begin
 
-    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, _copy(pode_ics, 3))
-    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, _copy(pode_ics, 3); parameters = _copy((α=1,), 3))
+    @test_logs size_one_warning PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics)
+    @test_logs size_one_warning PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics...)
+    @test_logs size_one_warning PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_raw...)
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl)
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_sva...)
+
+    @test_logs size_one_warning PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics; parameters = ode_params)
+    @test_logs size_one_warning PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics...; parameters = ode_params)
+    @test_logs size_one_warning PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_raw...; parameters = ode_params)
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl; parameters = ode_params)
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_sva...; parameters = ode_params)
+
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics; parameters = _copy(ode_params, 3))
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics...; parameters = _copy(ode_params, 3))
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_raw...; parameters = _copy(ode_params, 3))
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl; parameters = _copy(ode_params, 2))
+    @test_nowarn PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_sva...; parameters = _copy(ode_params, 2))
+    @test_throws AssertionError PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl; parameters = _copy(ode_params, 3))
+    @test_throws AssertionError PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_sva...; parameters = _copy(ode_params, 3))
 
     ens = EnsembleProblem(PODE(pode_eqs...), (t₀,t₁), Δt, pode_ics_tpl)
 
     @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl)
     @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_tpl; parameters = NullParameters())
-    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_sva, p_sva)
-    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_sva, p_sva; parameters = NullParameters())
-    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_arr, p_arr)
-    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, q_arr, p_arr; parameters = NullParameters())
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_sva...)
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_sva...; parameters = NullParameters())
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_arr...)
+    @test ens == PODEEnsemble(pode_eqs..., (t₀,t₁), Δt, pode_ics_arr...; parameters = NullParameters())
 
 end
 
 
 @testset "$(rpad("IODE Ensemble",80))" begin
 
-    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, _copy(iode_ics, 3))
-    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, _copy(iode_ics, 3); parameters = _copy((α=1,), 3))
+    @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics)
+    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...)
+    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...)
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl)
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_sva...)
+
+    @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics; parameters = ode_params)
+    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...; parameters = ode_params)
+    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...; parameters = ode_params)
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl; parameters = ode_params)
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_sva...; parameters = ode_params)
+
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics; parameters = _copy(ode_params, 3))
+    # @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...; parameters = _copy(ode_params, 3))
+    # @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...; parameters = _copy(ode_params, 3))
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl; parameters = _copy(ode_params, 2))
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_sva...; parameters = _copy(ode_params, 2))
+    @test_throws AssertionError IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl; parameters = _copy(ode_params, 3))
+    @test_throws AssertionError IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_sva...; parameters = _copy(ode_params, 3))
 
     ens = EnsembleProblem(IODE(iode_eqs...), (t₀,t₁), Δt, iode_ics_tpl)
 
@@ -214,8 +280,25 @@ end
 
 @testset "$(rpad("HODE Ensemble",80))" begin
 
-    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, _copy(hode_ics, 3))
-    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, _copy(hode_ics, 3); parameters = _copy((α=1,), 3))
+    @test_logs size_one_warning HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics)
+    @test_logs size_one_warning HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics...)
+    @test_logs size_one_warning HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_raw...)
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_tpl)
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_sva...)
+
+    @test_logs size_one_warning HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics; parameters = ode_params)
+    @test_logs size_one_warning HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics...; parameters = ode_params)
+    @test_logs size_one_warning HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_raw...; parameters = ode_params)
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_tpl; parameters = ode_params)
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_sva...; parameters = ode_params)
+
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics; parameters = _copy(ode_params, 3))
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics...; parameters = _copy(ode_params, 3))
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_raw...; parameters = _copy(ode_params, 3))
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_tpl; parameters = _copy(ode_params, 2))
+    @test_nowarn HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_sva...; parameters = _copy(ode_params, 2))
+    @test_throws AssertionError HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_tpl; parameters = _copy(ode_params, 3))
+    @test_throws AssertionError HODEEnsemble(hode_eqs..., (t₀,t₁), Δt, hode_ics_sva...; parameters = _copy(ode_params, 3))
 
     ens = EnsembleProblem(HODE(hode_eqs...), (t₀,t₁), Δt, hode_ics_tpl)
 
@@ -231,8 +314,25 @@ end
 
 @testset "$(rpad("LODE Ensemble",80))" begin
 
-    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3))
-    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, _copy(lode_ics, 3); parameters = _copy((α=1,), 3))
+    @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics)
+    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...)
+    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...)
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl)
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_sva...)
+
+    @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics; parameters = ode_params)
+    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...; parameters = ode_params)
+    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...; parameters = ode_params)
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl; parameters = ode_params)
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_sva...; parameters = ode_params)
+
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics; parameters = _copy(ode_params, 3))
+    # @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...; parameters = _copy(ode_params, 3))
+    # @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...; parameters = _copy(ode_params, 3))
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl; parameters = _copy(ode_params, 2))
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_sva...; parameters = _copy(ode_params, 2))
+    @test_throws AssertionError LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl; parameters = _copy(ode_params, 3))
+    @test_throws AssertionError LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_sva...; parameters = _copy(ode_params, 3))
 
     ens = EnsembleProblem(LODE(lode_eqs...), (t₀,t₁), Δt, lode_ics_tpl)
 
