@@ -46,6 +46,8 @@ include("initial_conditions.jl")
     @test prob == similar(prob; tstep = Δt)
     @test prob == similar(prob; ics = ode_ics)
     @test prob == similar(prob; ics = ode_ics_raw)
+    @test prob == similar(prob; ics = Tuple(ode_ics))
+    @test prob == similar(prob; ics = Tuple(ode_ics_raw))
     @test prob == similar(prob; parameters = NullParameters())
 
 end
