@@ -45,6 +45,7 @@ include("initial_conditions.jl")
     @test prob == similar(prob; tspan = (t₀,t₁))
     @test prob == similar(prob; tstep = Δt)
     @test prob == similar(prob; ics = ode_ics)
+    @test prob == similar(prob; ics = ode_ics_raw)
     @test prob == similar(prob; parameters = NullParameters())
 
 end
