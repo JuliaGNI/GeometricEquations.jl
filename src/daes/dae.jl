@@ -184,6 +184,32 @@ function Base.show(io::IO, equation::DAE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::DAE, ics::NamedTuple)
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
+
+    for s in ics
+        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
+    end
+
+    return ics
+end
+
+function initialstate(::DAE, q₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    (
+        q = _statevariable(q₀),
+        λ = _algebraicvariable(λ₀),
+        μ = _algebraicvariable(μ₀),
+    )
+end
+
+function initialstate(::DAE, q₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [(
+        q = _statevariable(q),
+        λ = _algebraicvariable(λ),
+        μ = _algebraicvariable(μ),
+    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+end
+
 function check_initial_conditions(equ::DAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :λ) || return false
@@ -303,24 +329,12 @@ prob = DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀, λ₀, μ₀)
 """
 const DAEProblem = EquationProblem{DAE}
 
-function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; v̄ = v,
+function DAEProblem(v, u, ϕ, ū, ψ, tspan::Tuple, tstep::Real, ics...; v̄ = v,
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
-    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zero(ics.λ),))
     equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::StateVariable, λ₀::AlgebraicVariable,
-        μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
-    ics = (q = q₀, λ = λ₀, μ = μ₀)
-    DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics; kwargs...)
-end
-
-function DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::AbstractArray, λ₀::AbstractArray,
-        μ₀::AbstractArray = zero(λ₀); kwargs...)
-    DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, StateVariable(q₀), AlgebraicVariable(λ₀), AlgebraicVariable(μ₀); kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function DAEProblem(v, u, ϕ, args...; kwargs...)
@@ -336,14 +350,14 @@ end
 
 const DAEEnsemble = EnsembleProblem{DAE}
 
-function DAEEnsemble(v, u, ϕ, ū, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v,
+function DAEEnsemble(v, u, ϕ, ū, ψ, tspan::Tuple, tstep::Real, ics...; v̄ = v,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = DAE(v, u, ϕ, ū, ψ, v̄)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
-function DAEEnsemble(v, u, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
-    DAEEnsemble(v, u, ϕ, nothing, nothing, tspan, tstep, ics; kwargs...)
+function DAEEnsemble(v, u, ϕ, args...; kwargs...)
+    DAEEnsemble(v, u, ϕ, nothing, nothing, args...; kwargs...)
 end

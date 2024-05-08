@@ -231,6 +231,34 @@ function Base.show(io::IO, equation::HDAE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::HDAE, ics::NamedTuple)
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
+
+    for s in ics
+        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
+    end
+
+    return ics
+end
+
+function initialstate(::HDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    (
+        q = _statevariable(q₀),
+        p = _statevariable(p₀),
+        λ = _algebraicvariable(λ₀),
+        μ = _algebraicvariable(μ₀),
+    )
+end
+
+function initialstate(::HDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [(
+        q = _statevariable(q),
+        p = _statevariable(p),
+        λ = _algebraicvariable(λ),
+        μ = _algebraicvariable(μ),
+    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+end
+
 function check_initial_conditions(equ::HDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
@@ -375,26 +403,12 @@ prob = HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, tspan, tstep, q₀, p₀, λ
 """
 const HDAEProblem = EquationProblem{HDAE}
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics::NamedTuple;
+function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan::Tuple, tstep::Real, ics...;
                      v̄ = v, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
-    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zero(ics.λ),))
     equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants,
                parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep,
-                     q₀::StateVariable, p₀::StateVariable,
-                     λ₀::AlgebraicVariable, μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
-    ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
-    HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics; kwargs...)
-end
-
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep,
-                     q₀::AbstractArray, p₀::AbstractArray,
-                     λ₀::AbstractArray, μ₀::AbstractArray = zero(λ₀); kwargs...)
-    HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀), AlgebraicVariable(μ₀); kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function HDAEProblem(v, f, u, g, ϕ, hamiltonian, args...; kwargs...)
@@ -409,14 +423,14 @@ end
 
 const HDAEEnsemble  = EnsembleProblem{HDAE}
 
-function HDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = v, f̄ = f,
+function HDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, tspan::Tuple, tstep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
-function HDAEEnsemble(v, f, u, g, ϕ, hamiltonian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
-    HDAEEnsemble(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian, tspan, tstep, ics; kwargs...)
+function HDAEEnsemble(v, f, u, g, ϕ, hamiltonian, args...; kwargs...)
+    HDAEEnsemble(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian, args...; kwargs...)
 end

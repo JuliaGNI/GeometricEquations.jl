@@ -258,6 +258,34 @@ function Base.show(io::IO, equation::LDAE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::LDAE, ics::NamedTuple)
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
+
+    for s in ics
+        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
+    end
+
+    return ics
+end
+
+function initialstate(::LDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    (
+        q = _statevariable(q₀),
+        p = _statevariable(p₀),
+        λ = _algebraicvariable(λ₀),
+        μ = _algebraicvariable(μ₀),
+    )
+end
+
+function initialstate(::LDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [(
+        q = _statevariable(q),
+        p = _statevariable(p),
+        λ = _algebraicvariable(λ),
+        μ = _algebraicvariable(μ),
+    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+end
+
 function check_initial_conditions(equ::LDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :v) || haskey(ics, :p) || return false
@@ -405,26 +433,12 @@ prob = LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, q₀, p�
 """
 const LDAEProblem = EquationProblem{LDAE}
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::NamedTuple;
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan::Tuple, tstep::Real, ics...;
                      v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
-    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zero(ics.λ),))
     equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants,
                parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep,
-                     q₀::StateVariable, p₀::StateVariable,
-                     λ₀::AlgebraicVariable, μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
-    ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
-    LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics; kwargs...)
-end
-
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep,
-                     q₀::AbstractArray, p₀::AbstractArray,
-                     λ₀::AbstractArray, μ₀::AbstractArray = zero(λ₀); kwargs...)
-    LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀), AlgebraicVariable(μ₀); kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, args...; kwargs...)
@@ -439,14 +453,14 @@ end
 
 const LDAEEnsemble  = EnsembleProblem{LDAE}
 
-function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = _ldae_default_v̄, f̄ = f,
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan::Tuple, tstep::Real, ics...; v̄ = _ldae_default_v̄, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
-function LDAEEnsemble(ϑ, f, u, g, ϕ, ω, lagrangian, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
-    LDAEEnsemble(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian, tspan, tstep, ics; kwargs...)
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ω, lagrangian, args...; kwargs...)
+    LDAEEnsemble(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian, args...; kwargs...)
 end

@@ -235,6 +235,34 @@ function Base.show(io::IO, equation::IDAE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(::IDAE, ics::NamedTuple)
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
+
+    for s in ics
+        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
+    end
+
+    return ics
+end
+
+function initialstate(::IDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    (
+        q = _statevariable(q₀),
+        p = _statevariable(p₀),
+        λ = _algebraicvariable(λ₀),
+        μ = _algebraicvariable(μ₀),
+    )
+end
+
+function initialstate(::IDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [(
+        q = _statevariable(q),
+        p = _statevariable(p),
+        λ = _algebraicvariable(λ),
+        μ = _algebraicvariable(μ),
+    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+end
+
 function check_initial_conditions(equ::IDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
@@ -359,26 +387,12 @@ $(idae_functions)
 """
 const IDAEProblem = EquationProblem{IDAE}
 
-function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple;
+function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan::Tuple, tstep::Real, ics...;
                      v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
-    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zero(ics.λ),))
     equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
                periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
-end
-
-function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep,
-                     q₀::StateVariable, p₀::StateVariable,
-                     λ₀::AlgebraicVariable, μ₀::AlgebraicVariable = zero(λ₀); kwargs...)
-    ics = (q = q₀, p = p₀, λ = λ₀, μ = μ₀)
-    IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics; kwargs...)
-end
-
-function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep,
-                     q₀::AbstractArray, p₀::AbstractArray,
-                     λ₀::AbstractArray, μ₀::AbstractArray = zero(λ₀); kwargs...)
-    IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, StateVariable(q₀), StateVariable(p₀), AlgebraicVariable(λ₀), AlgebraicVariable(μ₀); kwargs...)
+    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
 function IDAEProblem(ϑ, f, u, g, ϕ, args...; kwargs...)
@@ -393,14 +407,14 @@ end
 
 const IDAEEnsemble  = EnsembleProblem{IDAE}
 
-function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; v̄ = _idae_default_v̄, f̄ = f,
+function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, tspan::Tuple, tstep::Real, ics...; v̄ = _idae_default_v̄, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
-function IDAEEnsemble(ϑ, f, u, g, ϕ, tspan, tstep, ics::AbstractVector{<:NamedTuple}; kwargs...)
-    IDAEEnsemble(ϑ, f, u, g, ϕ, nothing, nothing, nothing, tspan, tstep, ics; kwargs...)
+function IDAEEnsemble(ϑ, f, u, g, ϕ, args...; kwargs...)
+    IDAEEnsemble(ϑ, f, u, g, ϕ, nothing, nothing, nothing, args...; kwargs...)
 end

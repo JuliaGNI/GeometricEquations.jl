@@ -134,11 +134,13 @@ function initialstate(::GeometricEquation, ics::NamedTuple)
 end
 
 function initialstate(equ::GeometricEquation, ics::AbstractVector{<:NamedTuple})
-    for ic in ics
-        initialstate(equ, ic)
+    _ics = similar(ics, typeof(initialstate(equ, ics[begin])))
+
+    for i in eachindex(_ics)
+        _ics[i] = initialstate(equ, ics[i])
     end
 
-    return ics
+    return _ics
 end
 
 function check_parameters(equ::GeometricEquation, params::NamedTuple)
