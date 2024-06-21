@@ -70,20 +70,21 @@ struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <:
     function EquationProblem(equ, tspan, tstep, ics, parameters)
         _tspan = promote_tspan(tspan)
         _tspan, _tstep = promote_tspan_and_tstep(_tspan, tstep)
+        _ics = initialstate(equ, _tspan[begin], ics, parameters)
 
-        @assert check_initial_conditions(equ, ics)
-        @assert check_methods(equ, _tspan, ics, parameters)
+        @assert check_initial_conditions(equ, _ics)
+        @assert check_methods(equ, _tspan, _ics, parameters)
 
         superType = eval(typeof(equ).name.name)
         tType = typeof(_tstep)
-        dType = datatype(equ, ics)
-        arrayType = arrtype(equ, ics)
+        dType = datatype(equ, _ics)
+        arrayType = arrtype(equ, _ics)
 
         funcs = functions(equ)
         sols = solutions(equ)
 
-        new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs), typeof(sols), typeof(ics), typeof(parameters)
-            }(equ, funcs, sols, _tspan, _tstep, ics, parameters)
+        new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs), typeof(sols), typeof(_ics), typeof(parameters)
+            }(equ, funcs, sols, _tspan, _tstep, _ics, parameters)
     end
 end
 

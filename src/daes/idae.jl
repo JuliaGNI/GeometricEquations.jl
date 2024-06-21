@@ -235,38 +235,51 @@ function Base.show(io::IO, equation::IDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::IDAE, ics::NamedTuple)
-    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
-
-    for s in ics
-        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
+function initialstate(::IDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+    if !haskey(ics, :v)
+        v = zeroalgebraic(ics.q)
+        equ.v̄(v, t, ics.q, ics.p, params)
+        ics = merge(ics, (v = v,))
     end
 
-    return ics
-end
-
-function initialstate(::IDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
+    
     (
-        q = _statevariable(q₀),
-        p = _statevariable(p₀),
-        λ = _algebraicvariable(λ₀),
-        μ = _algebraicvariable(μ₀),
+        q = _statevariable(ics.q),
+        p = _statevariable(ics.p),
+        v = _algebraicvariable(ics.v),
+        λ = _algebraicvariable(ics.λ),
+        μ = _algebraicvariable(ics.μ),
     )
 end
 
-function initialstate(::IDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [(
-        q = _statevariable(q),
-        p = _statevariable(p),
-        λ = _algebraicvariable(λ),
-        μ = _algebraicvariable(μ),
-    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+function initialstate(equ::IDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic)
+    initialstate(equ, (q = q₀, p = p₀, λ = λ₀))
+end
+
+function initialstate(equ::IDAE, q₀::InitialState, p₀::InitialState, v₀::InitialAlgebraic, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    initialstate(equ, (q = q₀, p = p₀, v = v₀, λ = λ₀, μ = μ₀))
+end
+
+function initialstate(equ::IDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector)
+    [initialstate(equ, q, p, λ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+end
+
+function initialstate(equ::IDAE, q₀::InitialStateVector, p₀::InitialStateVector, v₀::InitialAlgebraicVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, p, v, λ, μ) for (q,p,v,λ,μ) in zip(q₀,p₀,v₀,λ₀,μ₀)]
 end
 
 function check_initial_conditions(equ::IDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
+    haskey(ics, :v) || return false
     haskey(ics, :p) || return false
     haskey(ics, :λ) || return false
+    eltype(ics.q) == eltype(ics.p) == eltype(ics.v) || return false
+    axes(ics.q) == axes(ics.p) == axes(ics.v) || return false
+    typeof(ics.q) <: StateVariable || return false
+    typeof(ics.p) <: StateVariable || return false
+    typeof(ics.v) <: AlgebraicVariable || return false
+    typeof(ics.λ) <: AlgebraicVariable || return false
     if hassecondary(equ)
         haskey(ics, :μ) || return false
         eltype(ics.λ) == eltype(ics.μ) || return false
@@ -277,16 +290,16 @@ function check_initial_conditions(equ::IDAE, ics::NamedTuple)
 end
 
 function check_methods(equ::IDAE, tspan, ics::NamedTuple, params)
-    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, params) || return false
+    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
+    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.v, ics.p, params) || return false
     applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
+    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.v, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
     # TODO add missing methods
     return true
 end

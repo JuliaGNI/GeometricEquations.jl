@@ -258,38 +258,50 @@ function Base.show(io::IO, equation::LDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::LDAE, ics::NamedTuple)
-    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
-
-    for s in ics
-        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
+function initialstate(::LDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+    if !haskey(ics, :v)
+        v = zeroalgebraic(ics.q)
+        equ.v̄(v, t, ics.q, ics.p, params)
+        ics = merge(ics, (v = v,))
     end
 
-    return ics
-end
-
-function initialstate(::LDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
+    
     (
-        q = _statevariable(q₀),
-        p = _statevariable(p₀),
-        λ = _algebraicvariable(λ₀),
-        μ = _algebraicvariable(μ₀),
+        q = _statevariable(ics.q),
+        p = _statevariable(ics.p),
+        v = _algebraicvariable(ics.v),
+        λ = _algebraicvariable(ics.λ),
+        μ = _algebraicvariable(ics.μ),
     )
 end
 
-function initialstate(::LDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [(
-        q = _statevariable(q),
-        p = _statevariable(p),
-        λ = _algebraicvariable(λ),
-        μ = _algebraicvariable(μ),
-    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+function initialstate(equ::LDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic)
+    initialstate(equ, (q = q₀, p = p₀, λ = λ₀))
+end
+
+function initialstate(equ::LDAE, q₀::InitialState, p₀::InitialState, v₀::InitialAlgebraic, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    initialstate(equ, (q = q₀, p = p₀, v = v₀, λ = λ₀, μ = μ₀))
+end
+
+function initialstate(equ::LDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector)
+    [initialstate(equ, q, p, λ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+end
+
+function initialstate(equ::LDAE, q₀::InitialStateVector, p₀::InitialStateVector, v₀::InitialAlgebraicVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, p, v, λ, μ) for (q,p,v,λ,μ) in zip(q₀,p₀,v₀,λ₀,μ₀)]
 end
 
 function check_initial_conditions(equ::LDAE, ics::NamedTuple)
     haskey(ics, :q) || return false
-    haskey(ics, :v) || haskey(ics, :p) || return false
+    haskey(ics, :v) || return false
     haskey(ics, :λ) || return false
+    eltype(ics.q) == eltype(ics.p) == eltype(ics.v) || return false
+    axes(ics.q) == axes(ics.p) == axes(ics.v) || return false
+    typeof(ics.q) <: StateVariable || return false
+    typeof(ics.p) <: StateVariable || return false
+    typeof(ics.v) <: AlgebraicVariable || return false
+    typeof(ics.λ) <: AlgebraicVariable || return false
     if hassecondary(equ)
         haskey(ics, :μ) || return false
         eltype(ics.λ) == eltype(ics.μ) || return false
@@ -362,7 +374,7 @@ function _functions(equ::LDAE, params::OptionalParameters)
             f̄ = _get_f̄(equ, params),
             ω = _get_ω(equ, params),
             l = _get_l(equ, params)
-        )
+    )
     else
         (
             ϑ = _get_ϑ(equ, params),
@@ -374,7 +386,7 @@ function _functions(equ::LDAE, params::OptionalParameters)
             f̄ = _get_f̄(equ, params),
             ω = _get_ω(equ, params),
             l = _get_l(equ, params)
-        )
+    )
     end
 end
 

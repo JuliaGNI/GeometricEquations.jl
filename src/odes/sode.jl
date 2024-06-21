@@ -138,21 +138,24 @@ function Base.show(io::IO, equation::SODE)
     print(io, "   ", invariants(equation))
 end
 
-function check_initial_conditions(::SODE, ics::NamedTuple)
-    haskey(ics, :q) || return false
-    return true
-end
-
-function initialstate(::SODE, q₀::InitialState)
+function initialstate(::SODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(q₀),
+        q = _statevariable(ics.q),
     )
 end
 
-function initialstate(::SODE, q₀::InitialStateVector)
-    [(
-        q = _statevariable(q),
-    ) for q in q₀]
+function initialstate(equ::SODE, q₀::InitialState)
+    initialstate(equ, (q = q₀,))
+end
+
+function initialstate(equ::SODE, q₀::InitialStateVector)
+    [initialstate(equ, q) for q in q₀]
+end
+
+function check_initial_conditions(::SODE, ics::NamedTuple)
+    haskey(ics, :q) || return false
+    typeof(ics.q) <: StateVariable || return false
+    return true
 end
 
 function check_methods(equ::SODE, tspan, ics, params)

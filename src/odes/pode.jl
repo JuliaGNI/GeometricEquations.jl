@@ -102,18 +102,19 @@ function Base.show(io::IO, equation::PODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::PODE, q₀::InitialState, p₀::InitialState)
+function initialstate(::PODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(q₀),
-        p = _statevariable(p₀),
+        q = _statevariable(ics.q),
+        p = _statevariable(ics.p),
     )
 end
 
-function initialstate(::PODE, q₀::InitialStateVector, p₀::InitialStateVector)
-    [(
-        q = _statevariable(q),
-        p = _statevariable(p),
-    ) for (q,p) in zip(q₀,p₀)]
+function initialstate(equ::PODE, q₀::InitialState, p₀::InitialState)
+    initialstate(equ, (q = q₀, p = p₀))
+end
+
+function initialstate(equ::PODE, q₀::InitialStateVector, p₀::InitialStateVector)
+    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
 end
 
 function check_initial_conditions(::PODE, ics::NamedTuple)
@@ -122,6 +123,8 @@ function check_initial_conditions(::PODE, ics::NamedTuple)
     eltype(ics.q) == eltype(ics.p) || return false
     typeof(ics.q) == typeof(ics.p) || return false
     axes(ics.q) == axes(ics.p) || return false
+    typeof(ics.q) <: StateVariable || return false
+    typeof(ics.p) <: StateVariable || return false
     return true
 end
 

@@ -122,26 +122,11 @@ haslagrangian(::GeometricEquation) = false
 GeometricBase.datatype(equ::GeometricEquation, ics::NamedTuple) = error("datatype(::GeometricEquation, ::NamedTuple) not implemented for ", typeof(equ), ".")
 GeometricBase.arrtype(equ::GeometricEquation, ics::NamedTuple) = error("arrtype(::GeometricEquation, ::NamedTuple) not implemented for ", typeof(equ), ".")
 
+initialstate(::GeometricEquation, ics::NamedTuple) = ics
+initialstate(::GeometricEquation, ::InitialTime, ics::NamedTuple, ::OptionalParameters) = ics
+
 check_initial_conditions(equ::GeometricEquation, ics::NamedTuple) = error("check_initial_conditions(::GeometricEquation, ::NamedTuple) not implemented for ", typeof(equ), ".")
 check_methods(equ::GeometricEquation, tspan, ics, params) = error("check_methods(::GeometricEquation, ::Tuple, ::NamedTuple, ::OptionalParameters) not implemented for ", typeof(equ), ".")
-
-function initialstate(::GeometricEquation, ics::NamedTuple)
-    for s in ics
-        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
-    end
-
-    return ics
-end
-
-function initialstate(equ::GeometricEquation, ics::AbstractVector{<:NamedTuple})
-    _ics = similar(ics, typeof(initialstate(equ, ics[begin])))
-
-    for i in eachindex(_ics)
-        _ics[i] = initialstate(equ, ics[i])
-    end
-
-    return _ics
-end
 
 function check_parameters(equ::GeometricEquation, params::NamedTuple)
     typeof(parameters(equ)) <: NamedTuple || return false

@@ -175,7 +175,7 @@ end
 
     @test periodicity(prob).q == periodicity(equation(prob))
     @test periodicity(prob).p == NullPeriodicity()
-    @test periodicity(prob).λ == NullPeriodicity()
+    @test periodicity(prob).v == NullPeriodicity()
 
     @test prob == IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics)
     @test prob == IODEProblem(iode_eqs..., (t₀,t₁), Δt, iode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
@@ -224,7 +224,7 @@ end
 
     @test periodicity(prob).q == periodicity(equation(prob))
     @test periodicity(prob).p == NullPeriodicity()
-    @test periodicity(prob).λ == NullPeriodicity()
+    @test periodicity(prob).v == NullPeriodicity()
 
     @test prob == LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics)
     @test prob == LODEProblem(lode_eqs..., (t₀,t₁), Δt, lode_ics; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())

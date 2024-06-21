@@ -184,30 +184,22 @@ function Base.show(io::IO, equation::DAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::DAE, ics::NamedTuple)
+function initialstate(::DAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
 
-    for s in ics
-        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
-    end
-
-    return ics
-end
-
-function initialstate(::DAE, q₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
     (
-        q = _statevariable(q₀),
-        λ = _algebraicvariable(λ₀),
-        μ = _algebraicvariable(μ₀),
+        q = _statevariable(ics.q),
+        λ = _algebraicvariable(ics.λ),
+        μ = _algebraicvariable(ics.μ),
     )
 end
 
-function initialstate(::DAE, q₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [(
-        q = _statevariable(q),
-        λ = _algebraicvariable(λ),
-        μ = _algebraicvariable(μ),
-    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+function initialstate(equ::DAE, q₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    initialstate(equ, (q = q₀, λ = λ₀, μ = μ₀))
+end
+
+function initialstate(equ::DAE, q₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, λ, μ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
 end
 
 function check_initial_conditions(equ::DAE, ics::NamedTuple)

@@ -1,4 +1,5 @@
 
+const InitialTime = Union{Number, TimeVariable}
 const InitialState = Union{StateVariable{<:Number}, AbstractArray{<:Number}}
 const InitialAlgebraic = Union{AlgebraicVariable{<:Number}, AbstractArray{<:Number}}
 
@@ -7,11 +8,14 @@ const InitialAlgebraicVector = Union{AbstractVector{<:AlgebraicVariable{<:Number
 
 const InitialConditions = Union{NamedTuple, AbstractVector{<:NamedTuple}}
 
+_timevariable(x::TimeVariable) = x
+_timevariable(x::Number) = TimeVariable(x)
+
 _statevariable(x::StateVariable) = x
-_statevariable(x::AbstractArray) = StateVariable(x)
+_statevariable(x::AbstractArray{<:Number}) = StateVariable(x)
 
 _algebraicvariable(x::AlgebraicVariable) = x
-_algebraicvariable(x::AbstractArray) = AlgebraicVariable(x)
+_algebraicvariable(x::AbstractArray{<:Number}) = AlgebraicVariable(x)
 
 zeroalgebraic(x::AbstractArray{<:Number}) = zero(x)
 zeroalgebraic(x::AbstractStateVariable{<:Number}) = AlgebraicVariable(zero(parent(x)))

@@ -230,20 +230,20 @@ end
 @testset "$(rpad("IODE Ensemble",80))" begin
 
     @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics)
-    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...)
-    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...)
+    @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...)
+    @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...)
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl)
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_sva...)
 
     @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics; parameters = ode_params)
-    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...; parameters = ode_params)
-    # @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...; parameters = ode_params)
+    @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...; parameters = ode_params)
+    @test_logs size_one_warning IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...; parameters = ode_params)
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl; parameters = ode_params)
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_sva...; parameters = ode_params)
 
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics; parameters = _copy(ode_params, 3))
-    # @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...; parameters = _copy(ode_params, 3))
-    # @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...; parameters = _copy(ode_params, 3))
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics...; parameters = _copy(ode_params, 3))
+    @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_raw...; parameters = _copy(ode_params, 3))
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl; parameters = _copy(ode_params, 2))
     @test_nowarn IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_sva...; parameters = _copy(ode_params, 2))
     @test_throws AssertionError IODEEnsemble(iode_eqs..., (t₀,t₁), Δt, iode_ics_tpl; parameters = _copy(ode_params, 3))
@@ -315,20 +315,20 @@ end
 @testset "$(rpad("LODE Ensemble",80))" begin
 
     @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics)
-    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...)
-    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...)
+    @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...)
+    @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...)
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl)
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_sva...)
 
     @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics; parameters = ode_params)
-    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...; parameters = ode_params)
-    # @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...; parameters = ode_params)
+    @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...; parameters = ode_params)
+    @test_logs size_one_warning LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...; parameters = ode_params)
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl; parameters = ode_params)
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_sva...; parameters = ode_params)
 
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics; parameters = _copy(ode_params, 3))
-    # @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...; parameters = _copy(ode_params, 3))
-    # @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...; parameters = _copy(ode_params, 3))
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics...; parameters = _copy(ode_params, 3))
+    @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_raw...; parameters = _copy(ode_params, 3))
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl; parameters = _copy(ode_params, 2))
     @test_nowarn LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_sva...; parameters = _copy(ode_params, 2))
     @test_throws AssertionError LODEEnsemble(lode_eqs..., (t₀,t₁), Δt, lode_ics_tpl; parameters = _copy(ode_params, 3))

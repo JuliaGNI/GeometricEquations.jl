@@ -103,31 +103,33 @@ struct EnsembleProblem{superType <: GeometricEquation, dType <: Number, tType <:
 end
 
 function EnsembleProblem(equ::equType, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::AbstractVector{<:OptionalParameters}) where {equType}
+    @assert axes(ics) == axes(parameters)
+
     _tspan = promote_tspan(tspan)
     _tspan, _tstep = promote_tspan_and_tstep(_tspan, tstep)
+    _ics = [initialstate(equ, _tspan[begin], ic, param) for (ic,param) in zip(ics,parameters)]
 
-    for ic in ics
-        @assert check_initial_conditions(equ, ic)
-        @assert typeof(ic) == typeof(ics[begin])
+    for i in eachindex(_ics)
+        @assert check_initial_conditions(equ, _ics[i])
     end
 
-    @assert check_methods(equ, _tspan, ics[begin], parameters)
+    @assert check_methods(equ, _tspan, _ics[begin], parameters[begin])
     @assert axes(parameters) == axes(ics)
 
-    length(ics) == 1 && @warn("You created an EnsembleProblem with a single initial condition and a single set of parameters. You probably want to create a GeometricProblem instead.")
+    length(_ics) == 1 && @warn("You created an EnsembleProblem with a single initial condition and a single set of parameters. You probably want to create a GeometricProblem instead.")
 
     superType = eval(typeof(equ).name.name)
     tType = typeof(_tstep)
-    dType = datatype(equ, ics[begin])
-    arrayType = arrtype(equ, ics[begin])
+    dType = datatype(equ, _ics[begin])
+    arrayType = arrtype(equ, _ics[begin])
 
     funcs = functions(equ)
     sols = solutions(equ)
 
-    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs), typeof(sols), typeof(ics), typeof(parameters)}(equ, funcs, sols, _tspan, _tstep, ics, parameters)
+    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs), typeof(sols), typeof(_ics), typeof(parameters)}(equ, funcs, sols, _tspan, _tstep, _ics, parameters)
 end
 
-function EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters=NullParameters())
+function EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters = NullParameters())
     _params = similar(ics, typeof(parameters))
 
     for i in eachindex(_params)
@@ -148,7 +150,7 @@ function EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::Abstrac
 end
 
 function EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::OptionalParameters)
-    EnsembleProblem(equ, tspan, tstep, [ics], parameters)
+    EnsembleProblem(equ, tspan, tstep, ics, [parameters])
 end
 
 function EnsembleProblem(equ, tspan, tstep, ics, ::Nothing)
@@ -182,10 +184,10 @@ Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
 @inline GeometricBase.solutions(ge::EnsembleProblem) = ge.solutions
 @inline GeometricBase.parameters(ge::EnsembleProblem) = ge.parameters
 
-initial_conditions(ge::EnsembleProblem) = ge.ics
 
 @inline GeometricBase.nsamples(ge::EnsembleProblem) = length(initial_conditions(ge))
 
+initial_conditions(ge::EnsembleProblem) = ge.ics
 initial_condition(ge::EnsembleProblem, i) = initial_conditions(ge)[i]
 parameter(ge::EnsembleProblem, i) = parameters(ge)[i]
 
@@ -196,3 +198,5 @@ end
 Base.length(ge::EnsembleProblem) = nsamples(ge)
 Base.iterate(ge::EnsembleProblem, i=1) = i > nsamples(ge) ? nothing : (problem(ge, i), i+1)
 Base.getindex(ge::EnsembleProblem, i::Union{Integer,Base.AbstractCartesianIndex}) = problem(ge, i)
+
+initialstate(::GeometricEquation, ics::AbstractVector{<:NamedTuple}) = ics

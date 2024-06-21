@@ -97,16 +97,18 @@ function Base.show(io::IO, equation::ODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::ODE, q₀::InitialState)
+function initialstate(::ODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(q₀),
+        q = _statevariable(ics.q),
     )
 end
 
-function initialstate(::ODE, q₀::InitialStateVector)
-    [(
-        q = _statevariable(q),
-    ) for q in q₀]
+function initialstate(equ::ODE, q₀::InitialState)
+    initialstate(equ, (q = q₀,))
+end
+
+function initialstate(equ::ODE, q₀::InitialStateVector)
+    [initialstate(equ, q) for q in q₀]
 end
 
 function check_initial_conditions(::ODE, ics::NamedTuple)

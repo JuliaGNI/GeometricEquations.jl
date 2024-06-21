@@ -231,32 +231,23 @@ function Base.show(io::IO, equation::HDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::HDAE, ics::NamedTuple)
+function initialstate(::HDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
-
-    for s in ics
-        @assert typeof(s) <: Union{AlgebraicVariable, StateVariable}
-    end
-
-    return ics
-end
-
-function initialstate(::HDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    
     (
-        q = _statevariable(q₀),
-        p = _statevariable(p₀),
-        λ = _algebraicvariable(λ₀),
-        μ = _algebraicvariable(μ₀),
+        q = _statevariable(ics.q),
+        p = _statevariable(ics.p),
+        λ = _algebraicvariable(ics.λ),
+        μ = _algebraicvariable(ics.μ),
     )
 end
 
-function initialstate(::HDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [(
-        q = _statevariable(q),
-        p = _statevariable(p),
-        λ = _algebraicvariable(λ),
-        μ = _algebraicvariable(μ),
-    ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+function initialstate(equ::HDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+    initialstate(equ, (q = q₀, p = p₀, λ = λ₀, μ = μ₀))
+end
+
+function initialstate(equ::HDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, p, λ, μ) for (q,p,λ,μ) in zip(q₀,p₀,λ₀,μ₀)]
 end
 
 function check_initial_conditions(equ::HDAE, ics::NamedTuple)

@@ -208,42 +208,56 @@ function Base.show(io::IO, equation::LODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::LODE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic = zeroalgebraic(q₀))
+function initialstate(equ::LODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+    if !haskey(ics, :v)
+        v = zeroalgebraic(ics.q)
+        equ.v̄(v, t, ics.q, ics.p, params)
+        ics = merge(ics, (v = v,))
+    end
+
     (
-        q = _statevariable(q₀),
-        p = _statevariable(p₀),
-        λ = _algebraicvariable(λ₀),
+        q = _statevariable(ics.q),
+        p = _statevariable(ics.p),
+        v = _algebraicvariable(ics.v),
     )
 end
 
-function initialstate(::LODE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀))
-    [(
-        q = _statevariable(q),
-        p = _statevariable(p),
-        λ = _algebraicvariable(λ)
-    ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+function initialstate(equ::LODE, q₀::InitialState, p₀::InitialState)
+    initialstate(equ, (q = q₀, p = p₀))
+end
+
+function initialstate(equ::LODE, q₀::InitialState, p₀::InitialState, v₀::InitialAlgebraic)
+    initialstate(equ, (q = q₀, p = p₀, v = v₀))
+end
+
+function initialstate(equ::LODE, q₀::InitialStateVector, p₀::InitialStateVector)
+    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+end
+
+function initialstate(equ::LODE, q₀::InitialStateVector, p₀::InitialStateVector, v₀::InitialAlgebraicVector)
+    [initialstate(equ, q, p, v) for (q,p,v) in zip(q₀,p₀,v₀)]
 end
 
 function check_initial_conditions(::LODE, ics::NamedTuple)
     haskey(ics, :q) || return false
-    haskey(ics, :v) || haskey(ics, :p) || return false
-    haskey(ics, :λ) || return false
-    eltype(ics.q) == eltype(ics.p) == eltype(ics.λ) || return false
-    axes(ics.q) == axes(ics.p) == axes(ics.λ) || return false
+    haskey(ics, :p) || return false
+    haskey(ics, :v) || return false
+    eltype(ics.q) == eltype(ics.p) == eltype(ics.v) || return false
+    axes(ics.q) == axes(ics.p) == axes(ics.v) || return false
     typeof(ics.q) <: StateVariable || return false
     typeof(ics.p) <: StateVariable || return false
-    typeof(ics.λ) <: AlgebraicVariable || return false
+    typeof(ics.v) <: AlgebraicVariable || return false
     return true
 end
 
 function check_methods(equ::LODE, tspan, ics, params)
-    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
+    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, ics.v, zero(ics.v), params) || return false
     # TODO add missing methods (namely ω)
     applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.lagrangian, tspan[begin], ics.q, ics.v, params) || return false
     return true
 end
 
@@ -329,7 +343,7 @@ end
 
 
 function GeometricBase.periodicity(prob::LODEProblem)
-    (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
+    (q = periodicity(equation(prob)), p = NullPeriodicity(), v = NullPeriodicity())
 end
 
 @inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
@@ -366,6 +380,8 @@ In addition to the standard keyword arguments for [`EquationProblem`](@ref Geome
 a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _lode_default_v̄` and `f̄ = f`.
 
+Initial conditions have to be prescribed for `(q,p)`. If instead initial conditions are available
+only for `(q,v)`, the function `ϑ` can be called to compute the corresponding initial value of `p`.    
 """
 const LODEEnsemble = EnsembleProblem{LODE}
 

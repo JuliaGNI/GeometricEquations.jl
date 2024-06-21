@@ -13,7 +13,7 @@ This is a special case of a differential algebraic equation with dynamical
 variables ``(q,p)`` and algebraic variable ``v``, that is determined such that the constraint
 ``p(t) = ϑ(t, q(t), v(t))`` is satisfied.
 
-Most integrators perform a projection step in order to enforce this constraint. To this end,
+Many integrators perform a projection step in order to enforce this constraint. To this end,
 the system is extended to
 ```math
 \begin{aligned}
@@ -177,40 +177,54 @@ function Base.show(io::IO, equation::IODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::IODE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic = zeroalgebraic(q₀))
+function initialstate(equ::IODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+    if !haskey(ics, :v)
+        v = zeroalgebraic(ics.q)
+        equ.v̄(v, t, ics.q, ics.p, params)
+        ics = merge(ics, (v = v,))
+    end
+
     (
-        q = _statevariable(q₀),
-        p = _statevariable(p₀),
-        λ = _algebraicvariable(λ₀),
+        q = _statevariable(ics.q),
+        p = _statevariable(ics.p),
+        v = _algebraicvariable(ics.v),
     )
 end
 
-function initialstate(::IODE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector = zeroalgebraic(q₀))
-    [(
-        q = _statevariable(q),
-        p = _statevariable(p),
-        λ = _algebraicvariable(λ)
-    ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+function initialstate(equ::IODE, q₀::InitialState, p₀::InitialState)
+    initialstate(equ, (q = q₀, p = p₀))
+end
+
+function initialstate(equ::IODE, q₀::InitialState, p₀::InitialState, v₀::InitialAlgebraic)
+    initialstate(equ, (q = q₀, p = p₀, v = v₀))
+end
+
+function initialstate(equ::IODE, q₀::InitialStateVector, p₀::InitialStateVector)
+    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+end
+
+function initialstate(equ::IODE, q₀::InitialStateVector, p₀::InitialStateVector, v₀::InitialAlgebraicVector)
+    [initialstate(equ, q, p, v) for (q,p,v) in zip(q₀,p₀,v₀)]
 end
 
 function check_initial_conditions(::IODE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
-    haskey(ics, :λ) || return false
-    eltype(ics.q) == eltype(ics.p) == eltype(ics.λ) || return false
-    axes(ics.q) == axes(ics.p) == axes(ics.λ) || return false
+    haskey(ics, :v) || return false
+    eltype(ics.q) == eltype(ics.p) == eltype(ics.v) || return false
+    axes(ics.q) == axes(ics.p) == axes(ics.v) || return false
     typeof(ics.q) <: StateVariable || return false
     typeof(ics.p) <: StateVariable || return false
-    typeof(ics.λ) <: AlgebraicVariable || return false
+    typeof(ics.v) <: AlgebraicVariable || return false
     return true
 end
 
 function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.λ, params) || return false
+    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, ics.v, zero(ics.v), params) || return false
     applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
     return true
 end
 
@@ -249,8 +263,8 @@ end
 $(iode_equations)
 
 The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
-take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``. The algebraic variable ``λ``
-with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}``.
+take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``. The algebraic variable ``v``
+with initial condition ``v(t_{0}) = v_{0}`` takes values in ``\\mathbb{R}^{d}``.
 
 ### Constructors
 
@@ -276,6 +290,8 @@ In addition to the standard keyword arguments for [`EquationProblem`](@ref Geome
 an `IODEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = _iode_default_v̄` and `f̄ = f`.
 
+Initial conditions have to be prescribed for `(q,p)`. If instead initial conditions are available
+only for `(q,v)`, the function `ϑ` can be called to compute the corresponding initial value of `p`.
 """
 const IODEProblem = EquationProblem{IODE}
 
@@ -293,7 +309,7 @@ function IODEProblem(ϑ, f, args...; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::IODEProblem)
-    (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity())
+    (q = periodicity(equation(prob)), p = NullPeriodicity(), v = NullPeriodicity())
 end
 
 @inline GeometricBase.nconstraints(prob::IODEProblem) = ndims(prob)
