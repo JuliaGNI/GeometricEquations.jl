@@ -235,7 +235,7 @@ function Base.show(io::IO, equation::IDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::IDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::IDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     if !haskey(ics, :v)
         v = zeroalgebraic(ics.q)
         equ.v̄(v, t, ics.q, ics.p, params)

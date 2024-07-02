@@ -258,7 +258,7 @@ function Base.show(io::IO, equation::LDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::LDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::LDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     if !haskey(ics, :v)
         v = zeroalgebraic(ics.q)
         equ.v̄(v, t, ics.q, ics.p, params)
