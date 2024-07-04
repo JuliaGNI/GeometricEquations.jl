@@ -57,11 +57,13 @@ struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <:
                         equType <: GeometricEquation,
                         functionsType <: NamedTuple,
                         solutionsType <: NamedTuple,
+                        iguessType <: NamedTuple,
                         icsType <: NamedTuple,
                         paramsType <: OptionalParameters} <: GeometricProblem{superType}
     equation::equType
     functions::functionsType
     solutions::solutionsType
+    initialguess::iguessType
     tspan::Tuple{tType, tType}
     tstep::tType
     ics::icsType
@@ -82,9 +84,10 @@ struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <:
 
         funcs = functions(equ)
         sols = solutions(equ)
+        iguess = initialguess(equ)
 
-        new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs), typeof(sols), typeof(_ics), typeof(parameters)
-            }(equ, funcs, sols, _tspan, _tstep, _ics, parameters)
+        new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs), typeof(sols), typeof(iguess), typeof(_ics), typeof(parameters)
+            }(equ, funcs, sols, iguess, _tspan, _tstep, _ics, parameters)
     end
 end
 
@@ -104,6 +107,7 @@ Base.:(==)(prob1::EquationProblem, prob2::EquationProblem) = (
                                 prob1.equation   == prob2.equation
                              && prob1.functions  == prob2.functions
                              && prob1.solutions  == prob2.solutions
+                             && prob1.initialguess == prob2.initialguess
                              && prob1.tspan      == prob2.tspan
                              && prob1.tstep      == prob2.tstep
                              && prob1.ics        == prob2.ics
@@ -121,6 +125,7 @@ Base.:(==)(prob1::EquationProblem, prob2::EquationProblem) = (
 @inline GeometricBase.timestep(prob::EquationProblem) = tstep(prob)
 @inline GeometricBase.functions(prob::EquationProblem) = prob.functions
 @inline GeometricBase.solutions(prob::EquationProblem) = prob.solutions
+@inline GeometricBase.initialguess(prob::EquationProblem) = prob.initialguess
 @inline GeometricBase.parameters(prob::EquationProblem) = prob.parameters
 @inline GeometricBase.nsamples(::EquationProblem) = 1
 

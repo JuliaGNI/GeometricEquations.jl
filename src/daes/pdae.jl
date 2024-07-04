@@ -205,6 +205,7 @@ GeometricBase.parameters(equation::PDAE) = equation.parameters
 GeometricBase.periodicity(equation::PDAE) = equation.periodicity
 
 hasvectorfield(::PDAE) = true
+hasinitialguess(::PDAE{vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable, <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType} = true
 
 function Base.show(io::IO, equation::PDAE)
     print(io, "Partitioned Differential Algebraic Equation (PDAE)", "\n")
@@ -265,7 +266,11 @@ function check_methods(equ::PDAE, tspan, ics::NamedTuple, params)
     applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.p, params) || return false
-    # TODO add missing methods
+    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -293,9 +298,9 @@ _get_invariant(::PDAE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 function _functions(equ::PDAE)
     if hassecondary(equ)
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
     else
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ)
     end
 end
 
@@ -323,6 +328,9 @@ function _functions(equ::PDAE, params::OptionalParameters)
             f̄ = _get_f̄(equ, params))
     end
 end
+
+_initialguess(equ::PDAE) = (v = equ.v̄, f = equ.f̄)
+_initialguess(equ::PDAE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 
 
 @doc """

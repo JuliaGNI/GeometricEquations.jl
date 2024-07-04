@@ -54,30 +54,35 @@ ODE(v; invariants = NullInvariants(), parameters = NullParameters(), periodicity
 $(ode_functions)
 
 """
-struct ODE{vType <: Callable,
+struct ODE{vType <: Callable, v̄Type <: OptionalCallable,
            invType <: OptionalInvariants,
            parType <: OptionalParameters,
            perType <: OptionalPeriodicity} <: AbstractEquationODE{invType, parType, perType}
+
     v::vType
+    v̄::v̄Type
 
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function ODE(v, invariants, parameters, periodicity)
+    function ODE(v, v̄, invariants, parameters, periodicity)
         @assert !isempty(methods(v))
         # @assert hasmethod(v, (Real, AbstractArray, AbstractArray, OptionalParameters))
 
-        new{typeof(v), typeof(invariants), typeof(parameters), typeof(periodicity)}(v,
-                                                                                    invariants,
-                                                                                    parameters,
-                                                                                    periodicity)
+        new{typeof(v), typeof(v̄),
+            typeof(invariants),
+            typeof(parameters),
+            typeof(periodicity)
+            }(v, v̄, invariants, parameters, periodicity)
     end
 end
 
-function ODE(v; invariants = NullInvariants(), parameters = NullParameters(),
+function ODE(v; v̄ = v,
+             invariants = NullInvariants(),
+             parameters = NullParameters(),
              periodicity = NullPeriodicity())
-    ODE(v, invariants, parameters, periodicity)
+    ODE(v, v̄, invariants, parameters, periodicity)
 end
 
 GeometricBase.invariants(equation::ODE) = equation.invariants
@@ -85,6 +90,8 @@ GeometricBase.parameters(equation::ODE) = equation.parameters
 GeometricBase.periodicity(equation::ODE) = equation.periodicity
 
 hasvectorfield(::ODE) = true
+hasinitialguess(::ODE{vType, <:Callable}) where {vType} = true
+hasinitialguess(::ODE{vType, <:Nothing}) where {vType} = false
 
 function Base.show(io::IO, equation::ODE)
     print(io, "Ordinary Differential Equation (ODE)", "\n")
@@ -119,6 +126,7 @@ end
 
 function check_methods(equ::ODE, tspan, ics, params)
     applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
     return true
 end
 
@@ -133,11 +141,13 @@ function GeometricBase.arrtype(equ::ODE, ics::NamedTuple)
 end
 
 _get_v(equ::ODE, params) = (v, t, q) -> equ.v(v, t, q, params)
-_get_v̄(equ::ODE, params) = _get_v(equ, params)
+_get_v̄(equ::ODE, params) = (v, t, q) -> equ.v̄(v, t, q, params)
 _get_invariant(::ODE, inv, params) = (t, q) -> inv(t, q, params)
 
 _functions(equ::ODE) = (v = equ.v,)
 _functions(equ::ODE, params::OptionalParameters) = (v = _get_v(equ, params),)
+_initialguess(equ::ODE) = (v = equ.v̄,)
+_initialguess(equ::ODE, params::OptionalParameters) = (v = _get_v̄(equ, params),)
 
 
 @doc """
@@ -173,8 +183,9 @@ const ODEProblem = EquationProblem{ODE}
 function ODEProblem(v, tspan, tstep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
-                    periodicity = NullPeriodicity())
-    equ = ODE(v, invariants, parameter_types(parameters), periodicity)
+                    periodicity = NullPeriodicity(),
+                    v̄ = v)
+    equ = ODE(v, v̄, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
@@ -212,7 +223,8 @@ const ODEEnsemble = EnsembleProblem{ODE}
 function ODEEnsemble(v, tspan, tstep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
-                    periodicity = NullPeriodicity())
-    equ = ODE(v, invariants, parameter_types(parameters), periodicity)
+                    periodicity = NullPeriodicity(),
+                    v̄ = v)
+    equ = ODE(v, v̄, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end

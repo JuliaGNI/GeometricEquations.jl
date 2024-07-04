@@ -126,7 +126,7 @@ equ = DAE(v, u, ϕ, ū, ψ)
 struct DAE{vType <: Callable,
            uType <: Callable, ϕType <: Callable,
            ūType <: OptionalCallable, ψType <: OptionalCallable,
-           v̄Type <: Callable,
+           v̄Type <: OptionalCallable,
            invType <: OptionalInvariants,
            parType <: OptionalParameters,
            perType <: OptionalPeriodicity} <: AbstractEquationDAE{invType,parType,perType,ψType}
@@ -165,6 +165,7 @@ GeometricBase.parameters(equation::DAE) = equation.parameters
 GeometricBase.periodicity(equation::DAE) = equation.periodicity
 
 hasvectorfield(::DAE) = true
+hasinitialguess(::DAE{vType, uType, ϕType, ūType, ψType, <:Callable}) where {vType, uType, ϕType, ūType, ψType} = true
 
 function Base.show(io::IO, equation::DAE)
     print(io, "Differential Algebraic Equation (DAE)", "\n")
@@ -218,6 +219,9 @@ function check_methods(equ::DAE, tspan, ics::NamedTuple, params)
     applicable(equ.v, zero(ics.q), tspan[begin], ics.q, params) || return false
     applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, params) || return false
+    equ.ū === nothing || applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
     return true
 end
 
@@ -241,9 +245,9 @@ _get_invariant(::DAE, inv, params) = (t,q) -> inv(t, q, params)
 
 function _functions(equ::DAE)
     if hassecondary(equ)
-        (v = equ.v, u = equ.u, ϕ = equ.ϕ, ū = equ.ū, ψ = equ.ψ, v̄ = equ.v̄)
+        (v = equ.v, u = equ.u, ϕ = equ.ϕ, ū = equ.ū, ψ = equ.ψ)
     else
-        (v = equ.v, u = equ.u, ϕ = equ.ϕ, v̄ = equ.v̄)
+        (v = equ.v, u = equ.u, ϕ = equ.ϕ)
     end
 end
 
@@ -266,6 +270,9 @@ function _functions(equ::DAE, params::OptionalParameters)
         )
     end
 end
+
+_initialguess(equ::DAE) = (v = equ.v̄,)
+_initialguess(equ::DAE, params::OptionalParameters) = (v = _get_v̄(equ, params),)
 
 
 @doc """

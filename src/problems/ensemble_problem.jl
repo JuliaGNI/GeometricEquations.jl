@@ -91,11 +91,13 @@ struct EnsembleProblem{superType <: GeometricEquation, dType <: Number, tType <:
                  equType <: GeometricEquation,
                  functionsType <: NamedTuple,
                  solutionsType <: NamedTuple,
+                 iguessType <: NamedTuple,
                  icsType <: AbstractVector{<:NamedTuple},
                  paramsType <: AbstractVector{<:OptionalParameters}} <: GeometricProblem{superType}
     equation::equType
     functions::functionsType
     solutions::solutionsType
+    initialguess::iguessType
     tspan::Tuple{tType,tType}
     tstep::tType
     ics::icsType
@@ -125,8 +127,9 @@ function EnsembleProblem(equ::equType, tspan, tstep, ics::AbstractVector{<:Named
 
     funcs = functions(equ)
     sols = solutions(equ)
+    iguesss = initialguess(equ)
 
-    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs), typeof(sols), typeof(_ics), typeof(parameters)}(equ, funcs, sols, _tspan, _tstep, _ics, parameters)
+    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs), typeof(sols), typeof(iguesss), typeof(_ics), typeof(parameters)}(equ, funcs, sols, iguesss, _tspan, _tstep, _ics, parameters)
 end
 
 function EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters = NullParameters())
@@ -165,6 +168,7 @@ Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
                                 ens1.equation   == ens2.equation
                              && ens1.functions  == ens2.functions
                              && ens1.solutions  == ens2.solutions
+                             && ens1.initialguess == ens2.initialguess
                              && ens1.tspan      == ens2.tspan
                              && ens1.tstep      == ens2.tstep
                              && ens1.ics        == ens2.ics
@@ -182,6 +186,7 @@ Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
 @inline GeometricBase.timestep(ge::EnsembleProblem) = tstep(ge)
 @inline GeometricBase.functions(ge::EnsembleProblem) = ge.functions
 @inline GeometricBase.solutions(ge::EnsembleProblem) = ge.solutions
+@inline GeometricBase.initialguess(ge::EnsembleProblem) = ge.initialguess
 @inline GeometricBase.parameters(ge::EnsembleProblem) = ge.parameters
 
 

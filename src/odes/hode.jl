@@ -79,31 +79,34 @@ $(hode_functions)
 
 """
 struct HODE{vType <: Callable, fType <: Callable,
+            v̄Type <: OptionalCallable,
+            f̄Type <: OptionalCallable,
             hamType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
             perType <: OptionalPeriodicity} <:
        AbstractEquationPODE{invType, parType, perType}
+    
     v::vType
     f::fType
+    v̄::v̄Type
+    f̄::f̄Type
 
     hamiltonian::hamType
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function HODE(v, f, hamiltonian, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f), typeof(hamiltonian),
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(v, f, hamiltonian,
-                                                                         invariants,
-                                                                         parameters,
-                                                                         periodicity)
+    function HODE(v, f, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(hamiltonian),
+            typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
     end
 end
 
-function HODE(v, f, hamiltonian; invariants = NullInvariants(),
+function HODE(v, f, hamiltonian; v̄ = v, f̄ = f, invariants = NullInvariants(),
               parameters = NullParameters(), periodicity = NullPeriodicity())
-    HODE(v, f, hamiltonian, invariants, parameters, periodicity)
+    HODE(v, f, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
 end
 
 GeometricBase.invariants(equation::HODE) = equation.invariants
@@ -112,6 +115,8 @@ GeometricBase.periodicity(equation::HODE) = equation.periodicity
 
 hasvectorfield(::HODE) = true
 hashamiltonian(::HODE) = true
+hasinitialguess(::HODE{vType, ftype, <:Callable, <:Callable}) where {vType, ftype} = true
+hasinitialguess(::HODE{vType, ftype, <:Nothing, <:Nothing}) where {vType, ftype} = false
 
 function Base.show(io::IO, equation::HODE)
     print(io, "Hamiltonian Ordinary Differential Equation (HODE)", "\n")
@@ -157,6 +162,8 @@ function check_methods(equ::HODE, tspan, ics, params)
     applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -172,16 +179,15 @@ end
 
 _get_v(equ::HODE, params) = (v, t, q, p) -> equ.v(v, t, q, p, params)
 _get_f(equ::HODE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
-_get_v̄(equ::HODE, params) = _get_v(equ, params)
-_get_f̄(equ::HODE, params) = _get_f(equ, params)
+_get_v̄(equ::HODE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
+_get_f̄(equ::HODE, params) = (f, t, q, p) -> equ.f̄(f, t, q, p, params)
 _get_h(equ::HODE, params) = (t, q, p) -> equ.hamiltonian(t, q, p, params)
 _get_invariant(::HODE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::HODE) = (v = equ.v, f = equ.f, h = equ.hamiltonian)
-
-function _functions(equ::HODE, params::OptionalParameters)
-    (v = _get_v(equ, params), f = _get_f(equ, params), h = _get_h(equ, params))
-end
+_functions(equ::HODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), h = _get_h(equ, params))
+_initialguess(equ::HODE) = (v = equ.v̄, f = equ.f̄)
+_initialguess(equ::HODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 
 
 @doc """
@@ -220,8 +226,9 @@ const HODEProblem = EquationProblem{HODE}
 function HODEProblem(v, f, hamiltonian, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
-        periodicity = NullPeriodicity())
-    equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
+        periodicity = NullPeriodicity(),
+        v̄ = v, f̄ = f)
+    equ = HODE(v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
@@ -261,7 +268,8 @@ const HODEEnsemble = EnsembleProblem{HODE}
 function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
-        periodicity = NullPeriodicity())
-    equ = HODE(v, f, hamiltonian, invariants, parameter_types(parameters), periodicity)
+        periodicity = NullPeriodicity(),
+        v̄ = v, f̄ = f)
+    equ = HODE(v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end

@@ -147,8 +147,8 @@ _lode_default_v̄(v, t, q, params) = nothing
 $(lode_functions)
 
 """
-struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
-            ωType <: Callable, v̄Type <: Callable, f̄Type <: Callable,
+struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable, ωType <: Callable,
+            v̄Type <: OptionalCallable, f̄Type <: OptionalCallable,
             lagType <: Callable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
@@ -193,6 +193,8 @@ GeometricBase.periodicity(equation::LODE) = equation.periodicity
 
 hasvectorfield(::LODE) = true
 haslagrangian(::LODE) = true
+hasinitialguess(::LODE{ϑType, ftype, gtype, ωType, <:Callable, <:Callable}) where {ϑType, ftype, gtype, ωType} = true
+hasinitialguess(::LODE{ϑType, ftype, gtype, ωType, <:Nothing, <:Nothing}) where {ϑType, ftype, gtype, ωType} = false
 
 function Base.show(io::IO, equation::LODE)
     print(io, "Lagrangian Ordinary Differential Equation (LODE)", "\n")
@@ -255,8 +257,8 @@ function check_methods(equ::LODE, tspan, ics, params)
     applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
     applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, ics.v, zero(ics.v), params) || return false
     # TODO add missing methods (namely ω)
-    applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
     applicable(equ.lagrangian, tspan[begin], ics.q, ics.v, params) || return false
     return true
 end
@@ -280,17 +282,18 @@ _get_f̄(equ::LODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_l(equ::LODE, params) = (t, q, v)    -> equ.lagrangian(t, q, v, params)
 _get_invariant(::LODE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
-_functions(equ::LODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, ω = equ.ω, v̄ = equ.v̄, f̄ = equ.f̄, l = equ.lagrangian)
+_functions(equ::LODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, ω = equ.ω, l = equ.lagrangian)
 
 _functions(equ::LODE, params::OptionalParameters) = (
         ϑ = _get_ϑ(equ, params),
         f = _get_f(equ, params),
         g = _get_g(equ, params),
         ω = _get_ω(equ, params),
-        v̄ = _get_v̄(equ, params),
-        f̄ = _get_f̄(equ, params),
-        l = _get_l(equ, params)
+        l = _get_l(equ, params),
     )
+
+_initialguess(equ::LODE) = (v = equ.v̄, f = equ.f̄)
+_initialguess(equ::LODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 
 
 @doc """

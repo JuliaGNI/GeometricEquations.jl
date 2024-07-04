@@ -1,6 +1,5 @@
 
 using GeometricEquations
-using GeometricEquations: symplectic_matrix
 using Test
 
 include("functions.jl")
@@ -9,7 +8,7 @@ include("initial_conditions.jl")
 
 @testset "$(rpad("Ordinary Differential Equations (ODE)",80))" begin
 
-    ode  = ODE(ode_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    ode  = ODE(ode_eqs..., ode_igs..., NullInvariants(), NullParameters(), NullPeriodicity())
     ode1 = ODE(ode_eqs...)
     ode2 = ODE(ode_eqs...; invariants=NullInvariants())
     ode3 = ODE(ode_eqs...; parameters=NullParameters())
@@ -27,6 +26,7 @@ include("initial_conditions.jl")
 
     @test functions(ode) == NamedTuple{(:v,)}(ode_eqs)
     @test solutions(ode) == NamedTuple()
+    @test initialguess(ode) == NamedTuple{(:v,)}(ode_igs)
 
     @test parameters(ode) == NullParameters()
     @test invariants(ode) == NullInvariants()
@@ -34,6 +34,7 @@ include("initial_conditions.jl")
 
     @test hasvectorfield(ode) == true
     @test hassolution(ode) == false
+    @test hasinitialguess(ode) == true
     @test hasprimary(ode) == false
     @test hassecondary(ode) == false
 
@@ -65,12 +66,14 @@ end
     @test_nowarn SODE(sode_eqs, sode_sols)
 
 
-    sode  = SODE(sode_eqs, nothing, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(sode_eqs)
-    sode2 = SODE(sode_eqs; invariants=NullInvariants())
-    sode3 = SODE(sode_eqs; parameters=NullParameters())
-    sode4 = SODE(sode_eqs; periodicity=NullPeriodicity())
+    sode  = SODE(sode_eqs, nothing, sode_igs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    sode0 = SODE(sode_eqs)
+    sode1 = SODE(sode_eqs; v̄ = ode_v)
+    sode2 = SODE(sode_eqs; v̄ = ode_v, invariants=NullInvariants())
+    sode3 = SODE(sode_eqs; v̄ = ode_v, parameters=NullParameters())
+    sode4 = SODE(sode_eqs; v̄ = ode_v, periodicity=NullPeriodicity())
 
+    @test sode != sode0
     @test sode == sode1
     @test sode == sode2
     @test sode == sode3
@@ -84,6 +87,7 @@ end
     @test nsteps(sode) == 2
     @test functions(sode) == (v = sode_eqs,)
     @test solutions(sode) == NamedTuple()
+    @test initialguess(sode) == (v = ode_v,)
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -91,6 +95,7 @@ end
 
     @test hasvectorfield(sode) == true
     @test hassolution(sode) == false
+    @test hasinitialguess(sode) == true
     @test hasprimary(sode) == false
     @test hassecondary(sode) == false
 
@@ -102,11 +107,12 @@ end
     @test haslagrangian(sode) == false
 
 
-    sode  = SODE(sode_eqs, sode_sols, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(sode_eqs, sode_sols)
-    sode2 = SODE(sode_eqs, sode_sols; invariants=NullInvariants())
-    sode3 = SODE(sode_eqs, sode_sols; parameters=NullParameters())
-    sode4 = SODE(sode_eqs, sode_sols; periodicity=NullPeriodicity())
+    sode  = SODE(sode_eqs, sode_sols, ode_v, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode0 = SODE(sode_eqs, sode_sols)
+    sode1 = SODE(sode_eqs, sode_sols; v̄ = ode_v)
+    sode2 = SODE(sode_eqs, sode_sols; v̄ = ode_v, invariants=NullInvariants())
+    sode3 = SODE(sode_eqs, sode_sols; v̄ = ode_v, parameters=NullParameters())
+    sode4 = SODE(sode_eqs, sode_sols; v̄ = ode_v, periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -121,6 +127,7 @@ end
     @test nsteps(sode) == 2
     @test functions(sode) == (v = sode_eqs,)
     @test solutions(sode) == (q = sode_sols,)
+    @test initialguess(sode) == (v = ode_v,)
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -128,6 +135,7 @@ end
 
     @test hasvectorfield(sode) == true
     @test hassolution(sode) == true
+    @test hasinitialguess(sode) == true
     @test hasprimary(sode) == false
     @test hassecondary(sode) == false
 
@@ -139,11 +147,12 @@ end
     @test haslagrangian(sode) == false
 
 
-    sode  = SODE(nothing, sode_sols, NullInvariants(), NullParameters(), NullPeriodicity())
-    sode1 = SODE(nothing, sode_sols)
-    sode2 = SODE(nothing, sode_sols; invariants=NullInvariants())
-    sode3 = SODE(nothing, sode_sols; parameters=NullParameters())
-    sode4 = SODE(nothing, sode_sols; periodicity=NullPeriodicity())
+    sode  = SODE(nothing, sode_sols, ode_v, NullInvariants(), NullParameters(), NullPeriodicity())
+    sode0 = SODE(nothing, sode_sols)
+    sode1 = SODE(nothing, sode_sols, v̄ = ode_v)
+    sode2 = SODE(nothing, sode_sols; v̄ = ode_v, invariants=NullInvariants())
+    sode3 = SODE(nothing, sode_sols; v̄ = ode_v, parameters=NullParameters())
+    sode4 = SODE(nothing, sode_sols; v̄ = ode_v, periodicity=NullPeriodicity())
 
     @test sode == sode1
     @test sode == sode2
@@ -158,6 +167,7 @@ end
     @test nsteps(sode) == 2
     @test functions(sode) == NamedTuple()
     @test solutions(sode) == (q = sode_sols,)
+    @test initialguess(sode) == (v = ode_v,)
 
     @test parameters(sode) == NullParameters()
     @test invariants(sode) == NullInvariants()
@@ -165,6 +175,7 @@ end
 
     @test hasvectorfield(sode) == false
     @test hassolution(sode) == true
+    @test hasinitialguess(sode) == true
     @test hasprimary(sode) == false
     @test hassecondary(sode) == false
 
@@ -180,7 +191,7 @@ end
 
 @testset "$(rpad("Partitioned Ordinary Differential Equations (PODE)",80))" begin
 
-    pode  = PODE(pode_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    pode  = PODE(pode_eqs..., pode_igs..., NullInvariants(), NullParameters(), NullPeriodicity())
     pode1 = PODE(pode_eqs...)
     pode2 = PODE(pode_eqs...; invariants=NullInvariants())
     pode3 = PODE(pode_eqs...; parameters=NullParameters())
@@ -198,6 +209,7 @@ end
 
     @test functions(pode) == NamedTuple{(:v,:f)}(pode_eqs)
     @test solutions(pode) == NamedTuple()
+    @test initialguess(pode) == NamedTuple{(:v,:f)}(pode_igs)
 
     @test parameters(pode) == NullParameters()
     @test invariants(pode) == NullInvariants()
@@ -205,6 +217,7 @@ end
 
     @test hasvectorfield(pode) == true
     @test hassolution(pode) == false
+    @test hasinitialguess(pode) == true
     @test hasprimary(pode) == false
     @test hassecondary(pode) == false
 
@@ -253,16 +266,16 @@ end
 
 @testset "$(rpad("Implicit Ordinary Differential Equations (IODE)",80))" begin
 
-    iode  = IODE(iode_eqs..., iode_v, iode_f, NullInvariants(), NullParameters(), NullPeriodicity())
+    iode  = IODE(iode_eqs..., iode_igs..., NullInvariants(), NullParameters(), NullPeriodicity())
 
-    iode1 = IODE(iode_eqs...; v̄=iode_v)
-    iode2 = IODE(iode_eqs...; v̄=iode_v, invariants=NullInvariants())
-    iode3 = IODE(iode_eqs...; v̄=iode_v, parameters=NullParameters())
-    iode4 = IODE(iode_eqs...; v̄=iode_v, periodicity=NullPeriodicity())
-    iode5 = IODE(iode_eqs...; v̄=iode_v, f̄=iode_f)
-    iode6 = IODE(iode_eqs...; v̄=iode_v, f̄=iode_f, invariants=NullInvariants())
-    iode7 = IODE(iode_eqs...; v̄=iode_v, f̄=iode_f, parameters=NullParameters())
-    iode8 = IODE(iode_eqs...; v̄=iode_v, f̄=iode_f, periodicity=NullPeriodicity())
+    iode1 = IODE(iode_eqs...; v̄ = iode_v)
+    iode2 = IODE(iode_eqs...; v̄ = iode_v, invariants=NullInvariants())
+    iode3 = IODE(iode_eqs...; v̄ = iode_v, parameters=NullParameters())
+    iode4 = IODE(iode_eqs...; v̄ = iode_v, periodicity=NullPeriodicity())
+    iode5 = IODE(iode_eqs...; v̄ = iode_v, f̄ = iode_f)
+    iode6 = IODE(iode_eqs...; v̄ = iode_v, f̄ = iode_f, invariants=NullInvariants())
+    iode7 = IODE(iode_eqs...; v̄ = iode_v, f̄ = iode_f, parameters=NullParameters())
+    iode8 = IODE(iode_eqs...; v̄ = iode_v, f̄ = iode_f, periodicity=NullPeriodicity())
     
     @test iode == iode1
     @test iode == iode2
@@ -282,8 +295,9 @@ end
     @test hash(iode) == hash(iode7)
     @test hash(iode) == hash(iode8)
 
-    # @test functions(iode) == NamedTuple{(:ϑ,:f,:g,:v̄,:f̄)}(iode_eqs)
+    @test functions(iode) == NamedTuple{(:ϑ,:f,:g)}(iode_eqs)
     @test solutions(iode) == NamedTuple()
+    @test initialguess(iode) == NamedTuple{(:v,:f)}(iode_igs)
 
     @test parameters(iode) == NullParameters()
     @test invariants(iode) == NullInvariants()
@@ -291,6 +305,7 @@ end
 
     @test hasvectorfield(iode) == true
     @test hassolution(iode) == false
+    @test hasinitialguess(iode) == true
     @test hasprimary(iode) == false
     @test hassecondary(iode) == false
 
@@ -332,7 +347,7 @@ end
 
 @testset "$(rpad("Hamiltonian Ordinary Differential Equations (HODE)",80))" begin
 
-    hode  = HODE(pode_v, pode_f, hode_h, NullInvariants(), NullParameters(), NullPeriodicity())
+    hode  = HODE(pode_eqs..., hode_igs..., hode_h, NullInvariants(), NullParameters(), NullPeriodicity())
 
     hode1 = HODE(hode_eqs...)
     hode2 = HODE(hode_eqs...; invariants=NullInvariants())
@@ -349,8 +364,9 @@ end
     @test hash(hode) == hash(hode3)
     @test hash(hode) == hash(hode4)
 
-    @test functions(hode) == NamedTuple{(:v,:f,:h)}((pode_v, pode_f, hode_h))
+    @test functions(hode) == NamedTuple{(:v,:f,:h)}(hode_eqs)
     @test solutions(hode) == NamedTuple()
+    @test initialguess(hode) == NamedTuple{(:v,:f)}(hode_igs)
 
     @test parameters(hode) == NullParameters()
     @test invariants(hode) == NullInvariants()
@@ -358,6 +374,7 @@ end
 
     @test hasvectorfield(hode) == true
     @test hassolution(hode) == false
+    @test hasinitialguess(hode) == true
     @test hasprimary(hode) == false
     @test hassecondary(hode) == false
 
@@ -426,12 +443,12 @@ end
 
 @testset "$(rpad("Lagrangian Ordinary Differential Equations (LODE)",80))" begin
 
-    lode = LODE(iode_ϑ, iode_f, iode_g, lode_ω, iode_v, iode_f, lode_l, NullInvariants(), NullParameters(), NullPeriodicity())
+    lode = LODE(iode_eqs..., lode_ω, lode_igs..., lode_l, NullInvariants(), NullParameters(), NullPeriodicity())
 
-    lode1 = LODE(lode_eqs..., v̄=iode_v)
-    lode2 = LODE(lode_eqs..., v̄=iode_v, invariants=NullInvariants())
-    lode3 = LODE(lode_eqs..., v̄=iode_v, parameters=NullParameters())
-    lode4 = LODE(lode_eqs..., v̄=iode_v, periodicity=NullPeriodicity())
+    lode1 = LODE(lode_eqs...; v̄ = lode_v, f̄ = lode_f)
+    lode2 = LODE(lode_eqs...; v̄ = lode_v, f̄ = lode_f, invariants=NullInvariants())
+    lode3 = LODE(lode_eqs...; v̄ = lode_v, f̄ = lode_f, parameters=NullParameters())
+    lode4 = LODE(lode_eqs...; v̄ = lode_v, f̄ = lode_f, periodicity=NullPeriodicity())
 
     @test lode == lode1
     @test lode == lode2
@@ -443,8 +460,9 @@ end
     @test hash(lode) == hash(lode3)
     @test hash(lode) == hash(lode4)
 
-    @test functions(lode) == NamedTuple{(:ϑ,:f,:g,:ω,:v̄,:f̄,:l)}((iode_ϑ, iode_f, iode_g, lode_ω, iode_v, iode_f, lode_l))
+    @test functions(lode) == NamedTuple{(:ϑ,:f,:g,:ω,:l)}(lode_eqs)
     @test solutions(lode) == NamedTuple()
+    @test initialguess(lode) == NamedTuple{(:v,:f)}(lode_igs)
 
     @test parameters(lode) == NullParameters()
     @test invariants(lode) == NullInvariants()
@@ -452,6 +470,7 @@ end
 
     @test hasvectorfield(lode) == true
     @test hassolution(lode) == false
+    @test hasinitialguess(lode) == true
     @test hasprimary(lode) == false
     @test hassecondary(lode) == false
 

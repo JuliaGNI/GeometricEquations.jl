@@ -55,10 +55,12 @@ hassecondary(::DAEsecType{<:Callable}) = true
 
 _functions(equ::GeometricEquation) = error("_functions(::GeometricEquation) not implemented for ", typeof(equ), ".")
 _solutions(equ::GeometricEquation) = error("_solutions(::GeometricEquation) not implemented for ", typeof(equ), ".")
+_initialguess(equ::GeometricEquation) = error("_initialguess(::GeometricEquation) not implemented for ", typeof(equ), ".")
 _invariants(equ::GeometricEquation) = error("_invariants(::GeometricEquation) not implemented for ", typeof(equ), ".")
 
 _functions(equ::GeometricEquation, ::OptionalParameters) = error("_functions(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 _solutions(equ::GeometricEquation, ::OptionalParameters) = error("_solutions(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
+_initialguess(equ::GeometricEquation, ::OptionalParameters) = error("_initialguess(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 _invariants(equ::GeometricEquation, ::OptionalParameters) = error("_invariants(::GeometricEquation, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 
 function GeometricBase.functions(equ::GeometricEquation)
@@ -95,6 +97,23 @@ function GeometricBase.solutions(equ::GeometricEquation, params::OptionalParamet
     end
 end
 
+function GeometricBase.initialguess(equ::GeometricEquation)
+    if hasinitialguess(equ)
+        return _initialguess(equ)
+    else
+        return NamedTuple()
+    end
+end
+
+function GeometricBase.initialguess(equ::GeometricEquation, params::OptionalParameters)
+    @assert check_parameters(equ, params)
+    if hasinitialguess(equ)
+        return _initialguess(equ, params)
+    else
+        return NamedTuple()
+    end
+end
+
 function GeometricBase.invariants(equ::GeometricEquation, params::OptionalParameters)
     @assert check_parameters(equ, params)
     if hasinvariants(equ)
@@ -109,6 +128,7 @@ GeometricBase.periodicity(equ::GeometricEquation, args...) = error("periodicity(
 
 hassolution(::GeometricEquation) = false
 hasvectorfield(::GeometricEquation) = false
+hasinitialguess(::GeometricEquation) = false
 hasprimary(::GeometricEquation) = false
 hassecondary(::GeometricEquation) = false
 

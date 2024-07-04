@@ -127,11 +127,12 @@ $(iode_functions)
 
 """
 struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
-            v̄Type <: Callable, f̄Type <: Callable,
+            v̄Type <: OptionalCallable, f̄Type <: OptionalCallable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
             perType <: OptionalPeriodicity} <:
        AbstractEquationPODE{invType, parType, perType}
+    
     ϑ::ϑType
     f::fType
     g::gType
@@ -164,6 +165,8 @@ GeometricBase.parameters(equation::IODE) = equation.parameters
 GeometricBase.periodicity(equation::IODE) = equation.periodicity
 
 hasvectorfield(::IODE) = true
+hasinitialguess(::IODE{ϑType, ftype, gtype, <:Callable, <:Callable}) where {ϑType, ftype, gtype} = true
+hasinitialguess(::IODE{ϑType, ftype, gtype, <:Nothing, <:Nothing}) where {ϑType, ftype, gtype} = false
 
 function Base.show(io::IO, equation::IODE)
     print(io, "Implicit Ordinary Differential Equation (IODE)", "\n")
@@ -223,8 +226,8 @@ function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
     applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
     applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, ics.v, zero(ics.v), params) || return false
-    applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
     return true
 end
 
@@ -245,17 +248,19 @@ _get_v̄(equ::IODE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::IODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IODE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
-_functions(equ::IODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, v̄ = equ.v̄, f̄ = equ.f̄)
+_functions(equ::IODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g)
 
 function _functions(equ::IODE, params::OptionalParameters)
     (
         ϑ = _get_ϑ(equ, params),
         f = _get_f(equ, params),
         g = _get_g(equ, params),
-        v̄ = _get_v̄(equ, params),
-        f̄ = _get_f̄(equ, params)
     )
 end
+
+_initialguess(equ::IODE) = (v = equ.v̄, f = equ.f̄)
+_initialguess(equ::IODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+
 
 @doc """
 `IODEProblem`: Implicit Ordinary Differential Equation Problem

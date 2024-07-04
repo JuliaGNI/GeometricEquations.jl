@@ -16,6 +16,7 @@ include("initial_conditions.jl")
     @test periodicity(dae) == NullPeriodicity()
 
     @test hasvectorfield(dae) == true
+    @test hasinitialguess(dae) == true
     @test hassecondary(dae) == false
     @test hasinvariants(dae) == false
     @test hasparameters(dae) == false
@@ -25,16 +26,19 @@ include("initial_conditions.jl")
     @test funcs.v == dae_v == dae.v
     @test funcs.u == dae_u == dae.u
     @test funcs.ϕ == dae_ϕ == dae.ϕ
-    @test funcs.v̄ == dae_v == dae.v̄
     @test !haskey(funcs, :ū)
     @test !haskey(funcs, :ψ)
+
+    igs = initialguess(dae)
+    @test igs.v == dae_v == dae.v̄
 
     funcs = functions(dae, parameters(dae))
     @test funcs.v != dae_v
     @test funcs.u != dae_u
     @test funcs.ϕ != dae_ϕ
-    @test funcs.v̄ != dae_v
     
+    @test initialguess(dae) == NamedTuple{(:v,)}(dae_igs)
+
 
     dae_eqs1 = (dae_eqs..., nothing, nothing)
     dae_eqs2 = (dae_eqs..., nothing, nothing, dae_v)
@@ -66,6 +70,7 @@ include("initial_conditions.jl")
     @test periodicity(dae) == dae_args.periodicity
 
     @test hasvectorfield(dae) == true
+    @test hasinitialguess(dae) == true
     @test hassecondary(dae) == true
     @test hasinvariants(dae) == true
     @test hasparameters(dae) == true
@@ -79,7 +84,9 @@ include("initial_conditions.jl")
     @test funcs.ϕ == dae_ϕ == dae.ϕ
     @test funcs.ū == dae_ū == dae.ū
     @test funcs.ψ == dae_ψ == dae.ψ
-    @test funcs.v̄ == dae_v == dae.v̄
+
+    igs = initialguess(dae)
+    @test igs.v == dae_v == dae.v̄
 
     funcs = functions(dae, dae_args.parameters)
     @test funcs.v != dae_v
@@ -88,6 +95,8 @@ include("initial_conditions.jl")
     @test funcs.ū != dae_ū
     @test funcs.ψ != dae_ψ
     @test funcs.v̄ != dae_v
+
+    @test initialguess(dae) == NamedTuple{(:v,)}(dae_igs)
 
     dae1 = DAE(dae_eqs_full...; v̄=dae_v, invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
     dae2 = DAE(dae_eqs_full...; invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
@@ -110,6 +119,7 @@ end
     @test periodicity(pdae) == NullPeriodicity()
 
     @test hasvectorfield(pdae) == true
+    @test hasinitialguess(pdae) == true
     @test hassecondary(pdae) == false
     @test hasinvariants(pdae) == false
     @test hasparameters(pdae) == false
@@ -121,9 +131,13 @@ end
     @test funcs.u == pdae_u == pdae.u
     @test funcs.g == pdae_g == pdae.g
     @test funcs.ϕ == pdae_ϕ == pdae.ϕ
-    @test funcs.v̄ == pdae_v == pdae.v̄
-    @test funcs.f̄ == pdae_f == pdae.f̄
     
+    igs = initialguess(pdae)
+    @test igs.v == pdae_v == pdae.v̄
+    @test igs.f == pdae_f == pdae.f̄
+
+    @test initialguess(pdae) == NamedTuple{(:v,:f)}(pdae_igs)
+
     # @test pdae == similar(pdae, t₀, q₀, p₀, λ₀)
     # @test pdae == similar(pdae, t₀, q₀, p₀)
     # @test pdae == similar(pdae, q₀, p₀)
@@ -159,6 +173,7 @@ end
     @test periodicity(pdae) == pdae_args.periodicity
 
     @test hasvectorfield(pdae) == true
+    @test hasinitialguess(pdae) == true
     @test hassecondary(pdae) == true
     @test hasinvariants(pdae) == true
     @test hasparameters(pdae) == true
@@ -173,9 +188,11 @@ end
     @test funcs.ū == pdae_u == pdae.ū
     @test funcs.ḡ == pdae_g == pdae.ḡ
     @test funcs.ψ == pdae_ψ == pdae.ψ
-    @test funcs.v̄ == pdae_v == pdae.v̄
-    @test funcs.f̄ == pdae_f == pdae.f̄
     
+    igs = initialguess(pdae)
+    @test igs.v == pdae_v == pdae.v̄
+    @test igs.f == pdae_f == pdae.f̄
+
     funcs = functions(pdae, pdae_args.parameters)
     @test funcs.v != pdae_v
     @test funcs.f != pdae_f
@@ -185,9 +202,10 @@ end
     @test funcs.ū != pdae_u
     @test funcs.ḡ != pdae_g
     @test funcs.ψ != pdae_ψ
-    @test funcs.v̄ != pdae_v
-    @test funcs.f̄ != pdae_f
     
+    @test initialguess(pdae) == NamedTuple{(:v,:f)}(pdae_igs)
+
+
     pdae1 = PDAE(pdae_eqs_full...; v̄=pdae_v, f̄=pdae_f, invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
     pdae2 = PDAE(pdae_eqs_full...; invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
 
@@ -209,6 +227,7 @@ end
     @test periodicity(idae) == NullPeriodicity()
 
     @test hasvectorfield(idae) == true
+    @test hasinitialguess(idae) == true
     @test hassecondary(idae) == false
     @test hasinvariants(idae) == false
     @test hasparameters(idae) == false
@@ -220,9 +239,13 @@ end
     @test funcs.u == idae_u == idae.u
     @test funcs.g == idae_g == idae.g
     @test funcs.ϕ == idae_ϕ == idae.ϕ
-    @test funcs.v̄ == idae_v == idae.v̄
-    @test funcs.f̄ == idae_f == idae.f̄
     
+    igs = initialguess(idae)
+    @test igs.v == idae_v == idae.v̄
+    @test igs.f == idae_f == idae.f̄
+
+    @test initialguess(idae) == NamedTuple{(:v,:f)}(idae_igs)
+
 
     idae_eqs1 = (idae_eqs..., nothing, nothing, nothing)
     idae_eqs2 = (idae_eqs..., nothing, nothing, nothing, idae_v, idae_f)
@@ -254,6 +277,7 @@ end
     @test periodicity(idae) == idae_args.periodicity
 
     @test hasvectorfield(idae) == true
+    @test hasinitialguess(idae) == true
     @test hassecondary(idae) == true
     @test hasinvariants(idae) == true
     @test hasparameters(idae) == true
@@ -268,9 +292,11 @@ end
     @test funcs.ū == idae_u == idae.ū
     @test funcs.ḡ == idae_g == idae.ḡ
     @test funcs.ψ == idae_ψ == idae.ψ
-    @test funcs.v̄ == idae_v == idae.v̄
-    @test funcs.f̄ == idae_f == idae.f̄
     
+    igs = initialguess(idae)
+    @test igs.v == idae_v == idae.v̄
+    @test igs.f == idae_f == idae.f̄
+
     funcs = functions(idae, idae_args.parameters)
     @test funcs.ϑ != idae_ϑ
     @test funcs.f != idae_f
@@ -280,9 +306,10 @@ end
     @test funcs.ū != idae_u
     @test funcs.ḡ != idae_g
     @test funcs.ψ != idae_ψ
-    @test funcs.v̄ != idae_v
-    @test funcs.f̄ != idae_f
     
+    @test initialguess(idae) == NamedTuple{(:v,:f)}(idae_igs)
+
+
     idae1 = IDAE(idae_eqs_full...; v̄=idae_v, f̄=idae_f, invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
     idae2 = IDAE(idae_eqs_full...; invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
 
@@ -300,6 +327,7 @@ end
     hdae = HDAE(hdae_eqs...)
 
     @test hasvectorfield(hdae) == true
+    @test hasinitialguess(hdae) == true
     @test hashamiltonian(hdae) == true
     @test hassecondary(hdae) == false
     @test hasinvariants(hdae) == false
@@ -312,9 +340,13 @@ end
     @test funcs.u == pdae_u == hdae.u
     @test funcs.g == pdae_g == hdae.g
     @test funcs.ϕ == pdae_ϕ == hdae.ϕ
-    @test funcs.v̄ == pdae_v == hdae.v̄
-    @test funcs.f̄ == pdae_f == hdae.f̄
     @test funcs.h == pdae_h == hdae.hamiltonian
+
+    igs = initialguess(hdae)
+    @test igs.v == pdae_v == hdae.v̄
+    @test igs.f == pdae_f == hdae.f̄
+
+    @test initialguess(hdae) == NamedTuple{(:v,:f)}(hdae_igs)
 
 
     hdae_eqs1 = (pdae_eqs..., nothing, nothing, nothing, pdae_h)
@@ -343,6 +375,7 @@ end
     hdae = HDAE(hdae_eqs_main..., hdae_args.invariants, parameter_types(hdae_args.parameters), hdae_args.periodicity)
 
     @test hasvectorfield(hdae) == true
+    @test hasinitialguess(hdae) == true
     @test hashamiltonian(hdae) == true
     @test hassecondary(hdae) == true
     @test hasinvariants(hdae) == true
@@ -358,9 +391,11 @@ end
     @test funcs.ū == pdae_u == hdae.ū
     @test funcs.ḡ == pdae_g == hdae.ḡ
     @test funcs.ψ == pdae_ψ == hdae.ψ
-    @test funcs.v̄ == pdae_v == hdae.v̄
-    @test funcs.f̄ == pdae_f == hdae.f̄
     @test funcs.h == pdae_h == hdae.hamiltonian
+
+    igs = initialguess(hdae)
+    @test igs.v == pdae_v == hdae.v̄
+    @test igs.f == pdae_f == hdae.f̄
 
     funcs = functions(hdae, hdae_args.parameters)
     @test funcs.v != pdae_v
@@ -371,9 +406,10 @@ end
     @test funcs.ū != pdae_u
     @test funcs.ḡ != pdae_g
     @test funcs.ψ != pdae_ψ
-    @test funcs.v̄ != pdae_v
-    @test funcs.f̄ != pdae_f
     @test funcs.h != pdae_h
+
+    @test initialguess(hdae) == NamedTuple{(:v,:f)}(hdae_igs)
+
 
     hdae1 = HDAE(hdae_eqs_full...; v̄=pdae_v, f̄=pdae_f, invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
     hdae2 = HDAE(hdae_eqs_full...; invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
@@ -392,6 +428,7 @@ end
     ldae = LDAE(ldae_eqs...)
 
     @test hassecondary(ldae) == false
+    @test hasinitialguess(ldae) == true
     @test hasinvariants(ldae) == false
     @test hasparameters(ldae) == false
     @test hasperiodicity(ldae) == false
@@ -403,9 +440,13 @@ end
     @test funcs.g == idae_g == ldae.g
     @test funcs.ϕ == idae_ϕ == ldae.ϕ
     @test funcs.ω == ldae_ω == ldae.ω
-    @test funcs.v̄ == ldae_v == ldae.v̄
-    @test funcs.f̄ == ldae_f == ldae.f̄
     @test funcs.l == ldae_l == ldae.lagrangian
+
+    igs = initialguess(ldae)
+    @test igs.v == ldae_v == ldae.v̄
+    @test igs.f == ldae_f == ldae.f̄
+
+    @test initialguess(ldae) == NamedTuple{(:v,:f)}(ldae_igs)
 
 
     ldae_eqs1 = (idae_eqs..., nothing, nothing, nothing, ldae_ω, ldae_l)
@@ -423,8 +464,6 @@ end
         @test ldae.g == ldae1.g
         @test ldae.ϕ == ldae1.ϕ
         @test ldae.ω == ldae1.ω
-        @test ldae.v̄ == ldae1.v̄
-        @test ldae.f̄ == ldae1.f̄
         @test ldae.lagrangian == ldae1.lagrangian
 
         @test ldae == ldae1
@@ -444,6 +483,7 @@ end
     ldae = LDAE(idae_eqs_full..., ldae_ω, ldae_v, ldae_f, ldae_l, ldae_args.invariants, parameter_types(ldae_args.parameters), ldae_args.periodicity)
 
     @test hassecondary(ldae) == true
+    @test hasinitialguess(ldae) == true
     @test hasinvariants(ldae) == true
     @test hasparameters(ldae) == true
     @test hasperiodicity(ldae) == true
@@ -455,9 +495,11 @@ end
     @test funcs.g == idae_g == ldae.g
     @test funcs.ϕ == idae_ϕ == ldae.ϕ
     @test funcs.ω == ldae_ω == ldae.ω
-    @test funcs.v̄ == ldae_v == ldae.v̄
-    @test funcs.f̄ == ldae_f == ldae.f̄
     @test funcs.l == ldae_l == ldae.lagrangian
+
+    igs = initialguess(ldae)
+    @test igs.v == ldae_v == ldae.v̄
+    @test igs.f == ldae_f == ldae.f̄
 
     funcs = functions(ldae, ldae_args.parameters)
     @test funcs.ϑ != idae_ϑ
@@ -466,9 +508,10 @@ end
     @test funcs.g != idae_g
     @test funcs.ϕ != idae_ϕ
     @test funcs.ω != ldae_ω
-    @test funcs.v̄ != ldae_v
-    @test funcs.f̄ != ldae_f
     @test funcs.l != ldae_l
+
+    @test initialguess(ldae) == NamedTuple{(:v,:f)}(ldae_igs)
+
 
     # ldae1 = LDAE(ldae_eqs..., lode_l, lode_ω, t₀, [q₀], [p₀], [λ₀], [λ₀]; v̄=iode_v, ldae_args...)
     # ldae2 = LDAE(ldae_eqs..., lode_l, lode_ω, t₀, [q₀], [p₀], [λ₀]; v̄=iode_v, ldae_args...)

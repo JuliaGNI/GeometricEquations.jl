@@ -23,6 +23,7 @@ GeometricBase.periodicity(prob::GeometricProblem) = periodicity(equation(prob))
 
 hassolution(prob::GeometricProblem) = hassolution(equation(prob))
 hasvectorfield(prob::GeometricProblem) = hasvectorfield(equation(prob))
+hasinitialguess(prob::GeometricProblem) = hasinitialguess(equation(prob))
 hasprimary(prob::GeometricProblem) = hasprimary(equation(prob))
 hassecondary(prob::GeometricProblem) = hassecondary(equation(prob))
 

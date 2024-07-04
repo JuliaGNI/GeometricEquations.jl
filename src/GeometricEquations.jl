@@ -6,7 +6,8 @@ module GeometricEquations
 
     import GeometricBase: datatype, timetype, arrtype, equtype
     import GeometricBase: tspan, tstep, tbegin, tend, timestep
-    import GeometricBase: equation, equations, functions, solutions, invariants, parameters, periodicity
+    import GeometricBase: equation, equations, functions, solutions, initialguess
+    import GeometricBase: invariants, parameters, periodicity
     import GeometricBase: ntime, nsamples, nconstraints, nsteps
     import GeometricBase: AbstractStateVariable, AbstractStochasticProcess
 
@@ -49,12 +50,12 @@ module GeometricEquations
 
     export datatype, timetype, arrtype, equtype
     export tspan, tstep, tbegin, tend, timestep
-    export problem, equation, equations, functions, solutions
+    export problem, equation, equations, functions, solutions, initialguess
     export invariants, parameters, periodicity
     export initial_conditions
     export ntime, nsamples, nconstraints, nsteps
 
-    export hassolution, hasvectorfield, hasprimary, hassecondary,
+    export hassolution, hasvectorfield, hasinitialguess, hasprimary, hassecondary,
            hasinvariants, hasparameters, hasperiodicity,
            hashamiltonian, haslagrangian
 

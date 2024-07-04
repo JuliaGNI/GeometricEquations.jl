@@ -66,30 +66,36 @@ $(pode_functions)
 
 """
 struct PODE{vType <: Callable, fType <: Callable,
+            v̄Type <: OptionalCallable,
+            f̄Type <: OptionalCallable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
             perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType,parType,perType}
 
     v::vType
     f::fType
+    v̄::v̄Type
+    f̄::f̄Type
 
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function PODE(v, f, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, invariants, parameters, periodicity)
+    function PODE(v, f, v̄, f̄, invariants, parameters, periodicity)
+        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, f, v̄, f̄, invariants, parameters, periodicity)
     end
 end
 
-PODE(v, f; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PODE(v, f, invariants, parameters, periodicity)
+PODE(v, f; v̄ = v, f̄ = f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PODE(v, f, v̄, f̄, invariants, parameters, periodicity)
 
 GeometricBase.invariants(equation::PODE) = equation.invariants
 GeometricBase.parameters(equation::PODE) = equation.parameters
 GeometricBase.periodicity(equation::PODE) = equation.periodicity
 
 hasvectorfield(::PODE) = true
+hasinitialguess(::PODE{vType, ftype, <:Callable, <:Callable}) where {vType, ftype} = true
+hasinitialguess(::PODE{vType, ftype, <:Nothing, <:Nothing}) where {vType, ftype} = false
 
 function Base.show(io::IO, equation::PODE)
     print(io, "Partitioned Ordinary Differential Equation (PODE)", "\n")
@@ -131,6 +137,8 @@ end
 function check_methods(equ::PODE, tspan, ics, params)
     applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -146,12 +154,14 @@ end
 
 _get_v(equ::PODE, params) = (v, t, q, p) -> equ.v(v, t, q, p, params)
 _get_f(equ::PODE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
-_get_v̄(equ::PODE, params) = _get_v(equ, params)
-_get_f̄(equ::PODE, params) = _get_f(equ, params)
+_get_v̄(equ::PODE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
+_get_f̄(equ::PODE, params) = (f, t, q, p) -> equ.f̄(f, t, q, p, params)
 _get_invariant(::PODE, inv, params) = (t,q,p) -> inv(t, q, p, params)
 
 _functions(equ::PODE) = (v = equ.v, f = equ.f)
 _functions(equ::PODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params))
+_initialguess(equ::PODE) = (v = equ.v̄, f = equ.f̄)
+_initialguess(equ::PODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 
 
 @doc """
@@ -189,8 +199,9 @@ const PODEProblem = EquationProblem{PODE}
 function PODEProblem(v, f, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
-        periodicity = NullPeriodicity())
-    equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
+        periodicity = NullPeriodicity(),
+        v̄ = v, f̄ = f)
+    equ = PODE(v, f, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
@@ -229,7 +240,8 @@ const PODEEnsemble  = EnsembleProblem{PODE}
 function PODEEnsemble(v, f, tspan, tstep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
-        periodicity = NullPeriodicity())
-    equ = PODE(v, f, invariants, parameter_types(parameters), periodicity)
+        periodicity = NullPeriodicity(),
+        v̄ = v, f̄ = f)
+    equ = PODE(v, f, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end

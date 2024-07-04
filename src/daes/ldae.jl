@@ -234,6 +234,7 @@ GeometricBase.periodicity(equation::LDAE) = equation.periodicity
 
 hasvectorfield(::LDAE) = true
 haslagrangian(::LDAE) = true
+hasinitialguess(::LDAE{ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, ωType, <:Callable, <:Callable}) where {ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, ωType} = true
 
 function Base.show(io::IO, equation::LDAE)
     print(io, "Lagrangian Differential Algebraic Equation (LDAE)", "\n")
@@ -317,13 +318,12 @@ function check_methods(equ::LDAE, tspan, ics::NamedTuple, params)
     applicable(equ.u, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, params) || return false
-    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
     equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
-    # TODO add missing methods
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
 end
 
@@ -353,9 +353,9 @@ _get_invariant(::LDAE, inv, params) = (t,q,v) -> inv(t, q, v, params)
 
 function _functions(equ::LDAE)
     if hassecondary(equ)
-        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, ω = equ.ω, l = equ.lagrangian)
+        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, ω = equ.ω, l = equ.lagrangian)
     else
-        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, ω = equ.ω, l = equ.lagrangian)
+        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ω = equ.ω, l = equ.lagrangian)
     end
 end
 
@@ -370,8 +370,6 @@ function _functions(equ::LDAE, params::OptionalParameters)
             ū = _get_ū(equ, params),
             ḡ = _get_ḡ(equ, params),
             ψ = _get_ψ(equ, params),
-            v̄ = _get_v̄(equ, params),
-            f̄ = _get_f̄(equ, params),
             ω = _get_ω(equ, params),
             l = _get_l(equ, params)
     )
@@ -382,13 +380,14 @@ function _functions(equ::LDAE, params::OptionalParameters)
             u = _get_u(equ, params),
             g = _get_g(equ, params),
             ϕ = _get_ϕ(equ, params),
-            v̄ = _get_v̄(equ, params),
-            f̄ = _get_f̄(equ, params),
             ω = _get_ω(equ, params),
             l = _get_l(equ, params)
     )
     end
 end
+
+_initialguess(equ::LDAE) = (v = equ.v̄, f = equ.f̄)
+_initialguess(equ::LDAE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 
 
 @doc """

@@ -2,6 +2,7 @@
 using Parameters: @unpack
 
 import GeometricBase: AbstractStochasticProcess
+import GeometricEquations: _iode_default_v̄, _lode_default_v̄
 import GeometricEquations: _iode_default_g, _lode_default_g
 import GeometricEquations: _idae_default_v̄, _ldae_default_v̄
 
@@ -14,6 +15,7 @@ function ode_v(ẋ, t, x, params)
 end
 
 const ode_eqs = (ode_v,)
+const ode_igs = (ode_v,)
 
 
 function sode_v1(v, t, x, params)
@@ -36,6 +38,7 @@ end
 
 const sode_eqs = (sode_v1, sode_v2)
 const sode_sols = (sode_q1, sode_q2)
+const sode_igs = (ode_v,)
 
 
 function pode_v(v, t, q, p, params)
@@ -51,6 +54,7 @@ function pode_h(t, q, p, params)
 end
 
 const pode_eqs = (pode_v, pode_f)
+const pode_igs = (pode_v, pode_f)
 
 
 function hode_h(t, q, p, params)
@@ -65,6 +69,7 @@ function hode_ω(ω, t, q, p, params)
 end
 
 const hode_eqs = (pode_v, pode_f, hode_h)
+const hode_igs = (pode_v, pode_f)
 
 
 function iode_ϑ(p, t, q, v, params)
@@ -94,6 +99,7 @@ end
 const iode_eqs_without_g = (iode_ϑ, iode_f)
 const iode_eqs_default_g = (iode_ϑ, iode_f, _iode_default_g)
 const iode_eqs = (iode_ϑ, iode_f, iode_g)
+const iode_igs = (iode_v, iode_f)
 
 
 function lode_l(t, q, v, params)
@@ -107,9 +113,13 @@ function lode_ω(ω, t, q, v, params)
     ω[2,2] = v[1]
 end
 
-const lode_eqs_without_g = (iode_ϑ, iode_f, lode_ω, lode_l)
-const lode_eqs_default_g = (iode_ϑ, iode_f, _lode_default_g, lode_ω, lode_l)
-const lode_eqs = (iode_ϑ, iode_f, iode_g, lode_ω, lode_l)
+const lode_v = iode_v
+const lode_f = iode_f
+
+const lode_eqs_without_g = (iode_ϑ, lode_f, lode_ω, lode_l)
+const lode_eqs_default_g = (iode_ϑ, lode_f, _lode_default_g, lode_ω, lode_l)
+const lode_eqs = (iode_ϑ, lode_f, iode_g, lode_ω, lode_l)
+const lode_igs = (lode_v, lode_f)
 
 
 
@@ -138,6 +148,7 @@ end
 
 const dae_eqs = (dae_v, dae_u, dae_ϕ)
 const dae_eqs_full = (dae_v, dae_u, dae_ϕ, dae_ū, dae_ψ)
+const dae_igs = (dae_v,)
 
 
 function pdae_v(v, t, q, p, params)
@@ -174,6 +185,7 @@ end
 
 const pdae_eqs = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ)
 const pdae_eqs_full = (pdae_v, pdae_f, pdae_u, pdae_g, pdae_ϕ, pdae_u, pdae_g, pdae_ψ)
+const pdae_igs = (pdae_v, pdae_f)
 
 
 const hdae_ω = hode_ω
@@ -181,6 +193,7 @@ const hdae_ω = hode_ω
 const hdae_eqs = (pdae_eqs..., pdae_h)
 const hdae_eqs_full = (pdae_eqs_full..., pdae_h)
 const hdae_eqs_main = (pdae_eqs_full..., pdae_v, pdae_f, pdae_h)
+const hdae_igs = (pdae_v, pdae_f)
 
 
 const idae_ϑ = iode_ϑ
@@ -194,6 +207,7 @@ idae_ψ(ψ, t, q, v, p, q̇, ṗ, params) = pdae_ψ(ψ, t, q, p, q̇, ṗ, param
 
 const idae_eqs = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ)
 const idae_eqs_full = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ, idae_u, idae_g, idae_ψ)
+const idae_igs = (idae_v, idae_f)
 
 
 const ldae_ω = lode_ω
@@ -203,6 +217,7 @@ const ldae_v = _ldae_default_v̄
 
 const ldae_eqs = (idae_eqs..., ldae_ω, ldae_l)
 const ldae_eqs_full = (idae_eqs_full..., ldae_ω, ldae_l)
+const ldae_igs = (ldae_v, idae_f)
 
 
 function sde_v(v, t, q, params)

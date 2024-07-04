@@ -80,26 +80,29 @@ SODE(v, q; invariants=NullInvariants(), parameters=NullParameters(), periodicity
 $(sode_functions)
 
 """
-struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing},
+struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing}, v̄Type <: OptionalCallable,
             invType <: OptionalInvariants,
             parType <: OptionalParameters,
             perType <: OptionalPeriodicity} <: AbstractEquationODE{invType,parType,perType}
 
     v::vType
     q::qType
+    v̄::v̄Type
 
     invariants::invType
     parameters::parType
     periodicity::perType
 
-    function SODE(v, q, invariants, parameters, periodicity)
+    function SODE(v, q, v̄, invariants, parameters, periodicity)
         @assert sode_equations_compatibility(v, q)
-        new{typeof(v), typeof(q), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, q, invariants, parameters, periodicity)
+        new{typeof(v), typeof(q), typeof(v̄), typeof(invariants), typeof(parameters), typeof(periodicity)}(
+                v, q, v̄, invariants, parameters, periodicity)
     end
 end
 
-SODE(v, q=nothing; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, q, invariants, parameters, periodicity)
+_sode_default_v̄(v, t, q, params) = nothing
+
+SODE(v, q=nothing; v̄ = _sode_default_v̄, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, q, v̄, invariants, parameters, periodicity)
 
 GeometricBase.invariants(equation::SODE) = equation.invariants
 GeometricBase.parameters(equation::SODE) = equation.parameters
@@ -114,14 +117,17 @@ const SODEVT{VT,QT,invT,parT,perT} = SODE{VT,QT,invT,parT,perT} # type alias for
 hassolution(::SODEQT{<:Nothing}) = false
 hassolution(::SODEQT{<:Tuple}) = true # && all(typeof(Q) <: Functiong for Q in equ.q)
 
-hassolution(::SODEQT{<:Nothing}, i) = false
-hassolution(equ::SODEQT{<:Tuple}, i) = i ≤ length(equ.q)# && typeof(equ.q[i]) <: Function
+hassolution(::SODEQT{<:Nothing}, i::Int) = false
+hassolution(equ::SODEQT{<:Tuple}, i::Int) = i ≤ length(equ.q)# && typeof(equ.q[i]) <: Function
 
 hasvectorfield(::SODEVT{<:Nothing}) = false
 hasvectorfield(::SODEVT{<:Tuple}) = true # && all(typeof(V) <: Function for V in equ.v)
 
-hasvectorfield(::SODEVT{<:Nothing}, i) = false
-hasvectorfield(equ::SODEVT{<:Tuple}, i) = i ≤ length(equ.v)# && typeof(equ.v[i]) <: Function
+hasvectorfield(::SODEVT{<:Nothing}, i::Int) = false
+hasvectorfield(equ::SODEVT{<:Tuple}, i::Int) = i ≤ length(equ.v)# && typeof(equ.v[i]) <: Function
+
+hasinitialguess(::SODE{vType, qType, <:Callable}) where {vType,qType} = true
+hasinitialguess(::SODE{vType, qType, <:Nothing}) where {vType,qType} = false
 
 function Base.show(io::IO, equation::SODE)
     print(io, "Split Ordinary Differential Equation (SODE)", "\n")
@@ -169,6 +175,7 @@ function check_methods(equ::SODE, tspan, ics, params)
             applicable(q, vectorfield(ics.q), tspan[end], ics.q, tspan[begin], params) || return false
         end
     end
+    applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
     return true
 end
 
@@ -184,6 +191,7 @@ end
 
 _get_v(equ::SODE, params) = Tuple((v, t, q) -> V(v, t, q, params) for V in equ.v)
 _get_q(equ::SODE, params) = Tuple((q̄, t̄, q, t) -> Q(q̄, t̄, q, t, params) for Q in equ.q)
+_get_v̄(equ::SODE, params) = (v, t, q) -> equ.v̄(v, t, q, params)
 _get_v(::SODEVT{<:Nothing}, params) = nothing
 _get_q(::SODEQT{<:Nothing}, params) = nothing
 _get_invariant(::SODE, inv, params) = (t, q) -> inv(t, q, params)
@@ -192,6 +200,9 @@ _functions(equ::SODE) = (v = equ.v,)
 _solutions(equ::SODE) = (q = equ.q,)
 _functions(equ::SODE, params::OptionalParameters) = (v = _get_v(equ, params),)
 _solutions(equ::SODE, params::OptionalParameters) = (q = _get_q(equ, params),)
+
+_initialguess(equ::SODE) = (v = equ.v̄,)
+_initialguess(equ::SODE, params::OptionalParameters) = (v = _get_v̄(equ, params),)
 
 
 @doc """
@@ -232,8 +243,9 @@ const SODEProblem = EquationProblem{SODE}
 function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
-        periodicity = NullPeriodicity())
-    equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
+        periodicity = NullPeriodicity(),
+        v̄ = _sode_default_v̄)
+    equ = SODE(v, q, v̄, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 
@@ -280,8 +292,9 @@ const SODEEnsemble  = EnsembleProblem{SODE}
 function SODEEnsemble(v, q, tspan::Tuple, tstep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
-        periodicity = NullPeriodicity())
-    equ = SODE(v, q, invariants, parameter_types(parameters), periodicity)
+        periodicity = NullPeriodicity(),
+        v̄ = _sode_default_v̄)
+    equ = SODE(v, q, v̄, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
 end
 

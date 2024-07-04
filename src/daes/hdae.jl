@@ -207,6 +207,7 @@ GeometricBase.periodicity(equation::HDAE) = equation.periodicity
 
 hasvectorfield(::HDAE) = true
 hashamiltonian(::HDAE) = true
+hasinitialguess(::HDAE{vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable, <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType} = true
 
 function Base.show(io::IO, equation::HDAE)
     print(io, "Hamiltonian Differential Algebraic Equation (HDAE)", "\n")
@@ -269,13 +270,12 @@ function check_methods(equ::HDAE, tspan, ics::NamedTuple, params)
     applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     applicable(equ.g, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
     equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
     equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
-    # TODO add missing methods
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -304,9 +304,9 @@ _get_invariant(::HDAE, inv, params) = (t,q,p)  -> inv(t, q, p, params)
 
 function _functions(equ::HDAE)
     if hassecondary(equ)
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, v̄ = equ.v̄, f̄ = equ.f̄, h = equ.hamiltonian)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, h = equ.hamiltonian)
     else
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, v̄ = equ.v̄, f̄ = equ.f̄, h = equ.hamiltonian)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, h = equ.hamiltonian)
     end
 end
 
@@ -321,8 +321,6 @@ function _functions(equ::HDAE, params::OptionalParameters)
             ū = _get_ū(equ, params),
             ḡ = _get_ḡ(equ, params),
             ψ = _get_ψ(equ, params),
-            v̄ = _get_v̄(equ, params),
-            f̄ = _get_f̄(equ, params),
             h = _get_h(equ, params)
         )
     else
@@ -332,12 +330,13 @@ function _functions(equ::HDAE, params::OptionalParameters)
             u = _get_u(equ, params),
             g = _get_g(equ, params),
             ϕ = _get_ϕ(equ, params),
-            v̄ = _get_v̄(equ, params),
-            f̄ = _get_f̄(equ, params),
             h = _get_h(equ, params)
         )
     end
 end
+
+_initialguess(equ::HDAE) = (v = equ.v̄, f = equ.f̄)
+_initialguess(equ::HDAE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 
 
 @doc """
