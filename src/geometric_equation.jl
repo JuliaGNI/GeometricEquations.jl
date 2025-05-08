@@ -24,6 +24,7 @@ abstract type GeometricEquation{invType,parType,perType} end
 abstract type DifferentialEquation{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
 abstract type DifferentialAlgebraicEquation{invType,parType,perType,secType} <: GeometricEquation{invType,parType,perType} end
 abstract type StochasticDifferentialEquation{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
+abstract type DiscreteEquation{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
 
 abstract type AbstractEquationODE{invType,parType,perType} <: GeometricEquation{invType,parType,perType} end
 abstract type AbstractEquationDAE{invType,parType,perType,secType} <: DifferentialAlgebraicEquation{invType,parType,perType,secType} end

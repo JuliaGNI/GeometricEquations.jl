@@ -283,3 +283,30 @@ end
 function spsde_G2(G, t, q, p, params)
     G[1,1] = 0
 end
+
+
+function dele_ld(t₀, t₁, q₀, q₁, params)
+    h = (t₁ - t₀)
+    q = (q₀[1] + q₁[1]) / 2
+    v = (q₁[1] - q₀[1]) / h
+    return h * ( v^2 / 2 - cos(q) )
+end
+
+function dele_d1ld(d, t₀, t₁, q₀, q₁, params)
+    h = (t₁ - t₀)
+    q = (q₀[1] + q₁[1]) / 2
+    v = (q₁[1] - q₀[1]) / h
+    d[1] = - v + h * sin(q) / 2
+    return nothing
+end
+
+function dele_d2ld(d, t₀, t₁, q₀, q₁, params)
+    h = (t₁ - t₀)
+    q = (q₀[1] + q₁[1]) / 2
+    v = (q₁[1] - q₀[1]) / h
+    d[1] = + v + h * sin(q) / 2
+    return nothing
+end
+
+const dele_eqs = (dele_ld, dele_d1ld, dele_d2ld)
+const dele_igs = ()

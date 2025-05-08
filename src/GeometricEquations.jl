@@ -17,9 +17,9 @@ module GeometricEquations
            OptionalFunction, OptionalNamedTuple,
            OptionalInvariants, OptionalParameters,
            OptionalPeriodicity
-    
+
     export AlgebraicVariable, StateVariable
-    
+
     export GeometricEquation
     export AbstractEquationODE, AbstractEquationPODE,
            AbstractEquationDAE, AbstractEquationPDAE,
@@ -35,18 +35,21 @@ module GeometricEquations
     export ODE, IODE, PODE, HODE, LODE, SODE
     export DAE, IDAE, PDAE, HDAE, LDAE#, SPDAE
     export SDE, PSDE, SPSDE
+    export DELE
 
     export ODEProblem,  IODEProblem, PODEProblem,
            HODEProblem, LODEProblem, SODEProblem
     export DAEProblem,  IDAEProblem, PDAEProblem,
            HDAEProblem, LDAEProblem#, SPDAEProblem
     export SDEProblem,  PSDEProblem, SPSDEProblem
+    export DELEProblem
 
     export ODEEnsemble,  IODEEnsemble, PODEEnsemble,
            HODEEnsemble, LODEEnsemble, SODEEnsemble
     export DAEEnsemble,  IDAEEnsemble, PDAEEnsemble,
            HDAEEnsemble, LDAEEnsemble#, SPDAEEnsemble
     export SDEEnsemble,  PSDEEnsemble, SPSDEEnsemble
+    export DELEEnsemble
 
     export datatype, timetype, arrtype, equtype
     export tspan, tstep, tbegin, tend, timestep
@@ -59,7 +62,7 @@ module GeometricEquations
            hasinvariants, hasparameters, hasperiodicity,
            hashamiltonian, haslagrangian
 
-    
+
     include("utils.jl")
 
     include("geometric_equation.jl")
@@ -87,11 +90,13 @@ module GeometricEquations
     include("sdes/psde.jl")
     include("sdes/spsde.jl")
 
+    include("discrete/dele.jl")
+
     include("problems/substep_problem.jl")
-    
+
     include("conversion.jl")
 
-    
+
     # Union types for problems that share a common interface
 
     const AbstractProblemODE{DT,TT} = Union{ODEProblem{DT,TT}, SubstepProblem{DT,TT}, DAEProblem{DT,TT}}
@@ -112,5 +117,5 @@ module GeometricEquations
 
 
     include("tests/Tests.jl")
-    
+
 end
