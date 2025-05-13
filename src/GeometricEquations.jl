@@ -23,14 +23,16 @@ module GeometricEquations
     export GeometricEquation
     export AbstractEquationODE, AbstractEquationPODE,
            AbstractEquationDAE, AbstractEquationPDAE,
-           AbstractEquationSDE, AbstractEquationPSDE
+           AbstractEquationSDE, AbstractEquationPSDE,
+           AbstractEquationDELE
 
     export GeometricProblem, EquationProblem, SubstepProblem
     export EnsembleProblem
 
     export AbstractProblemODE, AbstractProblemPODE, AbstractProblemIODE, AbstractProblemHODE, AbstractProblemLODE,
            AbstractProblemDAE, AbstractProblemPDAE, AbstractProblemIDAE,
-           AbstractProblemSDE, AbstractProblemPSDE, AbstractProblemSPSDE
+           AbstractProblemSDE, AbstractProblemPSDE, AbstractProblemSPSDE,
+           AbstractProblemDELE
 
     export ODE, IODE, PODE, HODE, LODE, SODE
     export DAE, IDAE, PDAE, HDAE, LDAE#, SPDAE
@@ -114,6 +116,8 @@ module GeometricEquations
     const AbstractProblemSDE{DT,TT} = Union{SDEProblem{DT,TT}}
     const AbstractProblemPSDE{DT,TT} = Union{PSDEProblem{DT,TT}}
     const AbstractProblemSPSDE{DT,TT} = Union{SPSDEProblem{DT,TT}}
+
+    const AbstractProblemDELE{DT,TT} = Union{DELEProblem{DT,TT}}
 
 
     include("tests/Tests.jl")
