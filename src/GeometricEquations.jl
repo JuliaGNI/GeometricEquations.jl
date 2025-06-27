@@ -5,7 +5,7 @@ module GeometricEquations
     import Base: Callable
 
     import GeometricBase: datatype, timetype, arrtype, equtype
-    import GeometricBase: tspan, tstep, tbegin, tend, timestep
+    import GeometricBase: initialtime, finaltime, timespan, timestep
     import GeometricBase: equation, equations, functions, solutions, initialguess
     import GeometricBase: invariants, parameters, periodicity
     import GeometricBase: ntime, nsamples, nconstraints, nsteps
@@ -54,7 +54,7 @@ module GeometricEquations
     export DELEEnsemble
 
     export datatype, timetype, arrtype, equtype
-    export tspan, tstep, tbegin, tend, timestep
+    export initialtime, finaltime, timespan, timestep
     export problem, equation, equations, functions, solutions, initialguess
     export invariants, parameters, periodicity
     export initial_conditions
