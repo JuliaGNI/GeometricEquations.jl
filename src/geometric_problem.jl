@@ -15,8 +15,8 @@ GeometricBase.solutions(prob::GeometricProblem) = solutions(equation(prob))
 "Returns a NamedTuple containing all invariants provided by the equation."
 GeometricBase.invariants(prob::GeometricProblem) = invariants(equation(prob))
 
-GeometricBase.tspan(prob::GeometricProblem) = error("tspan() not implemented for ", typeof(prob), ".")
-GeometricBase.tstep(prob::GeometricProblem) = error("tstep() not implemented for ", typeof(prob), ".")
+GeometricBase.timespan(prob::GeometricProblem) = error("timespan() not implemented for ", typeof(prob), ".")
+GeometricBase.timestep(prob::GeometricProblem) = error("timestep() not implemented for ", typeof(prob), ".")
 
 GeometricBase.parameters(prob::GeometricProblem) = error("parameters() not implemented for ", typeof(prob), ".")
 GeometricBase.periodicity(prob::GeometricProblem) = periodicity(equation(prob))

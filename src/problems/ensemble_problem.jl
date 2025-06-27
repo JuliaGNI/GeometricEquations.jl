@@ -53,7 +53,7 @@ where `ensemble` is an `EnsembleProblem` and `problem` is the corresponding `Geo
 * `equType <: GeometricEquation`: equation type
 * `functionsType <: NamedTuple`: types of all function methods
 * `solutionsType <: NamedTuple`: types of all solution methods
-* `icsType <: AbstractVector{<:NamedTuple}`: types of all initial conditions 
+* `icsType <: AbstractVector{<:NamedTuple}`: types of all initial conditions
 * `parType <: AbstractVector{<:OptionalParameters}`: parameters type
 
 ### Fields
@@ -73,9 +73,9 @@ The `EnsembleProblem` provides the following constructors:
 EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::AbstractVector{<:OptionalParameters})
 EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters=NullParameters())
 EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::AbstractVector{<:OptionalParameters})
-EnsembleProblem(equ, tspan, tstep, ics, ::Nothing) = 
+EnsembleProblem(equ, tspan, tstep, ics, ::Nothing) =
     EnsembleProblem(equ, tspan, tstep, ics, NullParameters())
-EnsembleProblem(equ, tspan, tstep, ics; parameters = NullParameters()) = 
+EnsembleProblem(equ, tspan, tstep, ics; parameters = NullParameters()) =
     EnsembleProblem(equ, tspan, tstep, ics, parameters)
 ```
 
@@ -87,7 +87,7 @@ EnsembleProblem(equ, tspan, tstep, ics; parameters = NullParameters()) =
 
 """
 struct EnsembleProblem{superType <: GeometricEquation, dType <: Number, tType <: Real,
-                 arrayType <: AbstractArray{dType}, 
+                 arrayType <: AbstractArray{dType},
                  equType <: GeometricEquation,
                  functionsType <: NamedTuple,
                  solutionsType <: NamedTuple,
@@ -180,10 +180,9 @@ Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
 @inline GeometricBase.equtype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = ST
 
 @inline GeometricBase.equation(ge::EnsembleProblem) = ge.equation
-@inline GeometricBase.tspan(ge::EnsembleProblem) = ge.tspan
-@inline GeometricBase.tstep(ge::EnsembleProblem) = ge.tstep
+@inline GeometricBase.timespan(ge::EnsembleProblem) = ge.tspan
+@inline GeometricBase.timestep(ge::EnsembleProblem) = ge.tstep
 
-@inline GeometricBase.timestep(ge::EnsembleProblem) = tstep(ge)
 @inline GeometricBase.functions(ge::EnsembleProblem) = ge.functions
 @inline GeometricBase.solutions(ge::EnsembleProblem) = ge.solutions
 @inline GeometricBase.initialguess(ge::EnsembleProblem) = ge.initialguess
@@ -197,7 +196,7 @@ initial_condition(ge::EnsembleProblem, i) = initial_conditions(ge)[i]
 parameter(ge::EnsembleProblem, i) = parameters(ge)[i]
 
 function problem(ge::EnsembleProblem, i)
-    EquationProblem(equation(ge), tspan(ge), tstep(ge), initial_condition(ge, i), parameter(ge, i))
+    EquationProblem(equation(ge), timespan(ge), timestep(ge), initial_condition(ge, i), parameter(ge, i))
 end
 
 Base.length(ge::EnsembleProblem) = nsamples(ge)

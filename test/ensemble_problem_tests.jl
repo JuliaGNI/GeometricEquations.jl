@@ -14,7 +14,7 @@ const size_one_warning = (:warn, "You created an EnsembleProblem with a single i
     ics_tpl = [(q=StateVariable(x₀),), (q=StateVariable(rand(length(x₀))),)]
     ics_sva = [StateVariable(x₀), StateVariable(rand(length(x₀)))]
     ics_arr = [x₀, rand(length(x₀))]
-    
+
     @test_nowarn EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics_tpl)
     @test_nowarn EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics_tpl, nothing)
     @test_nowarn EnsembleProblem(ODE(ode_v), (t₀,t₁), Δt, ics_tpl, NullParameters())
@@ -22,7 +22,7 @@ const size_one_warning = (:warn, "You created an EnsembleProblem with a single i
 
 
     ode = ODE(ode_v, parameters = ode_param_types)
-    
+
     @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics_tpl, ode_params)
     @test_nowarn EnsembleProblem(ode, (t₀,t₁), Δt, ics_tpl; parameters = ode_params)
 
@@ -38,10 +38,10 @@ const size_one_warning = (:warn, "You created an EnsembleProblem with a single i
     @test arrtype(ens) == typeof(StateVariable(x₀))
     @test equtype(ens) == ODE
 
-    @test tspan(ens) == (t₀,t₁)
-    @test tbegin(ens) == t₀
-    @test tend(ens) == t₁
-    @test tstep(ens) == Δt
+    @test timespan(ens) == (t₀,t₁)
+    @test initialtime(ens) == t₀
+    @test finaltime(ens) == t₁
+    @test timestep(ens) == Δt
 
     @test equation(ens) == ode
     @test functions(ens) == functions(ode)
@@ -171,7 +171,7 @@ end
     @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_tpl; parameters = _copy(ode_params, 2))
     @test_nowarn SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 2))
     @test_throws AssertionError SODEEnsemble(sode_eqs, sode_sols, (t₀,t₁), Δt, ode_ics_sva...; parameters = _copy(ode_params, 3))
-    
+
     ens = EnsembleProblem(SODE(sode_eqs), (t₀,t₁), Δt, ode_ics_tpl)
 
     @test ens == SODEEnsemble(sode_eqs, (t₀,t₁), Δt, ode_ics_tpl)

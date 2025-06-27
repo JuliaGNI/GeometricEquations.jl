@@ -59,7 +59,7 @@ function parameter_types(params::AbstractVector{<:NamedTuple})
     for pt in ptypes
         @assert pt == ptypes[begin]
     end
-    
+
     return ptypes[begin]
 end
 

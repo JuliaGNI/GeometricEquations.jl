@@ -10,7 +10,7 @@ EquationProblem: stores a GeometricEquation together with initial conditions, pa
 * `equType <: GeometricEquation`: equation type
 * `functionsType <: NamedTuple`: types of all function methods
 * `solutionsType <: NamedTuple`: types of all solution methods
-* `icsType <: NamedTuple`: types of all initial conditions 
+* `icsType <: NamedTuple`: types of all initial conditions
 * `parType <: OptionalParameters`: parameters type
 
 ### Fields
@@ -44,7 +44,7 @@ All problem subtypes take the following keyword arguments:
 If not set to their corresponding Null types, the user needs to pass a `NamedTuple` whose values are
 
 * functions for invariants,
-* arbitrary data structures for parameters, 
+* arbitrary data structures for parameters,
 * the same data structure as the solution for periodicity.
 
 The latter should be zero everywhere, except for those components, that are periodic, i.e.,
@@ -119,10 +119,9 @@ Base.:(==)(prob1::EquationProblem, prob2::EquationProblem) = (
 @inline GeometricBase.equtype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = ST
 
 @inline GeometricBase.equation(prob::EquationProblem) = prob.equation
-@inline GeometricBase.tspan(prob::EquationProblem) = prob.tspan
-@inline GeometricBase.tstep(prob::EquationProblem) = prob.tstep
+@inline GeometricBase.timespan(prob::EquationProblem) = prob.tspan
+@inline GeometricBase.timestep(prob::EquationProblem) = prob.tstep
 
-@inline GeometricBase.timestep(prob::EquationProblem) = tstep(prob)
 @inline GeometricBase.functions(prob::EquationProblem) = prob.functions
 @inline GeometricBase.solutions(prob::EquationProblem) = prob.solutions
 @inline GeometricBase.initialguess(prob::EquationProblem) = prob.initialguess
@@ -130,20 +129,20 @@ Base.:(==)(prob1::EquationProblem, prob2::EquationProblem) = (
 @inline GeometricBase.nsamples(::EquationProblem) = 1
 
 @inline function GeometricBase.ntime(prob::EquationProblem)
-    Int(abs(div(tend(prob) - tbegin(prob), tstep(prob), RoundUp)))
+    Int(abs(div(finaltime(prob) - initialtime(prob), timestep(prob), RoundUp)))
 end
 
 @inline function GeometricBase.invariants(prob::EquationProblem)
     invariants(equation(prob))
 end
 
-initial_conditions(prob::EquationProblem) = merge((t = tbegin(prob),), prob.ics)
+initial_conditions(prob::EquationProblem) = merge((t = initialtime(prob),), prob.ics)
 
 function Base.show(io::IO, prob::EquationProblem)
     print(io, "Geometric Equation Problem for ", equation(prob))
     print(io, "\n\n")
-    print(io, " Timespan: $(tspan(prob)) \n")
-    print(io, " Timestep: $(tstep(prob)) \n")
+    print(io, " Timespan: $(timespan(prob)) \n")
+    print(io, " Timestep: $(timestep(prob)) \n")
     print(io, "\n")
     print(io, " Initial conditions: \n")
     print(io, "   ", initial_conditions(prob))
@@ -152,12 +151,12 @@ function Base.show(io::IO, prob::EquationProblem)
     print(io, "   ", parameters(prob))
 end
 
-function Base.similar(prob::EquationProblem, tspan, tstep = tstep(prob), ics = prob.ics,
+function Base.similar(prob::EquationProblem, tspan, tstep = timestep(prob), ics = prob.ics,
                       parameters = parameters(prob))
     EquationProblem(equation(prob), tspan, tstep, initialstate(equation(prob), ics...), parameters)
 end
 
-function Base.similar(prob::EquationProblem; tspan = tspan(prob), tstep = tstep(prob),
+function Base.similar(prob::EquationProblem; tspan = timespan(prob), tstep = timestep(prob),
                       ics = prob.ics, parameters = parameters(prob))
     similar(prob, tspan, tstep, initialstate(equation(prob), ics...), parameters)
 end

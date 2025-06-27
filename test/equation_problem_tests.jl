@@ -20,10 +20,10 @@ include("initial_conditions.jl")
     @test arrtype(prob) == StateVariable{eltype(x₀), ndims(x₀), typeof(x₀), Tuple{eltype(x₀),eltype(x₀)}, Missing}
     @test equtype(prob) == ODE
 
-    @test tspan(prob) == (t₀,t₁)
-    @test tbegin(prob) == t₀
-    @test tend(prob) == t₁
-    @test tstep(prob) == Δt
+    @test timespan(prob) == (t₀,t₁)
+    @test initialtime(prob) == t₀
+    @test finaltime(prob) == t₁
+    @test timestep(prob) == Δt
 
     @test initial_conditions(prob) == (t = t₀, q = x₀)
     @test parameters(prob) == NullParameters()
@@ -110,7 +110,7 @@ end
     prob1 = SubstepProblem(prob, one(timestep(prob))/2, 1)
     prob2 = SubstepProblem(prob, one(timestep(prob)), 2)
     prob3 = SubstepProblem(prob, one(timestep(prob))/2, 1)
-    
+
     @test solutions(prob).q[1] == solutions(prob1).q
     @test solutions(prob).q[2] == solutions(prob2).q
     @test solutions(prob).q[1] == solutions(prob3).q
@@ -127,10 +127,10 @@ end
     @test timetype(prob1) == timetype(prob)
     @test arrtype(prob1) == arrtype(prob)
     @test equtype(prob1) == equtype(prob)
-    
+
     @test ntime(prob1) == ntime(prob)
-    @test tspan(prob1) == tspan(prob)
-    @test tstep(prob1) == tstep(prob)
+    @test timespan(prob1) == timespan(prob)
+    @test timestep(prob1) == timestep(prob)/2
 
     @test equation(prob1) == equation(prob)
     @test invariants(prob1) == invariants(prob)
@@ -494,7 +494,7 @@ end
     @test prob == LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_full...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     @test prob == LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_raw...)
     @test prob == LDAEProblem(ldae_eqs_full..., (t₀,t₁), Δt, ldae_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
-    
+
 end
 
 
@@ -516,7 +516,7 @@ end
     @test prob == SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     @test prob == SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics_raw...)
     @test prob == SDEProblem(sde_v, sde_B, TestNoise(), (t₀,t₁), Δt, sde_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
-    
+
 end
 
 
@@ -562,5 +562,5 @@ end
     @test prob == SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
     @test prob == SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics_raw...)
     @test prob == SPSDEProblem(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(), (t₀,t₁), Δt, spsde_ics_raw...; invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
-    
+
 end

@@ -41,7 +41,6 @@ coefficient(ssp::SubstepProblem) = ssp.coefficient
 
 @inline GeometricBase.functions(ssp::SubstepProblem) = ssp.functions
 @inline GeometricBase.solutions(ssp::SubstepProblem) = ssp.solutions
-@inline GeometricBase.timestep(ssp::SubstepProblem) = coefficient(ssp) * timestep(problem(ssp))
 
 @inline GeometricBase.datatype(ssp::SubstepProblem) = datatype(problem(ssp))
 @inline GeometricBase.timetype(ssp::SubstepProblem) = timetype(problem(ssp))
@@ -50,8 +49,8 @@ coefficient(ssp::SubstepProblem) = ssp.coefficient
 
 @inline GeometricBase.ndims(ssp::SubstepProblem) = ndims(problem(ssp))
 @inline GeometricBase.ntime(ssp::SubstepProblem) = ntime(problem(ssp))
-@inline GeometricBase.tspan(ssp::SubstepProblem) = tspan(problem(ssp))
-@inline GeometricBase.tstep(ssp::SubstepProblem) = tstep(problem(ssp))
+@inline GeometricBase.timespan(ssp::SubstepProblem) = timespan(problem(ssp))
+@inline GeometricBase.timestep(ssp::SubstepProblem) = coefficient(ssp) * timestep(problem(ssp))
 
 @inline GeometricBase.equation(ssp::SubstepProblem) = equation(problem(ssp))
 @inline GeometricBase.invariants(ssp::SubstepProblem) = invariants(problem(ssp))
