@@ -115,8 +115,8 @@ function check_initial_conditions(::SDE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::SDE, tspan, ics, params)
-    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, params) || return false
+function check_methods(equ::SDE, timespan, ics, params)
+    applicable(equ.v, zero(ics.q), timespan[begin], ics.q, params) || return false
     # TODO add missing methods
     return true
 end
@@ -148,12 +148,12 @@ $(sde_equations)
 ### Constructors
 
 ```julia
-SDEProblem(v, B, tspan, tstep, ics::NamedTuple; kwargs...)
-SDEProblem(v, B, tspan, tstep, q₀::StateVariable; kwargs...)
+SDEProblem(v, B, timespan, timestep, ics::NamedTuple; kwargs...)
+SDEProblem(v, B, timespan, timestep, q₀::StateVariable; kwargs...)
 ```
 where `v` is the function computing the vector field and `B` computes the diffusion matrix
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
 `StateVariable` an `AbstractArray{<:Number}`.
@@ -167,15 +167,15 @@ $(sde_functions)
 """
 const SDEProblem = EquationProblem{SDE}
 
-function SDEProblem(v, B, noise, tspan, tstep, ics::NamedTuple; invariants = NullInvariants(),
+function SDEProblem(v, B, noise, timespan, timestep, ics::NamedTuple; invariants = NullInvariants(),
                     parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = SDE(v, B, noise, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, timespan, timestep, ics, parameters)
 end
 
-function SDEProblem(v, B, noise, tspan, tstep, q₀::AbstractArray; kwargs...)
+function SDEProblem(v, B, noise, timespan, timestep, q₀::AbstractArray; kwargs...)
     ics = (q = StateVariable(q₀),)
-    SDEProblem(v, B, noise, tspan, tstep, ics; kwargs...)
+    SDEProblem(v, B, noise, timespan, timestep, ics; kwargs...)
 end
 
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)),)

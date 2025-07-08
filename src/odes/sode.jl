@@ -164,18 +164,18 @@ function check_initial_conditions(::SODE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::SODE, tspan, ics, params)
+function check_methods(equ::SODE, timespan, ics, params)
     if hasvectorfield(equ)
         for v in equ.v
-            applicable(v, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
+            applicable(v, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
         end
     end
     if hassolution(equ)
         for q in equ.q
-            applicable(q, vectorfield(ics.q), tspan[end], ics.q, tspan[begin], params) || return false
+            applicable(q, vectorfield(ics.q), timespan[end], ics.q, timespan[begin], params) || return false
         end
     end
-    applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
+    applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
     return true
 end
 
@@ -215,18 +215,18 @@ The dynamical variables ``q`` with initial condition ``q_{0}`` take values in ``
 ### Constructors
 
 ```julia
-SODEProblem(v, q, tspan, tstep, ics::NamedTuple; kwargs...)
-SODEProblem(v, q, tspan, tstep, q₀::StateVariable; kwargs...)
-SODEProblem(v, q, tspan, tstep, q₀::AbstractArray; kwargs...)
-SODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
-SODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
-SODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
+SODEProblem(v, q, timespan, timestep, ics::NamedTuple; kwargs...)
+SODEProblem(v, q, timespan, timestep, q₀::StateVariable; kwargs...)
+SODEProblem(v, q, timespan, timestep, q₀::AbstractArray; kwargs...)
+SODEProblem(v, timespan, timestep, ics::NamedTuple; kwargs...)
+SODEProblem(v, timespan, timestep, q₀::StateVariable; kwargs...)
+SODEProblem(v, timespan, timestep, q₀::AbstractArray; kwargs...)
 ```
 
 where `v` is a tuple of functions computing the vector fields for each substep, 
 `q` is an optional tuple of functions computing the solution for each substep,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
 `StateVariable` an `AbstractArray{<:Number}`.
@@ -240,13 +240,13 @@ $(sode_functions)
 """
 const SODEProblem = EquationProblem{SODE}
 
-function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, tspan::Tuple, tstep::Real, ics...;
+function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = _sode_default_v̄)
     equ = SODE(v, q, v̄, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function SODEProblem(v, args...; kwargs...)
@@ -267,17 +267,17 @@ The dynamical variables ``q`` take values in ``\\mathbb{R}^{d}``.
 ### Constructors
 
 ```julia
-SODEEnsemble(v, q, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
-SODEEnsemble(v, q, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
-SODEEnsemble(v, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-SODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
-SODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
+SODEEnsemble(v, q, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+SODEEnsemble(v, q, timespan, timestep, q₀::AbstractVector{<: StateVariable}; kwargs...)
+SODEEnsemble(v, q, timespan, timestep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
+SODEEnsemble(v, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+SODEEnsemble(v, timespan, timestep, q₀::AbstractVector{<: StateVariable}; kwargs...)
+SODEEnsemble(v, timespan, timestep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
 where `v` is a tuple of functions computing the vector fields for each substep, 
 `q` is an optional tuple of functions computing the solution for each substep,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with an entry `q`
 of type `StateVariable`.
 The initial condition `q₀` can also be prescribed as an `AbstractVector`
@@ -289,13 +289,13 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const SODEEnsemble  = EnsembleProblem{SODE}
 
-function SODEEnsemble(v, q, tspan::Tuple, tstep::Real, ics...;
+function SODEEnsemble(v, q, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = _sode_default_v̄)
     equ = SODE(v, q, v̄, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function SODEEnsemble(v, args...; kwargs...)

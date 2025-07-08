@@ -222,12 +222,12 @@ function check_initial_conditions(::IODE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::IODE, tspan, ics::NamedTuple, params)
-    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, ics.v, zero(ics.v), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
+function check_methods(equ::IODE, timespan, ics::NamedTuple, params)
+    applicable(equ.ϑ, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.g, vectorfield(ics.p), timespan[begin], ics.q, ics.v, zero(ics.v), params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
     return true
 end
 
@@ -274,18 +274,18 @@ with initial condition ``v(t_{0}) = v_{0}`` takes values in ``\\mathbb{R}^{d}``.
 ### Constructors
 
 ```julia
-IODEProblem(ϑ, f, tspan, tstep, ics; kwargs...)
-IODEProblem(ϑ, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
-IODEProblem(ϑ, f, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
-IODEProblem(ϑ, f, g, tspan, tstep, ics; kwargs...)
-IODEProblem(ϑ, f, g, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
-IODEProblem(ϑ, f, g, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+IODEProblem(ϑ, f, timespan, timestep, ics; kwargs...)
+IODEProblem(ϑ, f, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+IODEProblem(ϑ, f, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+IODEProblem(ϑ, f, g, timespan, timestep, ics; kwargs...)
+IODEProblem(ϑ, f, g, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+IODEProblem(ϑ, f, g, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
 ```
 
 $(iode_constructors)
 
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`.
@@ -300,13 +300,13 @@ only for `(q,v)`, the function `ϑ` can be called to compute the corresponding i
 """
 const IODEProblem = EquationProblem{IODE}
 
-function IODEProblem(ϑ, f, g, tspan::Tuple, tstep::Real, ics...;
+function IODEProblem(ϑ, f, g, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = _iode_default_v̄, f̄ = f)
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function IODEProblem(ϑ, f, args...; kwargs...)
@@ -331,18 +331,18 @@ The algebraic variable ``λ`` takes values in ``\\mathbb{R}^{m}``.
 ### Constructors
 
 ```julia
-IODEEnsemble(ϑ, f, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-IODEEnsemble(ϑ, f, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}, λ₀::AbstractVector{<: AlgebraicVariable}; kwargs...)
-IODEEnsemble(ϑ, f, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}, λ₀::AbstractVector{<: AbstractArray}; kwargs...)
-IODEEnsemble(ϑ, f, g, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}, λ₀::AbstractVector{<: AlgebraicVariable}; kwargs...)
-IODEEnsemble(ϑ, f, g, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}, λ₀::AbstractVector{<: AbstractArray}; kwargs...)
+IODEEnsemble(ϑ, f, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+IODEEnsemble(ϑ, f, timespan, timestep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}, λ₀::AbstractVector{<: AlgebraicVariable}; kwargs...)
+IODEEnsemble(ϑ, f, timespan, timestep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}, λ₀::AbstractVector{<: AbstractArray}; kwargs...)
+IODEEnsemble(ϑ, f, g, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+IODEEnsemble(ϑ, f, g, timespan, timestep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}, λ₀::AbstractVector{<: AlgebraicVariable}; kwargs...)
+IODEEnsemble(ϑ, f, g, timespan, timestep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}, λ₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
 
 $(iode_constructors)
 
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 `ics` is an `AbstractVector` of `NamedTuple`, each with entries `q`, `p` and `λ`.
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed, each as an
@@ -358,7 +358,7 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const IODEEnsemble = EnsembleProblem{IODE}
 
-function IODEEnsemble(ϑ, f, g, tspan::Tuple, tstep::Real, ics...;
+function IODEEnsemble(ϑ, f, g, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
@@ -366,7 +366,7 @@ function IODEEnsemble(ϑ, f, g, tspan::Tuple, tstep::Real, ics...;
         f̄ = f
     )
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function IODEEnsemble(ϑ, f, args...; kwargs...)

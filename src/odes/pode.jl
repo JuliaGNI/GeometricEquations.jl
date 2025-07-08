@@ -134,11 +134,11 @@ function check_initial_conditions(::PODE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::PODE, tspan, ics, params)
-    applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+function check_methods(equ::PODE, timespan, ics, params)
+    applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -175,13 +175,13 @@ take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
 ### Constructors
 
 ```julia
-PODEProblem(v, f, tspan, tstep, ics; kwargs...)
-PODEProblem(v, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
-PODEProblem(v, f, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+PODEProblem(v, f, timespan, timestep, ics; kwargs...)
+PODEProblem(v, f, timespan, timestep, q₀::StateVariable, p₀::StateVariable; kwargs...)
+PODEProblem(v, f, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
 ```
 where `v` and `f` are the function computing the vector fields, 
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`.
@@ -196,13 +196,13 @@ $(pode_functions)
 """
 const PODEProblem = EquationProblem{PODE}
 
-function PODEProblem(v, f, tspan, tstep, ics...;
+function PODEProblem(v, f, timespan, timestep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = v, f̄ = f)
     equ = PODE(v, f, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function GeometricBase.periodicity(prob::PODEProblem)
@@ -220,13 +220,13 @@ The dynamical variables ``(q,p)`` take values in ``\\mathbb{R}^{d} \\times \\mat
 ### Constructors
 
 ```julia
-PODEEnsemble(v, f, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
-PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
+PODEEnsemble(v, f, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+PODEEnsemble(v, f, timespan, timestep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
+PODEEnsemble(v, f, timespan, timestep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
 where `v` and `f` are the function computing the vector fields, 
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed, each as an
 `AbstractVector` of `StateVariable` or `AbstractArray{<:Number}`.
@@ -237,11 +237,11 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const PODEEnsemble  = EnsembleProblem{PODE}
 
-function PODEEnsemble(v, f, tspan, tstep, ics...;
+function PODEEnsemble(v, f, timespan, timestep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = v, f̄ = f)
     equ = PODE(v, f, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

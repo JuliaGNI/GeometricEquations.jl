@@ -1,6 +1,6 @@
 
 using GeometricEquations: function_dummy_v, initial_multiplier, symplectic_matrix,
-                          promote_tspan, promote_tspan_and_tstep, parameter_types
+                          promote_timespan, promote_timespan_and_timestep, parameter_types
 using Test
 
 include("initial_conditions.jl")
@@ -9,29 +9,29 @@ include("initial_conditions.jl")
 @test function_dummy_v(t₀, q₀, p₀, λ₀) === nothing
 
 
-@test promote_tspan(0) == (0,0)
-@test promote_tspan(1) == (0,1)
-@test promote_tspan(0.0) == (0.0,0.0)
-@test promote_tspan(1.0) == (0.0,1.0)
-@test promote_tspan((0,   1.0)) == (0.0,1.0)
-@test promote_tspan((0.0, 1  )) == (0.0,1.0)
-@test promote_tspan([0,   1.0]) == (0.0,1.0)
-@test promote_tspan([0.0, 1  ]) == (0.0,1.0)
-@test promote_tspan([0,   1  ]) == (0,  1  )
-@test promote_tspan([0.0, 1.0]) == (0.0,1.0)
+@test promote_timespan(0) == (0,0)
+@test promote_timespan(1) == (0,1)
+@test promote_timespan(0.0) == (0.0,0.0)
+@test promote_timespan(1.0) == (0.0,1.0)
+@test promote_timespan((0,   1.0)) == (0.0,1.0)
+@test promote_timespan((0.0, 1  )) == (0.0,1.0)
+@test promote_timespan([0,   1.0]) == (0.0,1.0)
+@test promote_timespan([0.0, 1  ]) == (0.0,1.0)
+@test promote_timespan([0,   1  ]) == (0,  1  )
+@test promote_timespan([0.0, 1.0]) == (0.0,1.0)
 
-@test_throws ErrorException promote_tspan([0.0])
-@test_throws ErrorException promote_tspan([0.0, 0.5, 1.0])
+@test_throws ErrorException promote_timespan([0.0])
+@test_throws ErrorException promote_timespan([0.0, 0.5, 1.0])
 
 
-@test promote_tspan_and_tstep((0,   1.0), 0  ) == ((0.0,1.0), 0.0)
-@test promote_tspan_and_tstep((0,   1.0), 0.0) == ((0.0,1.0), 0.0)
-@test promote_tspan_and_tstep((0.0, 1  ), 0  ) == ((0.0,1.0), 0.0)
-@test promote_tspan_and_tstep((0.0, 1  ), 0.0) == ((0.0,1.0), 0.0)
-@test promote_tspan_and_tstep((0,   1  ), 0  ) == ((0,  1  ), 0  )
-@test promote_tspan_and_tstep((0,   1  ), 0.0) == ((0.0,1.0), 0.0)
-@test promote_tspan_and_tstep((0.0, 1.0), 0  ) == ((0.0,1.0), 0.0)
-@test promote_tspan_and_tstep((0.0, 1.0), 0.0) == ((0.0,1.0), 0.0)
+@test promote_timespan_and_timestep((0,   1.0), 0  ) == ((0.0,1.0), 0.0)
+@test promote_timespan_and_timestep((0,   1.0), 0.0) == ((0.0,1.0), 0.0)
+@test promote_timespan_and_timestep((0.0, 1  ), 0  ) == ((0.0,1.0), 0.0)
+@test promote_timespan_and_timestep((0.0, 1  ), 0.0) == ((0.0,1.0), 0.0)
+@test promote_timespan_and_timestep((0,   1  ), 0  ) == ((0,  1  ), 0  )
+@test promote_timespan_and_timestep((0,   1  ), 0.0) == ((0.0,1.0), 0.0)
+@test promote_timespan_and_timestep((0.0, 1.0), 0  ) == ((0.0,1.0), 0.0)
+@test promote_timespan_and_timestep((0.0, 1.0), 0.0) == ((0.0,1.0), 0.0)
 
 
 params = (a = 1.0, b = 0, c = :c, d = [0,1])
