@@ -36,7 +36,7 @@ function Base.convert(::Type{ODEProblem}, prob::Union{PODEProblem{DT,TT,AT}, HOD
         equation(prob).f(ṗ, t, q, p, params)
     end
 
-    ODEProblem(v, prob.tspan, prob.tstep, x₀; parameters=prob.parameters, periodicity=ode_periodicity)
+    ODEProblem(v, prob.timespan, prob.timestep, x₀; parameters=prob.parameters, periodicity=ode_periodicity)
     # TODO: Convert invariants and pass to ODE
     # TODO: For HODE append (h=equ.h,) to invariants
 end
@@ -57,18 +57,18 @@ function Base.convert(::Type{SODEProblem}, prob::Union{PODEProblem{DT,TT,AT}, HO
         equation(prob).f(ṗ, t, q, p, params)
     end
 
-    SODEProblem((v₁, v₂), prob.tspan, prob.tstep, x₀; parameters=parameters(prob), periodicity=ode_periodicity)
+    SODEProblem((v₁, v₂), prob.timespan, prob.timestep, x₀; parameters=parameters(prob), periodicity=ode_periodicity)
     # TODO: Convert invariants and pass to SODE
 end
 
 function Base.convert(::Type{PODEProblem}, prob::HODEProblem)
-    PODEProblem(equation(prob).v, equation(prob).f, prob.tspan, prob.tstep, prob.ics.q, prob.ics.p;
+    PODEProblem(equation(prob).v, equation(prob).f, prob.timespan, prob.timestep, prob.ics.q, prob.ics.p;
                 invariants=invariants(equation(prob)), parameters=parameters(prob), periodicity=periodicity(equation(prob)))
     # TODO: Append (h=equ.h,) to invariants
 end
 
 function Base.convert(::Type{IODEProblem}, prob::LODEProblem)
-    IODEProblem(equation(prob).ϑ, equation(prob).f, equation(prob).g, prob.tspan, prob.tspep, prob.ics.q, prob.ics.p, prob.ics.λ;
+    IODEProblem(equation(prob).ϑ, equation(prob).f, equation(prob).g, prob.timespan, prob.tspep, prob.ics.q, prob.ics.p, prob.ics.λ;
                 v̄=equation(prob).v̄, f̄=equation(prob).f̄, invariants=invariants(equation(prob)), parameters=parameters(prob), periodicity=periodicity(equation(prob)))
 end
 

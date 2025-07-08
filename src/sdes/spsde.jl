@@ -163,10 +163,10 @@ function check_initial_conditions(::SPSDE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::SPSDE, tspan, ics, params)
-    applicable(equ.v,  zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f1, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f2, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+function check_methods(equ::SPSDE, timespan, ics, params)
+    applicable(equ.v,  zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f1, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f2, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
     # TODO add missing methods
     return true
 end
@@ -210,13 +210,13 @@ $(spsde_equations)
 ### Constructors
 
 ```julia
-SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, ics::NamedTuple; kwargs...)
-SPSDEProblem(v, f1, f2, B, G1, G2, tspan, tstep, q₀::StateVariable; p₀::StateVariable; kwargs...)
+SPSDEProblem(v, f1, f2, B, G1, G2, timespan, timestep, ics::NamedTuple; kwargs...)
+SPSDEProblem(v, f1, f2, B, G1, G2, timespan, timestep, q₀::StateVariable; p₀::StateVariable; kwargs...)
 ```
 where `v` and `f` are the functions computing the vector field and `Bᵢ` and `Gᵢ`
 compute the diffusion matrices,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
 `StateVariable` an `AbstractArray{<:Number}`.
@@ -230,16 +230,16 @@ $(spsde_functions)
 """
 const SPSDEProblem = EquationProblem{SPSDE}
 
-function SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, ics::NamedTuple;
+function SPSDEProblem(v, f1, f2, B, G1, G2, noise, timespan, timestep, ics::NamedTuple;
                       invariants = NullInvariants(), parameters = NullParameters(),
                       periodicity = NullPeriodicity())
     equ = SPSDE(v, f1, f2, B, G1, G2, noise, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, timespan, timestep, ics, parameters)
 end
 
-function SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+function SPSDEProblem(v, f1, f2, B, G1, G2, noise, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
     ics = (q = StateVariable(q₀), p = StateVariable(p₀))
-    SPSDEProblem(v, f1, f2, B, G1, G2, noise, tspan, tstep, ics; kwargs...)
+    SPSDEProblem(v, f1, f2, B, G1, G2, noise, timespan, timestep, ics; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::SPSDEProblem)

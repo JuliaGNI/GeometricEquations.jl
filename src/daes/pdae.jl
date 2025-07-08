@@ -260,17 +260,17 @@ function check_initial_conditions(equ::PDAE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::PDAE, tspan, ics::NamedTuple, params)
-    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, ics.p, params) || return false
-    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, ics.p, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+function check_methods(equ::PDAE, timespan, ics::NamedTuple, params)
+    applicable(equ.v, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, ics.p, params) || return false
+    equ.ū === nothing || applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
+    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -345,16 +345,16 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 ### Constructors
 
 ```julia
-PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, ics::NamedTuple; kwargs...)
-PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
-PDAEProblem(v, f, u, g, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
-PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, ics::NamedTuple; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
+PDAEProblem(v, f, u, g, ϕ, timespan, timestep, ics::NamedTuple; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable; kwargs...)
 ```
 
 $(pdae_constructors)
 
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `μ`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed directly,
 with `StateVariable` an `AbstractArray{<:Number}`.
@@ -371,29 +371,29 @@ $(pdae_functions)
 With the above function definitions the `PDAEProblem` can be created by
 
 ```julia
-tspan = (0.0, 1.0)
-tstep = 0.1
+timespan = (0.0, 1.0)
+timestep = 0.1
 q₀ = [1., 1.]
 p₀ = [1., 0.]
 λ₀ = [0.]
 μ₀ = [0.]
 
-prob = PDAEProblem(v, f, u, g, ϕ, tspan, tstep, q₀, p₀, λ₀)
+prob = PDAEProblem(v, f, u, g, ϕ, timespan, timestep, q₀, p₀, λ₀)
 ```
 or
 ```julia
-prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan, tstep, q₀, p₀, λ₀, μ₀)
+prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀, p₀, λ₀, μ₀)
 ```
 """
 const PDAEProblem = EquationProblem{PDAE}
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, tspan::Tuple, tstep::Real, ics...; v̄ = v, f̄ = f,
+function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄,
                invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function PDAEProblem(v, f, u, g, ϕ, args...; kwargs...)
@@ -409,12 +409,12 @@ end
 
 const PDAEEnsemble  = EnsembleProblem{PDAE}
 
-function PDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, tspan::Tuple, tstep::Real, ics...; v̄ = v, f̄ = f,
+function PDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function PDAEEnsemble(v, f, u, g, ϕ, args...; kwargs...)

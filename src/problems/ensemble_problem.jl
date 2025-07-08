@@ -61,8 +61,8 @@ where `ensemble` is an `EnsembleProblem` and `problem` is the corresponding `Geo
 * `equation`: reference to the parent equation object holding the vector fields, etc.
 * `functions`: methods for all vector fields, etc., that define the problem
 * `solutions`: methods for all solutions, etc., if defined
-* `tspan`: time span for problem `(t₀,t₁)`
-* `tstep`: time step to be used in simulation
+* `timespan`: time span for problem `(t₀,t₁)`
+* `timestep`: time step to be used in simulation
 * `ics`: vector of `NamedTuple` containing the initial conditions, each `NamedTuple` must contain one field for each state variable
 * `parameters`: vector of either `NamedTuple` containing the equation's parameters or `NullParameters` indicating that the equation does not have any parameters
 
@@ -70,18 +70,18 @@ where `ensemble` is an `EnsembleProblem` and `problem` is the corresponding `Geo
 
 The `EnsembleProblem` provides the following constructors:
 ```
-EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::AbstractVector{<:OptionalParameters})
-EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters=NullParameters())
-EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::AbstractVector{<:OptionalParameters})
-EnsembleProblem(equ, tspan, tstep, ics, ::Nothing) =
-    EnsembleProblem(equ, tspan, tstep, ics, NullParameters())
-EnsembleProblem(equ, tspan, tstep, ics; parameters = NullParameters()) =
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+EnsembleProblem(equ, timespan, timestep, ics::AbstractVector{<:NamedTuple}, parameters::AbstractVector{<:OptionalParameters})
+EnsembleProblem(equ, timespan, timestep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters=NullParameters())
+EnsembleProblem(equ, timespan, timestep, ics::NamedTuple, parameters::AbstractVector{<:OptionalParameters})
+EnsembleProblem(equ, timespan, timestep, ics, ::Nothing) =
+    EnsembleProblem(equ, timespan, timestep, ics, NullParameters())
+EnsembleProblem(equ, timespan, timestep, ics; parameters = NullParameters()) =
+    EnsembleProblem(equ, timespan, timestep, ics, parameters)
 ```
 
 * `equ` is a subtype of `GeometricEquation`
-* `tspan` is a tuple `(t₀,t₁)` of the integration time span with `t₀` the start time and `t₁` the end time
-* `tstep` is the time step, typically a value of some `AbstractFloat` subtype
+* `timespan` is a tuple `(t₀,t₁)` of the integration time span with `t₀` the start time and `t₁` the end time
+* `timestep` is the time step, typically a value of some `AbstractFloat` subtype
 * `ics` are the initial conditions, either a single set or a vector of multiple sets
 * `parameters` are the static parameters of the problem, either a single set or a vector of multiple sets
 
@@ -98,30 +98,30 @@ struct EnsembleProblem{superType <: GeometricEquation, dType <: Number, tType <:
     functions::functionsType
     solutions::solutionsType
     initialguess::iguessType
-    tspan::Tuple{tType,tType}
-    tstep::tType
+    timespan::Tuple{tType,tType}
+    timestep::tType
     ics::icsType
     parameters::paramsType
 end
 
-function EnsembleProblem(equ::equType, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::AbstractVector{<:OptionalParameters}) where {equType}
+function EnsembleProblem(equ::equType, timespan, timestep, ics::AbstractVector{<:NamedTuple}, parameters::AbstractVector{<:OptionalParameters}) where {equType}
     @assert axes(ics) == axes(parameters)
 
-    _tspan = promote_tspan(tspan)
-    _tspan, _tstep = promote_tspan_and_tstep(_tspan, tstep)
-    _ics = [initialstate(equ, _tspan[begin], ic, param) for (ic,param) in zip(ics,parameters)]
+    _timespan = promote_timespan(timespan)
+    _timespan, _timestep = promote_timespan_and_timestep(_timespan, timestep)
+    _ics = [initialstate(equ, _timespan[begin], ic, param) for (ic,param) in zip(ics,parameters)]
 
     for i in eachindex(_ics)
         @assert check_initial_conditions(equ, _ics[i])
     end
 
-    @assert check_methods(equ, _tspan, _ics[begin], parameters[begin])
+    @assert check_methods(equ, _timespan, _ics[begin], parameters[begin])
     @assert axes(parameters) == axes(ics)
 
     length(_ics) == 1 && @warn("You created an EnsembleProblem with a single initial condition and a single set of parameters. You probably want to create a GeometricProblem instead.")
 
     superType = eval(typeof(equ).name.name)
-    tType = typeof(_tstep)
+    tType = typeof(_timestep)
     dType = datatype(equ, _ics[begin])
     arrayType = arrtype(equ, _ics[begin])
 
@@ -129,39 +129,39 @@ function EnsembleProblem(equ::equType, tspan, tstep, ics::AbstractVector{<:Named
     sols = solutions(equ)
     iguesss = initialguess(equ)
 
-    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs), typeof(sols), typeof(iguesss), typeof(_ics), typeof(parameters)}(equ, funcs, sols, iguesss, _tspan, _tstep, _ics, parameters)
+    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs), typeof(sols), typeof(iguesss), typeof(_ics), typeof(parameters)}(equ, funcs, sols, iguesss, _timespan, _timestep, _ics, parameters)
 end
 
-function EnsembleProblem(equ, tspan, tstep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters = NullParameters())
+function EnsembleProblem(equ, timespan, timestep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters = NullParameters())
     _params = similar(ics, typeof(parameters))
 
     for i in eachindex(_params)
         _params[i] = parameters
     end
 
-    EnsembleProblem(equ, tspan, tstep, ics, _params)
+    EnsembleProblem(equ, timespan, timestep, ics, _params)
 end
 
-function EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::AbstractVector{<:OptionalParameters})
+function EnsembleProblem(equ, timespan, timestep, ics::NamedTuple, parameters::AbstractVector{<:OptionalParameters})
     _ics = similar(parameters, typeof(ics))
 
     for i in eachindex(_ics)
         _ics[i] = ics
     end
 
-    EnsembleProblem(equ, tspan, tstep, _ics, parameters)
+    EnsembleProblem(equ, timespan, timestep, _ics, parameters)
 end
 
-function EnsembleProblem(equ, tspan, tstep, ics::NamedTuple, parameters::OptionalParameters)
-    EnsembleProblem(equ, tspan, tstep, ics, [parameters])
+function EnsembleProblem(equ, timespan, timestep, ics::NamedTuple, parameters::OptionalParameters)
+    EnsembleProblem(equ, timespan, timestep, ics, [parameters])
 end
 
-function EnsembleProblem(equ, tspan, tstep, ics, ::Nothing)
-    EnsembleProblem(equ, tspan, tstep, ics, NullParameters())
+function EnsembleProblem(equ, timespan, timestep, ics, ::Nothing)
+    EnsembleProblem(equ, timespan, timestep, ics, NullParameters())
 end
 
-function EnsembleProblem(equ, tspan, tstep, ics; parameters = NullParameters())
-    EnsembleProblem(equ, tspan, tstep, ics, parameters)
+function EnsembleProblem(equ, timespan, timestep, ics; parameters = NullParameters())
+    EnsembleProblem(equ, timespan, timestep, ics, parameters)
 end
 
 Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
@@ -169,8 +169,8 @@ Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
                              && ens1.functions  == ens2.functions
                              && ens1.solutions  == ens2.solutions
                              && ens1.initialguess == ens2.initialguess
-                             && ens1.tspan      == ens2.tspan
-                             && ens1.tstep      == ens2.tstep
+                             && ens1.timespan      == ens2.timespan
+                             && ens1.timestep      == ens2.timestep
                              && ens1.ics        == ens2.ics
                              && ens1.parameters == ens2.parameters)
 
@@ -180,8 +180,8 @@ Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
 @inline GeometricBase.equtype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = ST
 
 @inline GeometricBase.equation(ge::EnsembleProblem) = ge.equation
-@inline GeometricBase.timespan(ge::EnsembleProblem) = ge.tspan
-@inline GeometricBase.timestep(ge::EnsembleProblem) = ge.tstep
+@inline GeometricBase.timespan(ge::EnsembleProblem) = ge.timespan
+@inline GeometricBase.timestep(ge::EnsembleProblem) = ge.timestep
 
 @inline GeometricBase.functions(ge::EnsembleProblem) = ge.functions
 @inline GeometricBase.solutions(ge::EnsembleProblem) = ge.solutions
