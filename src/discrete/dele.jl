@@ -156,11 +156,11 @@ function check_initial_conditions(::DELE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::DELE, tspan, ics, params)
-    applicable(equ.Ld, tspan[begin], tspan[end], ics.q̄, ics.q, params) || return false
-    applicable(equ.D1Ld, vectorfield(ics.q), tspan[begin], tspan[end], ics.q̄, ics.q, params) || return false
-    applicable(equ.D2Ld, vectorfield(ics.q), tspan[begin], tspan[end], ics.q̄, ics.q, params) || return false
-    # equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
+function check_methods(equ::DELE, timespan, ics, params)
+    applicable(equ.Ld, timespan[begin], timespan[end], ics.q̄, ics.q, params) || return false
+    applicable(equ.D1Ld, vectorfield(ics.q), timespan[begin], timespan[end], ics.q̄, ics.q, params) || return false
+    applicable(equ.D2Ld, vectorfield(ics.q), timespan[begin], timespan[end], ics.q̄, ics.q, params) || return false
+    # equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
     return true
 end
 
@@ -188,14 +188,14 @@ The dynamical variables ``q`` with initial conditions ``q_{0}`` and ``q_{1}`` ta
 ### Constructors
 
 ```julia
-DELEProblem(Ld, D1Ld, D2Ld, tspan, tstep, ics::NamedTuple; kwargs...)
-DELEProblem(Ld, D1Ld, D2Ld, tspan, tstep, q₀::StateVariable, q₁::StateVariable; kwargs...)
-DELEProblem(Ld, D1Ld, D2Ld, tspan, tstep, q₀::AbstractArray, q₁::AbstractArray; kwargs...)
+DELEProblem(Ld, D1Ld, D2Ld, timespan, timestep, ics::NamedTuple; kwargs...)
+DELEProblem(Ld, D1Ld, D2Ld, timespan, timestep, q₀::StateVariable, q₁::StateVariable; kwargs...)
+DELEProblem(Ld, D1Ld, D2Ld, timespan, timestep, q₀::AbstractArray, q₁::AbstractArray; kwargs...)
 ```
 where `Ld` is the function computing the discrete Lagrangian, `D1Ld` and `D2Ld`
 are functions computing the derivative of `Ld` with respect to the first and second argument,
-`tspan` is the time interval `(t₀,tₙ)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,tₙ)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q₀` and  `q₁` of type `StateVariable`.
 The initial conditions `q₀` and  `q₁` can also be prescribed directly, as a
 `StateVariable` or an `AbstractArray{<:Number}`.
@@ -211,12 +211,12 @@ $(dele_functions)
 """
 const DELEProblem = EquationProblem{DELE}
 
-function DELEProblem(Ld, D1Ld, D2Ld, tspan, tstep, ics...;
+function DELEProblem(Ld, D1Ld, D2Ld, timespan, timestep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = DELE(Ld, D1Ld, D2Ld, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 GeometricBase.periodicity(prob::DELEProblem) = (q = periodicity(equation(prob)),)
@@ -232,14 +232,14 @@ The dynamical variables ``q`` take values in ``\\mathbb{R}^{d}``.
 ### Constructors
 
 ```julia
-DELEEnsemble(Ld, D1Ld, D2Ld, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-DELEEnsemble(Ld, D1Ld, D2Ld, tspan, tstep, q₀::AbstractVector{<: StateVariable}, q₁::AbstractVector{<: StateVariable}; kwargs...)
-DELEEnsemble(Ld, D1Ld, D2Ld, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, q₁::AbstractVector{<: AbstractArray}; kwargs...)
+DELEEnsemble(Ld, D1Ld, D2Ld, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+DELEEnsemble(Ld, D1Ld, D2Ld, timespan, timestep, q₀::AbstractVector{<: StateVariable}, q₁::AbstractVector{<: StateVariable}; kwargs...)
+DELEEnsemble(Ld, D1Ld, D2Ld, timespan, timestep, q₀::AbstractVector{<: AbstractArray}, q₁::AbstractVector{<: AbstractArray}; kwargs...)
 ```
 where `Ld` is the function computing the discrete Lagrangian, `D1Ld` and `D2Ld`
 are functions computing the derivative of `Ld` with respect to the first and second argument,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with entries `q₀` and  `q₁` of type `StateVariable`.
 The initial conditions `q₀` and  `q₁` can also be prescribed as two `AbstractVector`s
 of `StateVariable` or `AbstractArray{<:Number}`.
@@ -250,10 +250,10 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const DELEEnsemble = EnsembleProblem{DELE}
 
-function DELEEnsemble(Ld, D1Ld, D2Ld, tspan, tstep, ics...;
+function DELEEnsemble(Ld, D1Ld, D2Ld, timespan, timestep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = DELE(Ld, D1Ld, D2Ld, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

@@ -254,14 +254,14 @@ function check_initial_conditions(::LODE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::LODE, tspan, ics, params)
-    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.g, vectorfield(ics.p), tspan[begin], ics.q, ics.v, zero(ics.v), params) || return false
+function check_methods(equ::LODE, timespan, ics, params)
+    applicable(equ.ϑ, zero(ics.p), timespan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.g, vectorfield(ics.p), timespan[begin], ics.q, ics.v, zero(ics.v), params) || return false
     # TODO add missing methods (namely ω)
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.lagrangian, tspan[begin], ics.q, ics.v, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.lagrangian, timespan[begin], ics.q, ics.v, params) || return false
     return true
 end
 
@@ -310,17 +310,17 @@ with initial condition ``λ(t_{0}) = λ_{0}`` takes values in ``\\mathbb{R}^{m}`
 ### Constructors
 
 ```julia
-LODEProblem(ϑ, f, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
-LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, ω, l, timespan, timestep, ics; kwargs...)
+LODEProblem(ϑ, f, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, ω, l, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, g, ω, l, timespan, timestep, ics; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
 ```
 where `ϑ`, `f` and `g` are the functions computing the momentum and the vector fields, respectively,
 `ω` determines the symplectic matrix, and `l` returns the Lagrangian,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
@@ -333,13 +333,13 @@ values `v̄ = _lode_default_v̄` and `f̄ = f`.
 """
 const LODEProblem = EquationProblem{LODE}
 
-function LODEProblem(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics...;
+function LODEProblem(ϑ, f, g, ω, l, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = _lode_default_v̄, f̄ = f)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function LODEProblem(ϑ, f, ω, l, args...; kwargs...)
@@ -365,17 +365,17 @@ The algebraic variable ``λ`` takes values in ``\\mathbb{R}^{m}``.
 ### Constructors
 
 ```julia
-LODEProblem(ϑ, f, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
-LODEProblem(ϑ, f, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, ics; kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
-LODEProblem(ϑ, f, g, ω, l, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, ω, l, timespan, timestep, ics; kwargs...)
+LODEProblem(ϑ, f, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, ω, l, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
+LODEProblem(ϑ, f, g, ω, l, timespan, timestep, ics; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::AlgebraicVariable; kwargs...)
+LODEProblem(ϑ, f, g, ω, l, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray, λ₀::AbstractArray = zero(q₀); kwargs...)
 ```
 where `ϑ`, `f` and `g` are the functions computing the momentum and the vector fields, respectively,
 `ω` determines the symplectic matrix, and `l` returns the Lagrangian,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `p` and `λ`.
 The initial conditions `q₀`, `p₀` and `λ₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`, where `λ₀` can also be omitted.
@@ -390,7 +390,7 @@ only for `(q,v)`, the function `ϑ` can be called to compute the corresponding i
 """
 const LODEEnsemble = EnsembleProblem{LODE}
 
-function LODEEnsemble(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics...;
+function LODEEnsemble(ϑ, f, g, ω, l, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
@@ -398,7 +398,7 @@ function LODEEnsemble(ϑ, f, g, ω, l, tspan::Tuple, tstep::Real, ics...;
         f̄ = f
     )
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function LODEEnsemble(ϑ, f, ω, l, args...; kwargs...)

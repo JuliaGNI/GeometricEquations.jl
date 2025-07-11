@@ -160,9 +160,9 @@ function check_initial_conditions(::PSDE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::PSDE, tspan, ics, params)
-    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+function check_methods(equ::PSDE, timespan, ics, params)
+    applicable(equ.v, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -196,13 +196,13 @@ $(psde_equations)
 ### Constructors
 
 ```julia
-PSDEProblem(v, f, B, G, tspan, tstep, ics::NamedTuple; kwargs...)
-PSDEProblem(v, f, B, G, tspan, tstep, q₀::StateVariable; p₀::StateVariable; kwargs...)
+PSDEProblem(v, f, B, G, timespan, timestep, ics::NamedTuple; kwargs...)
+PSDEProblem(v, f, B, G, timespan, timestep, q₀::StateVariable; p₀::StateVariable; kwargs...)
 ```
 where `v` and `f` are the functions computing the vector field and `B` and `G`
 compute the diffusion matrices,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
 The initial condition `q₀` can also be prescribed directly, with
 `StateVariable` an `AbstractArray{<:Number}`.
@@ -216,16 +216,16 @@ $(psde_functions)
 """
 const PSDEProblem = EquationProblem{PSDE}
 
-function PSDEProblem(v, f, B, G, noise, tspan, tstep, ics::NamedTuple;
+function PSDEProblem(v, f, B, G, noise, timespan, timestep, ics::NamedTuple;
                      invariants = NullInvariants(), parameters = NullParameters(),
                      periodicity = NullPeriodicity())
     equ = PSDE(v, f, B, G, noise, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, ics, parameters)
+    EquationProblem(equ, timespan, timestep, ics, parameters)
 end
 
-function PSDEProblem(v, f, B, G, noise, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+function PSDEProblem(v, f, B, G, noise, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
     ics = (q = StateVariable(q₀), p = StateVariable(p₀))
-    PSDEProblem(v, f, B, G, noise, tspan, tstep, ics; kwargs...)
+    PSDEProblem(v, f, B, G, noise, timespan, timestep, ics; kwargs...)
 end
 
 function GeometricBase.periodicity(prob::PSDEProblem)

@@ -217,13 +217,13 @@ function check_initial_conditions(equ::DAE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::DAE, tspan, ics::NamedTuple, params)
-    applicable(equ.v, zero(ics.q), tspan[begin], ics.q, params) || return false
-    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.λ, params) || return false
-    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, params) || return false
-    equ.ū === nothing || applicable(equ.u, zero(ics.q), tspan[begin], ics.q, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, params) || return false
+function check_methods(equ::DAE, timespan, ics::NamedTuple, params)
+    applicable(equ.v, zero(ics.q), timespan[begin], ics.q, params) || return false
+    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, params) || return false
+    equ.ū === nothing || applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, vectorfield(ics.q), params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, params) || return false
     return true
 end
 
@@ -290,16 +290,16 @@ values in ``\\mathbb{R}^{m} \\times \\mathbb{R}^{m}``.
 ### Constructors
 
 ```julia
-DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, ics::NamedTuple; kwargs...)
-DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
-DAEProblem(v, u, ϕ, tspan, tstep, ics::NamedTuple; kwargs...)
-DAEProblem(v, u, ϕ, tspan, tstep, q₀::StateVariable, λ₀::StateVariable; kwargs...)
+DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, ics::NamedTuple; kwargs...)
+DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, q₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
+DAEProblem(v, u, ϕ, timespan, timestep, ics::NamedTuple; kwargs...)
+DAEProblem(v, u, ϕ, timespan, timestep, q₀::StateVariable, λ₀::StateVariable; kwargs...)
 ```
 
 $(dae_constructors)
 
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q`, `λ` and `μ`.
 The initial conditions `q₀`, `λ₀` and `μ₀` can also be prescribed directly,
 with `StateVariable` an `AbstractArray{<:Number}`.
@@ -315,27 +315,27 @@ $(dae_functions)
 With the above function definitions the `DAEProblem` can be created by
 
 ```julia
-tspan = (0.0, 1.0)
-tstep = 0.1
+timespan = (0.0, 1.0)
+timestep = 0.1
 q₀ = [1., 1.]
 λ₀ = [0.]
 μ₀ = [0.]
 
-prob = DAEProblem(v, u, ϕ, tspan, tstep, q₀, λ₀)
+prob = DAEProblem(v, u, ϕ, timespan, timestep, q₀, λ₀)
 ```
 or
 ```julia
-prob = DAEProblem(v, u, ϕ, ū, ψ, tspan, tstep, q₀, λ₀, μ₀)
+prob = DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, q₀, λ₀, μ₀)
 ```
 """
 const DAEProblem = EquationProblem{DAE}
 
-function DAEProblem(v, u, ϕ, ū, ψ, tspan::Tuple, tstep::Real, ics...; v̄ = v,
+function DAEProblem(v, u, ϕ, ū, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v,
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity())
     equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function DAEProblem(v, u, ϕ, args...; kwargs...)
@@ -351,12 +351,12 @@ end
 
 const DAEEnsemble = EnsembleProblem{DAE}
 
-function DAEEnsemble(v, u, ϕ, ū, ψ, tspan::Tuple, tstep::Real, ics...; v̄ = v,
+function DAEEnsemble(v, u, ϕ, ū, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = DAE(v, u, ϕ, ū, ψ, v̄)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function DAEEnsemble(v, u, ϕ, args...; kwargs...)

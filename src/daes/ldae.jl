@@ -314,18 +314,18 @@ function check_initial_conditions(equ::LDAE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::LDAE, tspan, ics::NamedTuple, params)
-    applicable(equ.ϑ, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.f, zero(ics.p), tspan[begin], ics.q, zero(ics.q), params) || return false
-    applicable(equ.u, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    applicable(equ.g, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    applicable(equ.ϕ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, params) || return false
-    applicable(equ.lagrangian, tspan[begin], ics.q, vectorfield(ics.q), params) || return false
-    equ.ū === nothing || applicable(equ.ū, zero(ics.q), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), tspan[begin], ics.q, vectorfield(ics.q), ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), tspan[begin], ics.q, vectorfield(ics.q), params) || return false
+function check_methods(equ::LDAE, timespan, ics::NamedTuple, params)
+    applicable(equ.ϑ, zero(ics.p), timespan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.f, zero(ics.p), timespan[begin], ics.q, zero(ics.q), params) || return false
+    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, vectorfield(ics.q), ics.p, params) || return false
+    applicable(equ.lagrangian, timespan[begin], ics.q, vectorfield(ics.q), params) || return false
+    equ.ū === nothing || applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), ics.p, ics.λ, params) || return false
+    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, vectorfield(ics.q), ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), params) || return false
     return true
 end
 
@@ -404,16 +404,16 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 ### Constructors
 
 ```julia
-LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, ics; kwargs...)
-LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀), μ₀::StateVariable = zero(λ₀); kwargs...)
-LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, ics; kwargs...)
-LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, ics; kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀), μ₀::StateVariable = zero(λ₀); kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ω, l, timespan, timestep, ics; kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
 
 $(ldae_constructors)
 
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`.
@@ -430,28 +430,28 @@ $(ldae_functions)
 With the above function definitions the `LDAEProblem` can be created by
 
 ```julia
-tspan = (0.0, 1.0)
-tstep = 0.1
+timespan = (0.0, 1.0)
+timestep = 0.1
 q₀ = [1., 1.]
 p₀ = [1., 0.]
 λ₀ = [0.]
 μ₀ = [0.]
 
-prob = LDAEProblem(ϑ, f, u, g, ϕ, ω, l, tspan, tstep, q₀, p₀, λ₀)
+prob = LDAEProblem(ϑ, f, u, g, ϕ, ω, l, timespan, timestep, q₀, p₀, λ₀)
 ```
 or
 ```julia
-prob = LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, tspan, tstep, q₀, p₀, λ₀, μ₀)
-```
+prob = LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, q₀, p₀, λ₀, μ₀)
+```    
 """
 const LDAEProblem = EquationProblem{LDAE}
 
-function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan::Tuple, tstep::Real, ics...;
+function LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, timespan::Tuple, timestep::Real, ics...;
                      v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(),
                      parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants,
                parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function LDAEProblem(ϑ, f, u, g, ϕ, ω, lagrangian, args...; kwargs...)
@@ -466,12 +466,12 @@ end
 
 const LDAEEnsemble  = EnsembleProblem{LDAE}
 
-function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, tspan::Tuple, tstep::Real, ics...; v̄ = _ldae_default_v̄, f̄ = f,
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, timespan::Tuple, timestep::Real, ics...; v̄ = _ldae_default_v̄, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function LDAEEnsemble(ϑ, f, u, g, ϕ, ω, lagrangian, args...; kwargs...)

@@ -126,9 +126,9 @@ function check_initial_conditions(::ODE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::ODE, tspan, ics, params)
-    applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, params) || return false
+function check_methods(equ::ODE, timespan, ics, params)
+    applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
     return true
 end
 
@@ -162,13 +162,13 @@ The dynamical variables ``q`` with initial condition ``q_{0}`` take values in ``
 ### Constructors
 
 ```julia
-ODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
-ODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
-ODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
+ODEProblem(v, timespan, timestep, ics::NamedTuple; kwargs...)
+ODEProblem(v, timespan, timestep, q₀::StateVariable; kwargs...)
+ODEProblem(v, timespan, timestep, q₀::AbstractArray; kwargs...)
 ```
-where `v` is the function computing the vector field,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+where `v` is the function computing the vector field, 
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q` of type `StateVariable`.
 The initial condition `q₀` can also be prescribed directly, as a
 `StateVariable` or an `AbstractArray{<:Number}`.
@@ -182,13 +182,13 @@ $(ode_functions)
 """
 const ODEProblem = EquationProblem{ODE}
 
-function ODEProblem(v, tspan, tstep, ics...;
+function ODEProblem(v, timespan, timestep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity(),
                     v̄ = v)
     equ = ODE(v, v̄, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
@@ -204,13 +204,13 @@ The dynamical variables ``q`` take values in ``\\mathbb{R}^{d}``.
 ### Constructors
 
 ```julia
-ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
-ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
+ODEEnsemble(v, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+ODEEnsemble(v, timespan, timestep, q₀::AbstractVector{<: StateVariable}; kwargs...)
+ODEEnsemble(v, timespan, timestep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
-where `v` is the function computing the vector field,
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+where `v` is the function computing the vector field, 
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and 
 `ics` is an `AbstractVector` of `NamedTuple`, each with an entry `q`
 of type `StateVariable`.
 The initial condition `q₀` can also be prescribed as an `AbstractVector`
@@ -222,11 +222,11 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const ODEEnsemble = EnsembleProblem{ODE}
 
-function ODEEnsemble(v, tspan, tstep, ics...;
+function ODEEnsemble(v, timespan, timestep, ics...;
                     invariants = NullInvariants(),
                     parameters = NullParameters(),
                     periodicity = NullPeriodicity(),
                     v̄ = v)
     equ = ODE(v, v̄, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

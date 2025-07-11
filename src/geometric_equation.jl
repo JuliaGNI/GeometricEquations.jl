@@ -147,7 +147,7 @@ initialstate(::GeometricEquation, ics::NamedTuple) = ics
 initialstate(::GeometricEquation, ::InitialTime, ics::NamedTuple, ::OptionalParameters) = ics
 
 check_initial_conditions(equ::GeometricEquation, ics::NamedTuple) = error("check_initial_conditions(::GeometricEquation, ::NamedTuple) not implemented for ", typeof(equ), ".")
-check_methods(equ::GeometricEquation, tspan, ics, params) = error("check_methods(::GeometricEquation, ::Tuple, ::NamedTuple, ::OptionalParameters) not implemented for ", typeof(equ), ".")
+check_methods(equ::GeometricEquation, timespan, ics, params) = error("check_methods(::GeometricEquation, ::Tuple, ::NamedTuple, ::OptionalParameters) not implemented for ", typeof(equ), ".")
 
 function check_parameters(equ::GeometricEquation, params::NamedTuple)
     typeof(parameters(equ)) <: NamedTuple || return false

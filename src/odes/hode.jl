@@ -159,12 +159,12 @@ function check_initial_conditions(::HODE, ics::NamedTuple)
     return true
 end
 
-function check_methods(equ::HODE, tspan, ics, params)
-    applicable(equ.v, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.hamiltonian, tspan[begin], ics.q, ics.p, params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), tspan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), tspan[begin], ics.q, ics.p, params) || return false
+function check_methods(equ::HODE, timespan, ics, params)
+    applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.hamiltonian, timespan[begin], ics.q, ics.p, params) || return false
+    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
+    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
     return true
 end
 
@@ -202,14 +202,14 @@ take values in ``T^{*} Q \\simeq \\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.
 ### Constructors
 
 ```julia
-HODEProblem(v, f, hamiltonian, tspan, tstep, ics; kwargs...)
-HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
-HODEProblem(v, f, hamiltonian, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
+HODEProblem(v, f, hamiltonian, timespan, timestep, ics; kwargs...)
+HODEProblem(v, f, hamiltonian, timespan, timestep, q₀::StateVariable, p₀::StateVariable; kwargs...)
+HODEProblem(v, f, hamiltonian, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
 ```
 where `v` and `f` are the function computing the vector fields,
 `hamiltonian` returns the value of the Hamiltonian (i.e. the total energy),
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`.
@@ -224,13 +224,13 @@ $(hode_functions)
 """
 const HODEProblem = EquationProblem{HODE}
 
-function HODEProblem(v, f, hamiltonian, tspan, tstep, ics...;
+function HODEProblem(v, f, hamiltonian, timespan, timestep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = v, f̄ = f)
     equ = HODE(v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function GeometricBase.periodicity(prob::HODEProblem)
@@ -248,14 +248,14 @@ The dynamical variables ``(q,p)`` take values in ``T^{*} Q \\simeq \\mathbb{R}^{
 ### Constructors
 
 ```julia
-HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
-HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
-HODEEnsemble(v, f, hamiltonian, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
+HODEEnsemble(v, f, hamiltonian, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...)
+HODEEnsemble(v, f, hamiltonian, timespan, timestep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
+HODEEnsemble(v, f, hamiltonian, timespan, timestep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
 where `v` and `f` are the function computing the vector fields,
 `hamiltonian` returns the value of the Hamiltonian (i.e. the total energy),
-`tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and
+`timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
+`timestep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with entries `q` and `p`.
 The initial conditions `q₀` and `p₀` can also be prescribed, each as an
 `AbstractVector` of `StateVariable` or `AbstractArray{<:Number}`.
@@ -266,11 +266,11 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 """
 const HODEEnsemble = EnsembleProblem{HODE}
 
-function HODEEnsemble(v, f, hamiltonian, tspan, tstep, ics...;
+function HODEEnsemble(v, f, hamiltonian, timespan, timestep, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = v, f̄ = f)
     equ = HODE(v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
-    EnsembleProblem(equ, tspan, tstep, initialstate(equ, ics...), parameters)
+    EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
