@@ -150,9 +150,11 @@ struct DAE{vType <: Callable,
         @assert !isempty(methods(ψ)) || ψ === nothing
         @assert !isempty(methods(v̄))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(v), typeof(u), typeof(ϕ), typeof(ū), typeof(ψ), typeof(v̄),
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+            typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, u, ϕ, ū, ψ, v̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -185,11 +187,11 @@ function Base.show(io::IO, equation::DAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::DAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::DAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
 
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
         λ = _algebraicvariable(ics.λ),
         μ = _algebraicvariable(ics.μ),
     )

@@ -82,8 +82,9 @@ struct PODE{vType <: Callable, fType <: Callable,
     periodicity::perType
 
     function PODE(v, f, v̄, f̄, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, v̄, f̄, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
+        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, f, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -108,10 +109,10 @@ function Base.show(io::IO, equation::PODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::PODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::PODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(ics.q),
-        p = _statevariable(ics.p),
+        q = _statevariable(ics.q, periodicity(equ)),
+        p = _statevariable(ics.p, NullPeriodicity()),
     )
 end
 
@@ -179,7 +180,7 @@ PODEProblem(v, f, tspan, tstep, ics; kwargs...)
 PODEProblem(v, f, tspan, tstep, q₀::StateVariable, p₀::StateVariable; kwargs...)
 PODEProblem(v, f, tspan, tstep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
 ```
-where `v` and `f` are the function computing the vector fields, 
+where `v` and `f` are the function computing the vector fields,
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q` and `p`.
@@ -224,7 +225,7 @@ PODEEnsemble(v, f, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
 PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
 PODEEnsemble(v, f, tspan, tstep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
-where `v` and `f` are the function computing the vector fields, 
+where `v` and `f` are the function computing the vector fields,
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with entries `q` and `p`.

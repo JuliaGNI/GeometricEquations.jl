@@ -53,6 +53,26 @@ include("initial_conditions.jl")
 
     @test_nowarn funcs.v(zero(x₀), t₀, x₀)
 
+
+    # Test for periodicity
+    odep = ODE(ode_eqs...; periodicity=([-π,0],[+π,2π]))
+
+    @test periodicity(odep) == (Float64[-π,0],Float64[+π,2π])
+    @test getperiodicity(odep) == BitArray([true,true])
+    @test hasperiodicity(odep) == true
+
+    odep = ODE(ode_eqs...; periodicity=([-Inf,0],[+Inf,2π]))
+
+    @test periodicity(odep) == (Float64[-Inf,0],Float64[+Inf,2π])
+    @test getperiodicity(odep) == BitArray([false,true])
+    @test hasperiodicity(odep) == true
+
+    odep = ODE(ode_eqs...; periodicity=([-Inf,-Inf],[+Inf,+Inf]))
+
+    @test periodicity(odep) == NullPeriodicity()
+    @test ismissing(getperiodicity(odep))
+    @test hasperiodicity(odep) == false
+
 end
 
 
@@ -60,7 +80,7 @@ end
 
     @test_throws AssertionError SODE(nothing, nothing)
     @test_throws AssertionError SODE(sode_eqs, (sode_sols..., sode_sols...))
-    
+
     @test_nowarn SODE(sode_eqs, nothing)
     @test_nowarn SODE(nothing, sode_sols)
     @test_nowarn SODE(sode_eqs, sode_sols)
@@ -186,6 +206,25 @@ end
     @test hashamiltonian(sode) == false
     @test haslagrangian(sode) == false
 
+    # Test for periodicity
+    sodep = SODE(sode_eqs; periodicity=([-π,0],[+π,2π]))
+
+    @test periodicity(sodep) == (Float64[-π,0],Float64[+π,2π])
+    @test getperiodicity(sodep) == BitArray([true,true])
+    @test hasperiodicity(sodep) == true
+
+    sodep = SODE(sode_eqs; periodicity=([-Inf,0],[+Inf,2π]))
+
+    @test periodicity(sodep) == (Float64[-Inf,0],Float64[+Inf,2π])
+    @test getperiodicity(sodep) == BitArray([false,true])
+    @test hasperiodicity(sodep) == true
+
+    sodep = SODE(sode_eqs; periodicity=([-Inf,-Inf],[+Inf,+Inf]))
+
+    @test periodicity(sodep) == NullPeriodicity()
+    @test ismissing(getperiodicity(sodep))
+    @test hasperiodicity(sodep) == false
+
 end
 
 
@@ -261,6 +300,20 @@ end
     # code.v[2](code.t₀, code.q₀[begin], v₂)
     # @test v₁ == v₂
 
+
+    # Test for periodicity
+    podep = PODE(pode_eqs...; periodicity=([0.0,],[2π]))
+
+    @test periodicity(podep) == (Float64[0],Float64[2π])
+    @test getperiodicity(podep) == BitArray([true])
+    @test hasperiodicity(podep) == true
+
+    podep = PODE(pode_eqs...; periodicity=([-Inf],[+Inf]))
+
+    @test periodicity(podep) == NullPeriodicity()
+    @test ismissing(getperiodicity(podep))
+    @test hasperiodicity(podep) == false
+
 end
 
 
@@ -276,7 +329,7 @@ end
     iode6 = IODE(iode_eqs...; v̄ = iode_v, f̄ = iode_f, invariants=NullInvariants())
     iode7 = IODE(iode_eqs...; v̄ = iode_v, f̄ = iode_f, parameters=NullParameters())
     iode8 = IODE(iode_eqs...; v̄ = iode_v, f̄ = iode_f, periodicity=NullPeriodicity())
-    
+
     @test iode == iode1
     @test iode == iode2
     @test iode == iode3
@@ -341,6 +394,19 @@ end
     # @test iode == similar(iode, t₀, q₀, p₀, λ₀)
     # @test iode == similar(iode, t₀, q₀, p₀)
     # @test iode == similar(iode, q₀, p₀)
+
+    # Test for periodicity
+    iodep = IODE(iode_eqs...; periodicity=([0.0,],[2π]))
+
+    @test periodicity(iodep) == (Float64[0],Float64[2π])
+    @test getperiodicity(iodep) == BitArray([true])
+    @test hasperiodicity(iodep) == true
+
+    iodep = IODE(iode_eqs...; periodicity=([-Inf],[+Inf]))
+
+    @test periodicity(iodep) == NullPeriodicity()
+    @test ismissing(getperiodicity(iodep))
+    @test hasperiodicity(iodep) == false
 
 end
 
@@ -438,6 +504,19 @@ end
     # code.v[2](code.t₀, code.q₀[begin], v₂)
     # @test v₁ == v₂
 
+    # Test for periodicity
+    hodep = HODE(hode_eqs...; periodicity=([0.0,],[2π]))
+
+    @test periodicity(hodep) == (Float64[0],Float64[2π])
+    @test getperiodicity(hodep) == BitArray([true])
+    @test hasperiodicity(hodep) == true
+
+    hodep = HODE(hode_eqs...; periodicity=([-Inf],[+Inf]))
+
+    @test periodicity(hodep) == NullPeriodicity()
+    @test ismissing(getperiodicity(hodep))
+    @test hasperiodicity(hodep) == false
+
 end
 
 
@@ -531,5 +610,18 @@ end
     # @test ϑ₁ == ϑ₂
     # @test f₁ == f₂
     # @test g₁ == g₂
+
+    # Test for periodicity
+    lodep = LODE(lode_eqs...; periodicity=([0.0,],[2π]))
+
+    @test periodicity(lodep) == (Float64[0],Float64[2π])
+    @test getperiodicity(lodep) == BitArray([true])
+    @test hasperiodicity(lodep) == true
+
+    lodep = LODE(lode_eqs...; periodicity=([-Inf],[+Inf]))
+
+    @test periodicity(lodep) == NullPeriodicity()
+    @test ismissing(getperiodicity(lodep))
+    @test hasperiodicity(lodep) == false
 
 end

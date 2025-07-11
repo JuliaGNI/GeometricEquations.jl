@@ -92,11 +92,13 @@ struct DELE{LdType <: Callable, D1LdType <: Callable, D2LdType <: Callable,
         @assert !isempty(methods(D2Ld))
         # @assert hasmethod(v, (Real, AbstractArray, AbstractArray, OptionalParameters))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(Ld), typeof(D1Ld), typeof(D2Ld),
             typeof(invariants),
             typeof(parameters),
-            typeof(periodicity)
-            }(Ld, D1Ld, D2Ld, invariants, parameters, periodicity)
+            typeof(_periodicity)
+            }(Ld, D1Ld, D2Ld, invariants, parameters, _periodicity)
     end
 end
 
@@ -131,10 +133,10 @@ function Base.show(io::IO, equation::DELE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::DELE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::DELE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q̄ = _statevariable(ics.q̄),
-        q = _statevariable(ics.q),
+        q̄ = _statevariable(ics.q̄, periodicity(equ)),
+        q = _statevariable(ics.q, periodicity(equ)),
     )
 end
 

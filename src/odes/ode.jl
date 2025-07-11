@@ -70,11 +70,13 @@ struct ODE{vType <: Callable, v̄Type <: OptionalCallable,
         @assert !isempty(methods(v))
         # @assert hasmethod(v, (Real, AbstractArray, AbstractArray, OptionalParameters))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(v), typeof(v̄),
             typeof(invariants),
             typeof(parameters),
-            typeof(periodicity)
-            }(v, v̄, invariants, parameters, periodicity)
+            typeof(_periodicity)
+            }(v, v̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -104,9 +106,9 @@ function Base.show(io::IO, equation::ODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::ODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::ODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
     )
 end
 
@@ -164,7 +166,7 @@ ODEProblem(v, tspan, tstep, ics::NamedTuple; kwargs...)
 ODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
 ODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
 ```
-where `v` is the function computing the vector field, 
+where `v` is the function computing the vector field,
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q` of type `StateVariable`.
@@ -206,9 +208,9 @@ ODEEnsemble(v, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
 ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
 ODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
-where `v` is the function computing the vector field, 
+where `v` is the function computing the vector field,
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`tstep` is the time step to be used in the simulation, and 
+`tstep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with an entry `q`
 of type `StateVariable`.
 The initial condition `q₀` can also be prescribed as an `AbstractVector`

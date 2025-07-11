@@ -95,8 +95,9 @@ struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing}, v̄Typ
 
     function SODE(v, q, v̄, invariants, parameters, periodicity)
         @assert sode_equations_compatibility(v, q)
-        new{typeof(v), typeof(q), typeof(v̄), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, q, v̄, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
+        new{typeof(v), typeof(q), typeof(v̄), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, q, v̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -144,9 +145,9 @@ function Base.show(io::IO, equation::SODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::SODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::SODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
     )
 end
 
@@ -223,7 +224,7 @@ SODEProblem(v, tspan, tstep, q₀::StateVariable; kwargs...)
 SODEProblem(v, tspan, tstep, q₀::AbstractArray; kwargs...)
 ```
 
-where `v` is a tuple of functions computing the vector fields for each substep, 
+where `v` is a tuple of functions computing the vector fields for each substep,
 `q` is an optional tuple of functions computing the solution for each substep,
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and
@@ -232,7 +233,7 @@ The initial condition `q₀` can also be prescribed directly, with
 `StateVariable` an `AbstractArray{<:Number}`.
 
 For possible keyword arguments see the documentation on [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes.
-    
+
 ### Function Definitions
 
 $(sode_functions)
@@ -274,7 +275,7 @@ SODEEnsemble(v, tspan, tstep, ics::AbstractVector{<: NamedTuple}; kwargs...)
 SODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: StateVariable}; kwargs...)
 SODEEnsemble(v, tspan, tstep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
-where `v` is a tuple of functions computing the vector fields for each substep, 
+where `v` is a tuple of functions computing the vector fields for each substep,
 `q` is an optional tuple of functions computing the solution for each substep,
 `tspan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `tstep` is the time step to be used in the simulation, and

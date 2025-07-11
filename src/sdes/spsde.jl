@@ -106,7 +106,7 @@ struct SPSDE{vType <: Callable,
              invType <: OptionalInvariants,
              parType <: OptionalParameters,
              perType <: OptionalPeriodicity} <: AbstractEquationPSDE{invType,parType,perType}
-            
+
     v::vType
     f1::f1Type
     f2::f2Type
@@ -121,9 +121,10 @@ struct SPSDE{vType <: Callable,
     periodicity::perType
 
     function SPSDE(v, f1, f2, B, G1, G2, noise, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
         new{typeof(v), typeof(f1), typeof(f2), typeof(B), typeof(G1), typeof(G2),
-            typeof(noise), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f1, f2, B, G1, G2, noise, invariants, parameters, periodicity)
+            typeof(noise), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, f1, f2, B, G1, G2, noise, invariants, parameters, _periodicity)
     end
 end
 
@@ -154,12 +155,29 @@ function Base.show(io::IO, equation::SPSDE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(equ::SPSDE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+    (
+        q = _statevariable(ics.q, periodicity(equ)),
+        p = _statevariable(ics.p, NullPeriodicity()),
+    )
+end
+
+function initialstate(equ::SPSDE, q₀::InitialState, p₀::InitialState)
+    initialstate(equ, (q = q₀, p = p₀))
+end
+
+function initialstate(equ::SPSDE, q₀::InitialStateVector, p₀::InitialStateVector)
+    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+end
+
 function check_initial_conditions(::SPSDE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
     eltype(ics.q) == eltype(ics.p) || return false
     typeof(ics.q) == typeof(ics.p) || return false
     axes(ics.q) == axes(ics.p) || return false
+    typeof(ics.q) <: StateVariable || return false
+    typeof(ics.p) <: StateVariable || return false
     return true
 end
 

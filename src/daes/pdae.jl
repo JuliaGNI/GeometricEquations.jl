@@ -187,12 +187,14 @@ struct PDAE{vType <: Callable, fType <: Callable,
         @assert !isempty(methods(v̄))
         @assert !isempty(methods(f̄))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(v), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+            typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -228,11 +230,11 @@ function Base.show(io::IO, equation::PDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::PDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::PDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
-    
+
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p),
         λ = _algebraicvariable(ics.λ),
         μ = _algebraicvariable(ics.μ),
@@ -363,7 +365,7 @@ For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ`
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `PDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
 values `v̄ = v` and `f̄ = f`.
-    
+
 ### Function Definitions
 
 $(pdae_functions)
