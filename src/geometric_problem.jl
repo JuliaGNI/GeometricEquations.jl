@@ -30,6 +30,7 @@ hassecondary(prob::GeometricProblem) = hassecondary(equation(prob))
 hasinvariants(prob::GeometricProblem) = hasinvariants(equation(prob))
 hasparameters(prob::GeometricProblem) = hasparameters(equation(prob))
 hasperiodicity(prob::GeometricProblem) = hasperiodicity(equation(prob))
+getperiodicity(prob::GeometricProblem) = getperiodicity(equation(prob))
 
 hashamiltonian(prob::GeometricProblem) = hashamiltonian(equation(prob))
 haslagrangian(prob::GeometricProblem) = haslagrangian(equation(prob))

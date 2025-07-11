@@ -54,6 +54,26 @@ include("initial_conditions.jl")
 
     @test_nowarn funcs.v(zero(x₀), t₀, x₀)
 
+
+    # Test for periodicity
+    sdep = SDE(sde_v, sde_B, TestNoise(); periodicity=([-π,0],[+π,2π]))
+
+    @test periodicity(sdep) == (Float64[-π,0],Float64[+π,2π])
+    @test getperiodicity(sdep) == BitArray([true,true])
+    @test hasperiodicity(sdep) == true
+
+    sdep = SDE(sde_v, sde_B, TestNoise(); periodicity=([-Inf,0],[+Inf,2π]))
+
+    @test periodicity(sdep) == (Float64[-Inf,0],Float64[+Inf,2π])
+    @test getperiodicity(sdep) == BitArray([false,true])
+    @test hasperiodicity(sdep) == true
+
+    sdep = SDE(sde_v, sde_B, TestNoise(); periodicity=([-Inf,-Inf],[+Inf,+Inf]))
+
+    @test periodicity(sdep) == NullPeriodicity()
+    @test ismissing(getperiodicity(sdep))
+    @test hasperiodicity(sdep) == false
+
 end
 
 
@@ -106,6 +126,20 @@ end
 
     @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀)
     @test_nowarn funcs.f(zero(p₀), t₀, q₀, p₀)
+
+
+    # Test for periodicity
+    psdep = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise(); periodicity=([0.0,],[2π]))
+
+    @test periodicity(psdep) == (Float64[0],Float64[2π])
+    @test getperiodicity(psdep) == BitArray([true])
+    @test hasperiodicity(psdep) == true
+
+    psdep = PSDE(psde_v, psde_f, psde_B, psde_G, TestNoise(); periodicity=([-Inf],[+Inf]))
+
+    @test periodicity(psdep) == NullPeriodicity()
+    @test ismissing(getperiodicity(psdep))
+    @test hasperiodicity(psdep) == false
 
 end
 
@@ -161,5 +195,19 @@ end
     @test_nowarn funcs.v(zero(q₀), t₀, q₀, p₀)
     @test_nowarn funcs.f1(zero(p₀), t₀, q₀, p₀, )
     @test_nowarn funcs.f2(zero(p₀), t₀, q₀, p₀, )
+
+
+    # Test for periodicity
+    psdep = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(); periodicity=([0.0,],[2π]))
+
+    @test periodicity(psdep) == (Float64[0],Float64[2π])
+    @test getperiodicity(psdep) == BitArray([true])
+    @test hasperiodicity(psdep) == true
+
+    psdep = SPSDE(spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(); periodicity=([-Inf],[+Inf]))
+
+    @test periodicity(psdep) == NullPeriodicity()
+    @test ismissing(getperiodicity(psdep))
+    @test hasperiodicity(psdep) == false
 
 end

@@ -136,7 +136,7 @@ LODE(ϑ, f, g, ω, l, v̄, f̄, invariants, parameters, periodicity)
 LODE(ϑ, f, g, ω, l; v̄ = _lode_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
-where 
+where
 
 ```julia
 _lode_default_v̄(v, t, q, params) = nothing
@@ -176,9 +176,11 @@ struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable, ωType <: 
         @assert !isempty(methods(f̄))
         @assert !isempty(methods(lagrangian))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(ϑ), typeof(f), typeof(g), typeof(ω), typeof(v̄), typeof(f̄),
-            typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                ϑ, f, g, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+            typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                ϑ, f, g, ω, v̄, f̄, lagrangian, invariants, parameters, _periodicity)
     end
 end
 
@@ -218,8 +220,8 @@ function initialstate(equ::LODE, t::InitialTime, ics::NamedTuple, params::Option
     end
 
     (
-        q = _statevariable(ics.q),
-        p = _statevariable(ics.p),
+        q = _statevariable(ics.q, periodicity(equ)),
+        p = _statevariable(ics.p, NullPeriodicity()),
         v = _algebraicvariable(ics.v),
     )
 end
@@ -384,7 +386,7 @@ a `LODEProblem` accepts functions `v̄` and `f̄` for the computation of initial
 values `v̄ = _lode_default_v̄` and `f̄ = f`.
 
 Initial conditions have to be prescribed for `(q,p)`. If instead initial conditions are available
-only for `(q,v)`, the function `ϑ` can be called to compute the corresponding initial value of `p`.    
+only for `(q,v)`, the function `ϑ` can be called to compute the corresponding initial value of `p`.
 """
 const LODEEnsemble = EnsembleProblem{LODE}
 

@@ -86,7 +86,7 @@ struct HODE{vType <: Callable, fType <: Callable,
             parType <: OptionalParameters,
             perType <: OptionalPeriodicity} <:
        AbstractEquationPODE{invType, parType, perType}
-    
+
     v::vType
     f::fType
     v̄::v̄Type
@@ -98,9 +98,10 @@ struct HODE{vType <: Callable, fType <: Callable,
     periodicity::perType
 
     function HODE(v, f, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
         new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(hamiltonian),
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+            typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, f, v̄, f̄, hamiltonian, invariants, parameters, _periodicity)
     end
 end
 
@@ -131,10 +132,10 @@ function Base.show(io::IO, equation::HODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::HODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::HODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(ics.q),
-        p = _statevariable(ics.p),
+        q = _statevariable(ics.q, periodicity(equ)),
+        p = _statevariable(ics.p, NullPeriodicity()),
     )
 end
 
@@ -205,7 +206,7 @@ HODEProblem(v, f, hamiltonian, timespan, timestep, ics; kwargs...)
 HODEProblem(v, f, hamiltonian, timespan, timestep, q₀::StateVariable, p₀::StateVariable; kwargs...)
 HODEProblem(v, f, hamiltonian, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
 ```
-where `v` and `f` are the function computing the vector fields, 
+where `v` and `f` are the function computing the vector fields,
 `hamiltonian` returns the value of the Hamiltonian (i.e. the total energy),
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `timestep` is the time step to be used in the simulation, and
@@ -251,7 +252,7 @@ HODEEnsemble(v, f, hamiltonian, timespan, timestep, ics::AbstractVector{<: Named
 HODEEnsemble(v, f, hamiltonian, timespan, timestep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
 HODEEnsemble(v, f, hamiltonian, timespan, timestep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
-where `v` and `f` are the function computing the vector fields, 
+where `v` and `f` are the function computing the vector fields,
 `hamiltonian` returns the value of the Hamiltonian (i.e. the total energy),
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `timestep` is the time step to be used in the simulation, and

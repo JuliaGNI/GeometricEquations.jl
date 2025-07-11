@@ -82,8 +82,9 @@ struct PODE{vType <: Callable, fType <: Callable,
     periodicity::perType
 
     function PODE(v, f, v̄, f̄, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, v̄, f̄, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
+        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, f, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -108,10 +109,10 @@ function Base.show(io::IO, equation::PODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::PODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::PODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(ics.q),
-        p = _statevariable(ics.p),
+        q = _statevariable(ics.q, periodicity(equ)),
+        p = _statevariable(ics.p, NullPeriodicity()),
     )
 end
 

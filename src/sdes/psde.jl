@@ -102,9 +102,10 @@ struct PSDE{vType <: Callable,
     periodicity::perType
 
     function PSDE(v, f, B, G, noise, invariants, parameters, periodicity)
-        new{typeof(v), typeof(f), typeof(B), typeof(G), 
-            typeof(noise), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, B, G, noise, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
+        new{typeof(v), typeof(f), typeof(B), typeof(G),
+            typeof(noise), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, f, B, G, noise, invariants, parameters, _periodicity)
     end
 end
 
@@ -133,12 +134,29 @@ function Base.show(io::IO, equation::PSDE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(equ::PSDE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+    (
+        q = _statevariable(ics.q, periodicity(equ)),
+        p = _statevariable(ics.p, NullPeriodicity()),
+    )
+end
+
+function initialstate(equ::PSDE, q₀::InitialState, p₀::InitialState)
+    initialstate(equ, (q = q₀, p = p₀))
+end
+
+function initialstate(equ::PSDE, q₀::InitialStateVector, p₀::InitialStateVector)
+    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+end
+
 function check_initial_conditions(::PSDE, ics::NamedTuple)
     haskey(ics, :q) || return false
     haskey(ics, :p) || return false
     eltype(ics.q) == eltype(ics.p) || return false
     typeof(ics.q) == typeof(ics.p) || return false
     axes(ics.q) == axes(ics.p) || return false
+    typeof(ics.q) <: StateVariable || return false
+    typeof(ics.p) <: StateVariable || return false
     return true
 end
 

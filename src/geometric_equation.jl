@@ -38,16 +38,16 @@ const GEparType{parType,invType,perType} = GeometricEquation{invType,parType,per
 const GEperType{perType,invType,parType} = GeometricEquation{invType,parType,perType} # type alias for dispatch on periodicity type parameter
 
 hasinvariants(::GEinvType{<:NullInvariants}) = false
-hasinvariants(::GEinvType{<:Nothing}) = false
 hasinvariants(::GEinvType{<:NamedTuple}) = true
 
 hasparameters(::GEparType{<:NullParameters}) = false
-hasparameters(::GEparType{<:Nothing}) = false
 hasparameters(::GEparType{<:NamedTuple}) = true
 
 hasperiodicity(::GEperType{<:NullPeriodicity}) = false
-hasperiodicity(::GEperType{<:Nothing}) = false
-hasperiodicity(::GEperType{<:AbstractArray}) = true
+hasperiodicity(::GEperType{<:Tuple{AT,AT}}) where {AT <: AbstractArray} = true
+
+getperiodicity(equ::GEperType{<:NullPeriodicity}) = missing
+getperiodicity(equ::GEperType{<:Tuple{AT,AT}}) where {DT, AT <: AbstractArray{DT}} = BitArray(periodicity(equ)[begin][i] ≠ -DT(Inf) && periodicity(equ)[end][i] ≠ +DT(Inf) for i in eachindex(periodicity(equ)[begin], periodicity(equ)[end]))
 
 const DAEsecType{secType,invType,parType,perType} = DifferentialAlgebraicEquation{invType,parType,perType,secType} # type alias for dispatch on secondary constraint type parameter
 

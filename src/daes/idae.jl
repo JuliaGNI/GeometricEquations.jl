@@ -145,7 +145,7 @@ IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄ = _idae_default_v̄, f̄ = f, invariants
 IDAE(ϑ, f, u, g, ϕ; v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
-where 
+where
 
 ```julia
 _idae_default_v̄(v, t, q, params) = nothing
@@ -193,12 +193,14 @@ struct IDAE{ϑType <: Callable, fType <: Callable,
         @assert !isempty(methods(v̄))
         @assert !isempty(methods(f̄))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(ϑ), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+            typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -244,9 +246,9 @@ function initialstate(equ::IDAE, t::InitialTime, ics::NamedTuple, params::Option
     end
 
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
-    
+
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p),
         v = _algebraicvariable(ics.v),
         λ = _algebraicvariable(ics.λ),
