@@ -70,11 +70,13 @@ struct ODE{vType <: Callable, v̄Type <: OptionalCallable,
         @assert !isempty(methods(v))
         # @assert hasmethod(v, (Real, AbstractArray, AbstractArray, OptionalParameters))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(v), typeof(v̄),
             typeof(invariants),
             typeof(parameters),
-            typeof(periodicity)
-            }(v, v̄, invariants, parameters, periodicity)
+            typeof(_periodicity)
+            }(v, v̄, invariants, parameters, _periodicity)
     end
 end
 
@@ -104,9 +106,9 @@ function Base.show(io::IO, equation::ODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::ODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::ODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
     )
 end
 

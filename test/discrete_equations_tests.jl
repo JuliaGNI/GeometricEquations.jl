@@ -58,4 +58,24 @@ include("initial_conditions.jl")
     # @test_nowarn funcs.D1Ld(zero(x₀), t₀, t₁, x₀, x₁)
     # @test_nowarn funcs.D2Ld(zero(x₀), t₀, t₁, x₀, x₁)
 
+
+    # Test for periodicity
+    delep = DELE(dele_eqs...; periodicity=([-π,0],[+π,2π]))
+
+    @test periodicity(delep) == (Float64[-π,0],Float64[+π,2π])
+    @test getperiodicity(delep) == BitArray([true,true])
+    @test hasperiodicity(delep) == true
+
+    delep = DELE(dele_eqs...; periodicity=([-Inf,0],[+Inf,2π]))
+
+    @test periodicity(delep) == (Float64[-Inf,0],Float64[+Inf,2π])
+    @test getperiodicity(delep) == BitArray([false,true])
+    @test hasperiodicity(delep) == true
+
+    delep = DELE(dele_eqs...; periodicity=([-Inf,-Inf],[+Inf,+Inf]))
+
+    @test periodicity(delep) == NullPeriodicity()
+    @test ismissing(getperiodicity(delep))
+    @test hasperiodicity(delep) == false
+
 end

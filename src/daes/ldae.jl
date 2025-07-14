@@ -159,7 +159,7 @@ LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄
 LDAE(ϑ, f, u, g, ϕ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
-where 
+where
 
 ```julia
 _ldae_default_v̄(v, t, q, params) = nothing
@@ -213,12 +213,14 @@ struct LDAE{ϑType <: Callable, fType <: Callable,
         @assert !isempty(methods(f̄))
         @assert !isempty(methods(lagrangian))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(ϑ), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(ω), typeof(v̄), typeof(f̄),
-            typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+            typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, _periodicity)
     end
 end
 
@@ -267,9 +269,9 @@ function initialstate(equ::LDAE, t::InitialTime, ics::NamedTuple, params::Option
     end
 
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
-    
+
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p),
         v = _algebraicvariable(ics.v),
         λ = _algebraicvariable(ics.λ),
@@ -362,7 +364,7 @@ end
 function _functions(equ::LDAE, params::OptionalParameters)
     if hassecondary(equ)
         (
-            ϑ = _get_ϑ(equ, params), 
+            ϑ = _get_ϑ(equ, params),
             f = _get_f(equ, params),
             u = _get_u(equ, params),
             g = _get_g(equ, params),

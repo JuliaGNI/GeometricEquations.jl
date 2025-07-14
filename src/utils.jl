@@ -8,17 +8,17 @@ const InitialAlgebraicVector = Union{AbstractVector{<:AlgebraicVariable{<:Number
 
 const InitialConditions = Union{NamedTuple, AbstractVector{<:NamedTuple}}
 
-_timevariable(x::TimeVariable) = x
-_timevariable(x::Number) = TimeVariable(x)
+_timevariable(x::TimeVariable, args...) = x
+_timevariable(x::Number, args...) = TimeVariable(x, args...)
 
-_statevariable(x::StateVariable) = x
-_statevariable(x::AbstractArray{<:Number}) = StateVariable(x)
+_statevariable(x::StateVariable, args...) = x
+_statevariable(x::AbstractArray{<:Number}, args...) = StateVariable(x, args...)
 
-_algebraicvariable(x::AlgebraicVariable) = x
-_algebraicvariable(x::AbstractArray{<:Number}) = AlgebraicVariable(x)
+_algebraicvariable(x::AlgebraicVariable, args...) = x
+_algebraicvariable(x::AbstractArray{<:Number}, args...) = AlgebraicVariable(x, args...)
 
-zeroalgebraic(x::AbstractArray{<:Number}) = zero(x)
-zeroalgebraic(x::AbstractStateVariable{<:Number}) = AlgebraicVariable(zero(parent(x)))
+zeroalgebraic(x::AbstractArray{<:Number}, args...) = zero(x)
+zeroalgebraic(x::AbstractStateVariable{<:Number}, args...) = AlgebraicVariable(zero(parent(x)), args...)
 
 function zeroalgebraic(X::InitialStateVector)
     zeroalg = similar(X, typeof(zeroalgebraic(X[begin])))
@@ -49,6 +49,9 @@ function promote_timespan_and_timestep((t1,t2)::Tuple, Δt::Number)
     return (t[1], t[2]), t[3]
 end
 
+promote_periodicity(p::NullPeriodicity) = p
+promote_periodicity(p::Tuple{AT,AT}) where {AT <: AbstractArray} = all(p[begin] .== -Inf) && all(p[end] .== +Inf) ? NullPeriodicity() : p
+promote_periodicity((p1,p2)::Tuple{PT1,PT2}) where {PT1 <: AbstractArray, PT2 <: AbstractArray} = promote_periodicity(promote(p1, p2))
 
 parameter_types(params::NullParameters) = params
 parameter_types(params::NamedTuple) = NamedTuple{keys(params)}(typeof.(values(params)))

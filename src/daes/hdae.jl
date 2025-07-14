@@ -59,7 +59,7 @@ end
 ```
 where `t` is the current time, `q`, `p`, `λ` and `μ` are the current solution vectors,
 `v`, `f`, `u` and `g` are the vectors which hold the result of evaluating the
-vector fields ``v`` and ``f``, the projections on the primary constraint ``u`` and ``g``, 
+vector fields ``v`` and ``f``, the projections on the primary constraint ``u`` and ``g``,
 `ϕ` holds the algebraic constraint ``\phi``, and `h` returns the Hamiltonian of the system,
 all evaluated on `t`, `q`, `p` and `λ`.
 
@@ -188,12 +188,14 @@ struct HDAE{vType <: Callable, fType <: Callable,
         @assert !isempty(methods(f̄))
         @assert !isempty(methods(hamiltonian))
 
+        _periodicity = promote_periodicity(periodicity)
+
         new{typeof(v), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
-            typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+            typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, _periodicity)
     end
 end
 
@@ -232,11 +234,11 @@ function Base.show(io::IO, equation::HDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(::HDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(equ::HDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
-    
+
     (
-        q = _statevariable(ics.q),
+        q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p),
         λ = _algebraicvariable(ics.λ),
         μ = _algebraicvariable(ics.μ),

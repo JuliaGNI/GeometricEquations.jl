@@ -113,7 +113,7 @@ IODE(ϑ, f, g, v̄, f̄, invariants, parameters, periodicity)
 IODE(ϑ, f, g; v̄ = _iode_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
-where 
+where
 
 ```julia
 _iode_default_v̄(v, t, q, params) = nothing
@@ -132,7 +132,7 @@ struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
             parType <: OptionalParameters,
             perType <: OptionalPeriodicity} <:
        AbstractEquationPODE{invType, parType, perType}
-    
+
     ϑ::ϑType
     f::fType
     g::gType
@@ -144,11 +144,12 @@ struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
     periodicity::perType
 
     function IODE(ϑ, f, g, v̄, f̄, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
         new{typeof(ϑ), typeof(f), typeof(g), typeof(v̄), typeof(f̄),
-            typeof(invariants), typeof(parameters), typeof(periodicity)}(ϑ, f, g, v̄, f̄,
+            typeof(invariants), typeof(parameters), typeof(_periodicity)}(ϑ, f, g, v̄, f̄,
                                                                          invariants,
                                                                          parameters,
-                                                                         periodicity)
+                                                                         _periodicity)
     end
 end
 
@@ -188,8 +189,8 @@ function initialstate(equ::IODE, t::InitialTime, ics::NamedTuple, params::Option
     end
 
     (
-        q = _statevariable(ics.q),
-        p = _statevariable(ics.p),
+        q = _statevariable(ics.q, periodicity(equ)),
+        p = _statevariable(ics.p, NullPeriodicity()),
         v = _algebraicvariable(ics.v),
     )
 end
@@ -264,7 +265,7 @@ _initialguess(equ::IODE, params::OptionalParameters) = (v = _get_v̄(equ, params
 
 @doc """
 `IODEProblem`: Implicit Ordinary Differential Equation Problem
- 
+
 $(iode_equations)
 
 The dynamical variables ``(q,p)`` with initial conditions ``(q(t_{0}) = q_{0}, p(t_{0}) = p_{0})``
@@ -322,7 +323,7 @@ end
 
 @doc """
 `IODEEnsemble`: Implicit Ordinary Differential Equation Ensemble
- 
+
 $(iode_equations)
 
 The dynamical variables ``(q,p)`` take values in ``\\mathbb{R}^{d} \\times \\mathbb{R}^{d}``.

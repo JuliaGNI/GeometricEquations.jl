@@ -82,8 +82,9 @@ struct SDE{vType <: Callable,
     periodicity::perType
 
     function SDE(v, B, noise, invariants, parameters, periodicity)
-        new{typeof(v), typeof(B), typeof(noise), typeof(invariants), typeof(parameters), typeof(periodicity)}(
-                v, B, noise, invariants, parameters, periodicity)
+        _periodicity = promote_periodicity(periodicity)
+        new{typeof(v), typeof(B), typeof(noise), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+                v, B, noise, invariants, parameters, _periodicity)
     end
 end
 
@@ -110,8 +111,23 @@ function Base.show(io::IO, equation::SDE)
     print(io, "   ", invariants(equation))
 end
 
+function initialstate(equ::SDE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+    (
+        q = _statevariable(ics.q, periodicity(equ)),
+    )
+end
+
+function initialstate(equ::SDE, q₀::InitialState)
+    initialstate(equ, (q = q₀,))
+end
+
+function initialstate(equ::SDE, q₀::InitialStateVector)
+    [initialstate(equ, q) for q in q₀]
+end
+
 function check_initial_conditions(::SDE, ics::NamedTuple)
     haskey(ics, :q) || return false
+    typeof(ics.q) <: StateVariable || return false
     return true
 end
 
