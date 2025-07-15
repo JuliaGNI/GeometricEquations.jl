@@ -45,7 +45,6 @@ end
 ```
 """
 
-
 @doc """
 `PSDE`: Stratonovich Partitioned Stochastic Differential Equation
 
@@ -82,18 +81,21 @@ $(psde_functions)
 
 """
 struct PSDE{vType <: Callable,
-            fType <: Callable,
-            BType <: Callable,
-            GType <: Callable,
-            nType <: AbstractStochasticProcess,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPSDE{invType,parType,perType}
-
+    fType <: Callable,
+    BType <: Callable,
+    GType <: Callable,
+    v̄Type <: Callable,
+    f̄Type <: Callable,
+    nType <: AbstractStochasticProcess,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <: AbstractEquationPSDE{invType, parType, perType}
     v::vType
     f::fType
     B::BType
     G::GType
+    v̄::v̄Type
+    f̄::f̄Type
 
     noise::nType
 
@@ -101,15 +103,18 @@ struct PSDE{vType <: Callable,
     parameters::parType
     periodicity::perType
 
-    function PSDE(v, f, B, G, noise, invariants, parameters, periodicity)
+    function PSDE(v, f, B, G, v̄, f̄, noise, invariants, parameters, periodicity)
         _periodicity = promote_periodicity(periodicity)
-        new{typeof(v), typeof(f), typeof(B), typeof(G),
+        new{typeof(v), typeof(f), typeof(B), typeof(G), typeof(v̄), typeof(f̄),
             typeof(noise), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, f, B, G, noise, invariants, parameters, _periodicity)
+            v, f, B, G, v̄, f̄, noise, invariants, parameters, _periodicity)
     end
 end
 
-PSDE(v, f, B, G, noise; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PSDE(v, f, B, G, noise, invariants, parameters, periodicity)
+function PSDE(v, f, B, G, noise; v̄ = v, f̄ = f, invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    PSDE(v, f, B, G, v̄, f̄, noise, invariants, parameters, periodicity)
+end
 
 GeometricBase.invariants(equation::PSDE) = equation.invariants
 GeometricBase.parameters(equation::PSDE) = equation.parameters
@@ -134,10 +139,11 @@ function Base.show(io::IO, equation::PSDE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::PSDE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::PSDE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
         q = _statevariable(ics.q, periodicity(equ)),
-        p = _statevariable(ics.p, NullPeriodicity()),
+        p = _statevariable(ics.p, NullPeriodicity())
     )
 end
 
@@ -146,7 +152,7 @@ function initialstate(equ::PSDE, q₀::InitialState, p₀::InitialState)
 end
 
 function initialstate(equ::PSDE, q₀::InitialStateVector, p₀::InitialStateVector)
-    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+    [initialstate(equ, q, p) for (q, p) in zip(q₀, p₀)]
 end
 
 function check_initial_conditions(::PSDE, ics::NamedTuple)
@@ -176,17 +182,34 @@ function GeometricBase.arrtype(equ::PSDE, ics::NamedTuple)
     typeof(ics.q)
 end
 
-_get_v(equ::PSDE, params) = hasparameters(equ) ? (v, t, q, p) -> equ.v(v, t, q, p, params) : equ.v
-_get_f(equ::PSDE, params) = hasparameters(equ) ? (f, t, q, p) -> equ.f(f, t, q, p, params) : equ.f
-_get_B(equ::PSDE, params) = hasparameters(equ) ? (B, t, q, p) -> equ.B(B, t, q, p, params) : equ.B
-_get_G(equ::PSDE, params) = hasparameters(equ) ? (G, t, q, p) -> equ.G(G, t, q, p, params) : equ.G
-_get_v̄(equ::PSDE, params) = _get_v(equ, params)
-_get_f̄(equ::PSDE, params) = _get_f(equ, params)
+function _get_v(equ::PSDE, params)
+    hasparameters(equ) ? (v, t, q, p) -> equ.v(v, t, q, p, params) : equ.v
+end
+function _get_f(equ::PSDE, params)
+    hasparameters(equ) ? (f, t, q, p) -> equ.f(f, t, q, p, params) : equ.f
+end
+function _get_B(equ::PSDE, params)
+    hasparameters(equ) ? (B, t, q, p) -> equ.B(B, t, q, p, params) : equ.B
+end
+function _get_G(equ::PSDE, params)
+    hasparameters(equ) ? (G, t, q, p) -> equ.G(G, t, q, p, params) : equ.G
+end
+function _get_v̄(equ::PSDE, params)
+    hasparameters(equ) ? (v, t, q, p) -> equ.v̄(v, t, q, p, params) : equ.v̄
+end
+function _get_f̄(equ::PSDE, params)
+    hasparameters(equ) ? (f, t, q, p) -> equ.f̄(f, t, q, p, params) : equ.f̄
+end
 _get_invariant(::PSDE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
-_functions(equ::PSDE) = (v = equ.v, f = equ.f, B = equ.B, G = equ.G)
-_functions(equ::PSDE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), B = _get_B(equ, params), G = _get_G(equ, params))
-
+function _functions(equ::PSDE)
+    (v = equ.v, f = equ.f, B = equ.B, G = equ.G, v̄ = equ.v̄, f̄ = equ.f̄)
+end
+function _functions(equ::PSDE, params::OptionalParameters)
+    (v = _get_v(equ, params), f = _get_f(equ, params),
+        B = _get_B(equ, params), G = _get_G(equ, params),
+        v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+end
 
 @doc """
 `PSDEProblem`: Stratonovich Partitioned Stochastic Differential Equation Problem
@@ -216,16 +239,13 @@ $(psde_functions)
 """
 const PSDEProblem = EquationProblem{PSDE}
 
-function PSDEProblem(v, f, B, G, noise, timespan, timestep, ics::NamedTuple;
-                     invariants = NullInvariants(), parameters = NullParameters(),
-                     periodicity = NullPeriodicity())
-    equ = PSDE(v, f, B, G, noise, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, timespan, timestep, ics, parameters)
-end
-
-function PSDEProblem(v, f, B, G, noise, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
-    ics = (q = StateVariable(q₀), p = StateVariable(p₀))
-    PSDEProblem(v, f, B, G, noise, timespan, timestep, ics; kwargs...)
+function PSDEProblem(
+        v, f, B, G, noise, timespan, timestep, ics...; v̄ = v, f̄ = f,
+        invariants = NullInvariants(), parameters = NullParameters(),
+        periodicity = NullPeriodicity())
+    equ = PSDE(
+        v, f, B, G, v̄, f̄, noise, invariants, parameter_types(parameters), periodicity)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 function GeometricBase.periodicity(prob::PSDEProblem)
