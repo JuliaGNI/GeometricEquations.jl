@@ -33,7 +33,6 @@ end
 ```
 """
 
-
 @doc """
 `SDE`: Stratonovich Stochastic Differential Equation
 
@@ -66,14 +65,15 @@ $(sde_functions)
 
 """
 struct SDE{vType <: Callable,
-           BType <: Callable,
-           nType <: AbstractStochasticProcess,
-           invType <: OptionalInvariants,
-           parType <: OptionalParameters,
-           perType <: OptionalPeriodicity} <: AbstractEquationSDE{invType,parType,perType}
-
+    BType <: Callable,
+    v̄Type <: Callable,
+    nType <: AbstractStochasticProcess,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <: AbstractEquationSDE{invType, parType, perType}
     v::vType
     B::BType
+    v̄::v̄Type
 
     noise::nType
 
@@ -81,14 +81,18 @@ struct SDE{vType <: Callable,
     parameters::parType
     periodicity::perType
 
-    function SDE(v, B, noise, invariants, parameters, periodicity)
+    function SDE(v, B, v̄, noise, invariants, parameters, periodicity)
         _periodicity = promote_periodicity(periodicity)
-        new{typeof(v), typeof(B), typeof(noise), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, B, noise, invariants, parameters, _periodicity)
+        new{typeof(v), typeof(B), typeof(v̄), typeof(noise), typeof(invariants),
+            typeof(parameters), typeof(_periodicity)}(
+            v, B, v̄, noise, invariants, parameters, _periodicity)
     end
 end
 
-SDE(v, B, noise; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SDE(v, B, noise, invariants, parameters, periodicity)
+function SDE(v, B, noise; v̄ = v, invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    SDE(v, B, v̄, noise, invariants, parameters, periodicity)
+end
 
 GeometricBase.invariants(equation::SDE) = equation.invariants
 GeometricBase.parameters(equation::SDE) = equation.parameters
@@ -149,12 +153,13 @@ end
 
 _get_v(equ::SDE, params) = (v, t, q) -> equ.v(v, t, q, params)
 _get_B(equ::SDE, params) = (B, t, q) -> equ.B(B, t, q, params)
-_get_v̄(equ::SDE, params) = _get_v(equ, params)
+_get_v̄(equ::SDE, params) = (v, t, q) -> equ.v̄(v, t, q, params)
 _get_invariant(::SDE, inv, params) = (t, q) -> inv(t, q, params)
 
-_functions(equ::SDE) = (v = equ.v, B = equ.B)
-_functions(equ::SDE, params::OptionalParameters) = (v = _get_v(equ, params), B = _get_B(equ, params))
-
+_functions(equ::SDE) = (v = equ.v, B = equ.B, v̄ = equ.v̄)
+function _functions(equ::SDE, params::OptionalParameters)
+    (v = _get_v(equ, params), B = _get_B(equ, params), v̄ = _get_v̄(equ, params))
+end
 
 @doc """
 `SDEProblem`: Stratonovich Stochastic Differential Equation Problem
@@ -183,15 +188,12 @@ $(sde_functions)
 """
 const SDEProblem = EquationProblem{SDE}
 
-function SDEProblem(v, B, noise, timespan, timestep, ics::NamedTuple; invariants = NullInvariants(),
-                    parameters = NullParameters(), periodicity = NullPeriodicity())
-    equ = SDE(v, B, noise, invariants, parameter_types(parameters), periodicity)
-    EquationProblem(equ, timespan, timestep, ics, parameters)
-end
-
-function SDEProblem(v, B, noise, timespan, timestep, q₀::AbstractArray; kwargs...)
-    ics = (q = StateVariable(q₀),)
-    SDEProblem(v, B, noise, timespan, timestep, ics; kwargs...)
+function SDEProblem(
+        v, B, noise, timespan, timestep, ics...; v̄ = v,
+        invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    equ = SDE(v, B, v̄, noise, invariants, parameter_types(parameters), periodicity)
+    EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)),)
