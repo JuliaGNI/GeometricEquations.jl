@@ -88,7 +88,6 @@ end
 ```
 """
 
-
 @doc """
 `PDAE`: Partitioned Differential Algebraic Equation
 
@@ -153,13 +152,13 @@ equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ)
 ```
 """
 struct PDAE{vType <: Callable, fType <: Callable,
-            uType <: Callable, gType <: Callable, ϕType <: Callable,
-            ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
-            v̄Type <: Callable, f̄Type <: Callable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
-
+    uType <: Callable, gType <: Callable, ϕType <: Callable,
+    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+    v̄Type <: Callable, f̄Type <: Callable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <:
+       AbstractEquationPDAE{invType, parType, perType, ψType}
     v::vType
     f::fType
     u::uType
@@ -194,12 +193,17 @@ struct PDAE{vType <: Callable, fType <: Callable,
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
+            v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄=v, f̄=f, kwargs...) = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
+function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+end
+function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄ = v, f̄ = f, kwargs...)
+    PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
+end
 PDAE(v, f, u, g, ϕ; kwargs...) = PDAE(v, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::PDAE) = equation.invariants
@@ -207,7 +211,11 @@ GeometricBase.parameters(equation::PDAE) = equation.parameters
 GeometricBase.periodicity(equation::PDAE) = equation.periodicity
 
 hasvectorfield(::PDAE) = true
-hasinitialguess(::PDAE{vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable, <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType} = true
+function hasinitialguess(::PDAE{
+        vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable,
+        <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType}
+    true
+end
 
 function Base.show(io::IO, equation::PDAE)
     print(io, "Partitioned Differential Algebraic Equation (PDAE)", "\n")
@@ -230,23 +238,26 @@ function Base.show(io::IO, equation::PDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::PDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::PDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
 
     (
         q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p),
         λ = _algebraicvariable(ics.λ),
-        μ = _algebraicvariable(ics.μ),
+        μ = _algebraicvariable(ics.μ)
     )
 end
 
-function initialstate(equ::PDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+function initialstate(equ::PDAE, q₀::InitialState, p₀::InitialState,
+        λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
     initialstate(equ, (q = q₀, p = p₀, λ = λ₀, μ = μ₀))
 end
 
-function initialstate(equ::PDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [initialstate(equ, q, p, λ, μ) for (q,p,λ,μ) in zip(q₀,p₀,λ₀,μ₀)]
+function initialstate(equ::PDAE, q₀::InitialStateVector, p₀::InitialStateVector,
+        λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, p, λ, μ) for (q, p, λ, μ) in zip(q₀, p₀, λ₀, μ₀)]
 end
 
 function check_initial_conditions(equ::PDAE, ics::NamedTuple)
@@ -265,14 +276,26 @@ end
 function check_methods(equ::PDAE, timespan, ics::NamedTuple, params)
     applicable(equ.v, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
-    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
+    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
     applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, ics.p, params) || return false
-    equ.ū === nothing || applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    equ.ū === nothing ||
+        applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
+    equ.ḡ === nothing ||
+        applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
+    equ.ψ === nothing ||
+        applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.p,
+            vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.f̄ === nothing ||
+        applicable(equ.f̄, zero(ics.p), timespan[begin], ics.q, ics.p, params) ||
+        return false
     return true
 end
 
@@ -286,21 +309,22 @@ function GeometricBase.arrtype(equ::PDAE, ics::NamedTuple)
     return typeof(ics.q)
 end
 
-_get_v(equ::PDAE, params) = (v, t, q, p)       -> equ.v(v, t, q, p, params)
-_get_f(equ::PDAE, params) = (f, t, q, p)       -> equ.f(f, t, q, p, params)
-_get_u(equ::PDAE, params) = (u, t, q, p, λ)    -> equ.u(u, t, q, p, λ, params)
-_get_g(equ::PDAE, params) = (g, t, q, p, λ)    -> equ.g(g, t, q, p, λ, params)
-_get_ϕ(equ::PDAE, params) = (ϕ, t, q, p)       -> equ.ϕ(ϕ, t, q, p, params)
-_get_ū(equ::PDAE, params) = (u, t, q, p, λ)    -> equ.ū(u, t, q, p, λ, params)
-_get_ḡ(equ::PDAE, params) = (g, t, q, p, λ)    -> equ.ḡ(g, t, q, p, λ, params)
+_get_v(equ::PDAE, params) = (v, t, q, p) -> equ.v(v, t, q, p, params)
+_get_f(equ::PDAE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
+_get_u(equ::PDAE, params) = (u, t, q, p, λ) -> equ.u(u, t, q, p, λ, params)
+_get_g(equ::PDAE, params) = (g, t, q, p, λ) -> equ.g(g, t, q, p, λ, params)
+_get_ϕ(equ::PDAE, params) = (ϕ, t, q, p) -> equ.ϕ(ϕ, t, q, p, params)
+_get_ū(equ::PDAE, params) = (u, t, q, p, λ) -> equ.ū(u, t, q, p, λ, params)
+_get_ḡ(equ::PDAE, params) = (g, t, q, p, λ) -> equ.ḡ(g, t, q, p, λ, params)
 _get_ψ(equ::PDAE, params) = (ψ, t, q, p, v, f) -> equ.ψ(ψ, t, q, p, v, f, params)
-_get_v̄(equ::PDAE, params) = (v, t, q, p)       -> equ.v̄(v, t, q, p, params)
-_get_f̄(equ::PDAE, params) = (f, t, q, p)       -> equ.f̄(f, t, q, p, params)
+_get_v̄(equ::PDAE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
+_get_f̄(equ::PDAE, params) = (f, t, q, p) -> equ.f̄(f, t, q, p, params)
 _get_invariant(::PDAE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 function _functions(equ::PDAE)
     if hassecondary(equ)
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g,
+            ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
     else
         (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ)
     end
@@ -332,8 +356,9 @@ function _functions(equ::PDAE, params::OptionalParameters)
 end
 
 _initialguess(equ::PDAE) = (v = equ.v̄, f = equ.f̄)
-_initialguess(equ::PDAE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
-
+function _initialguess(equ::PDAE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+end
 
 @doc """
 `PDAEProblem`: Partitioned Differential Algebraic Equation Problem
@@ -389,12 +414,13 @@ prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀, p₀,
 """
 const PDAEProblem = EquationProblem{PDAE}
 
-function PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
+function PDAEProblem(
+        v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
     equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄,
-               invariants, parameter_types(parameters), periodicity)
+        invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
@@ -408,14 +434,20 @@ end
 
 @inline GeometricBase.nconstraints(prob::PDAEProblem) = length(initial_conditions(prob).λ)
 
+function compute_vectorfields!(vecfield, sol, prob::PDAEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+end
 
-const PDAEEnsemble  = EnsembleProblem{PDAE}
+const PDAEEnsemble = EnsembleProblem{PDAE}
 
-function PDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
+function PDAEEnsemble(
+        v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
+    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants,
+        parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 

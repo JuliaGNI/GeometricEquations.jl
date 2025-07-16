@@ -80,11 +80,11 @@ SODE(v, q; invariants=NullInvariants(), parameters=NullParameters(), periodicity
 $(sode_functions)
 
 """
-struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing}, v̄Type <: OptionalCallable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationODE{invType,parType,perType}
-
+struct SODE{vType <: Union{Tuple, Nothing},
+    qType <: Union{Tuple, Nothing}, v̄Type <: OptionalCallable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <: AbstractEquationODE{invType, parType, perType}
     v::vType
     q::qType
     v̄::v̄Type
@@ -96,14 +96,18 @@ struct SODE{vType <: Union{Tuple,Nothing}, qType <: Union{Tuple,Nothing}, v̄Typ
     function SODE(v, q, v̄, invariants, parameters, periodicity)
         @assert sode_equations_compatibility(v, q)
         _periodicity = promote_periodicity(periodicity)
-        new{typeof(v), typeof(q), typeof(v̄), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, q, v̄, invariants, parameters, _periodicity)
+        new{typeof(v), typeof(q), typeof(v̄), typeof(invariants),
+            typeof(parameters), typeof(_periodicity)}(
+            v, q, v̄, invariants, parameters, _periodicity)
     end
 end
 
 _sode_default_v̄(v, t, q, params) = nothing
 
-SODE(v, q=nothing; v̄ = _sode_default_v̄, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = SODE(v, q, v̄, invariants, parameters, periodicity)
+function SODE(v, q = nothing; v̄ = _sode_default_v̄, invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    SODE(v, q, v̄, invariants, parameters, periodicity)
+end
 
 GeometricBase.invariants(equation::SODE) = equation.invariants
 GeometricBase.parameters(equation::SODE) = equation.parameters
@@ -112,8 +116,8 @@ GeometricBase.periodicity(equation::SODE) = equation.periodicity
 GeometricBase.nsteps(equ::SODE{<:Nothing}) = length(equ.q)
 GeometricBase.nsteps(equ::SODE) = length(equ.v)
 
-const SODEQT{QT,VT,invT,parT,perT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on solution type parameter
-const SODEVT{VT,QT,invT,parT,perT} = SODE{VT,QT,invT,parT,perT} # type alias for dispatch on vector field type parameter
+const SODEQT{QT, VT, invT, parT, perT} = SODE{VT, QT, invT, parT, perT} # type alias for dispatch on solution type parameter
+const SODEVT{VT, QT, invT, parT, perT} = SODE{VT, QT, invT, parT, perT} # type alias for dispatch on vector field type parameter
 
 hassolution(::SODEQT{<:Nothing}) = false
 hassolution(::SODEQT{<:Tuple}) = true # && all(typeof(Q) <: Functiong for Q in equ.q)
@@ -127,8 +131,8 @@ hasvectorfield(::SODEVT{<:Tuple}) = true # && all(typeof(V) <: Function for V in
 hasvectorfield(::SODEVT{<:Nothing}, i::Int) = false
 hasvectorfield(equ::SODEVT{<:Tuple}, i::Int) = i ≤ length(equ.v)# && typeof(equ.v[i]) <: Function
 
-hasinitialguess(::SODE{vType, qType, <:Callable}) where {vType,qType} = true
-hasinitialguess(::SODE{vType, qType, <:Nothing}) where {vType,qType} = false
+hasinitialguess(::SODE{vType, qType, <:Callable}) where {vType, qType} = true
+hasinitialguess(::SODE{vType, qType, <:Nothing}) where {vType, qType} = false
 
 function Base.show(io::IO, equation::SODE)
     print(io, "Split Ordinary Differential Equation (SODE)", "\n")
@@ -145,7 +149,8 @@ function Base.show(io::IO, equation::SODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::SODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::SODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
         q = _statevariable(ics.q, periodicity(equ)),
     )
@@ -168,12 +173,15 @@ end
 function check_methods(equ::SODE, timespan, ics, params)
     if hasvectorfield(equ)
         for v in equ.v
-            applicable(v, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
+            applicable(v, vectorfield(ics.q), timespan[begin], ics.q, params) ||
+                return false
         end
     end
     if hassolution(equ)
         for q in equ.q
-            applicable(q, vectorfield(ics.q), timespan[end], ics.q, timespan[begin], params) || return false
+            applicable(
+                q, vectorfield(ics.q), timespan[end], ics.q, timespan[begin], params) ||
+                return false
         end
     end
     applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
@@ -204,7 +212,6 @@ _solutions(equ::SODE, params::OptionalParameters) = (q = _get_q(equ, params),)
 
 _initialguess(equ::SODE) = (v = equ.v̄,)
 _initialguess(equ::SODE, params::OptionalParameters) = (v = _get_v̄(equ, params),)
-
 
 @doc """
 `SODEProblem`: Split Ordinary Differential Equation Problem
@@ -241,7 +248,8 @@ $(sode_functions)
 """
 const SODEProblem = EquationProblem{SODE}
 
-function SODEProblem(v::Tuple, q::Union{Tuple, Nothing}, timespan::Tuple, timestep::Real, ics...;
+function SODEProblem(
+        v::Tuple, q::Union{Tuple, Nothing}, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
@@ -257,6 +265,9 @@ end
 GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))
 GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)
 
+function compute_vectorfields!(vecfield, sol, prob::SODEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+end
 
 @doc """
 `SODEEnsemble`: Split Ordinary Differential Equation Ensemble
@@ -288,7 +299,7 @@ For the interface of the functions `v` and `q` see [`SODE`](@ref).
 For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref GeometricEquations.EnsembleProblem) subtypes.
 
 """
-const SODEEnsemble  = EnsembleProblem{SODE}
+const SODEEnsemble = EnsembleProblem{SODE}
 
 function SODEEnsemble(v, q, timespan::Tuple, timestep::Real, ics...;
         invariants = NullInvariants(),

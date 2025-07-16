@@ -99,6 +99,8 @@ GeometricBase.parameters(equation::SDE) = equation.parameters
 GeometricBase.periodicity(equation::SDE) = equation.periodicity
 
 hasvectorfield(::SDE) = true
+hasinitialguess(::SDE{vType, BType, <:Callable}) where {vType, BType} = true
+hasinitialguess(::SDE{vType, BType, <:Nothing}) where {vType, BType} = false
 
 function Base.show(io::IO, equation::SDE)
     print(io, "Stratonovich Stochastic Differential Equation (SDE)", "\n")
@@ -156,10 +158,12 @@ _get_B(equ::SDE, params) = (B, t, q) -> equ.B(B, t, q, params)
 _get_v̄(equ::SDE, params) = (v, t, q) -> equ.v̄(v, t, q, params)
 _get_invariant(::SDE, inv, params) = (t, q) -> inv(t, q, params)
 
-_functions(equ::SDE) = (v = equ.v, B = equ.B, v̄ = equ.v̄)
+_functions(equ::SDE) = (v = equ.v, B = equ.B)
 function _functions(equ::SDE, params::OptionalParameters)
-    (v = _get_v(equ, params), B = _get_B(equ, params), v̄ = _get_v̄(equ, params))
+    (v = _get_v(equ, params), B = _get_B(equ, params))
 end
+_initialguess(equ::SDE) = (v = equ.v̄,)
+_initialguess(equ::SDE, params::OptionalParameters) = (v = _get_v̄(equ, params),)
 
 @doc """
 `SDEProblem`: Stratonovich Stochastic Differential Equation Problem
@@ -198,5 +202,8 @@ end
 
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)),)
 
+function compute_vectorfields!(vecfield, sol, prob::SDEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+end
 
 const SDEEnsemble = EnsembleProblem{SDE}

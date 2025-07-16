@@ -84,7 +84,6 @@ end
 ```
 """
 
-
 @doc """
 `HDAE`: Hamiltonian Differential Algebraic Equation
 
@@ -151,14 +150,14 @@ equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, h)
 ```
 """
 struct HDAE{vType <: Callable, fType <: Callable,
-            uType <: Callable, gType <: Callable, ϕType <: Callable,
-            ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
-            v̄Type <: Callable, f̄Type <: Callable,
-            hamType <: Callable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
-
+    uType <: Callable, gType <: Callable, ϕType <: Callable,
+    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+    v̄Type <: Callable, f̄Type <: Callable,
+    hamType <: Callable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <:
+       AbstractEquationPDAE{invType, parType, perType, ψType}
     v::vType
     f::fType
     u::uType
@@ -175,7 +174,8 @@ struct HDAE{vType <: Callable, fType <: Callable,
     parameters::parType
     periodicity::perType
 
-    function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+    function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian,
+            invariants, parameters, periodicity)
         @assert !isempty(methods(v))
         @assert !isempty(methods(f))
         @assert !isempty(methods(u))
@@ -195,13 +195,21 @@ struct HDAE{vType <: Callable, fType <: Callable,
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
             typeof(hamiltonian), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, _periodicity)
+            v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian,
+            invariants, parameters, _periodicity)
     end
 end
 
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
-HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian; v̄=v, f̄=f, kwargs...) = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian; kwargs...)
-HDAE(v, f, u, g, ϕ, hamiltonian; kwargs...) = HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian; kwargs...)
+function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian; invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
+end
+function HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian; v̄ = v, f̄ = f, kwargs...)
+    HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian; kwargs...)
+end
+function HDAE(v, f, u, g, ϕ, hamiltonian; kwargs...)
+    HDAE(v, f, u, g, ϕ, nothing, nothing, nothing, hamiltonian; kwargs...)
+end
 
 GeometricBase.invariants(equation::HDAE) = equation.invariants
 GeometricBase.parameters(equation::HDAE) = equation.parameters
@@ -209,7 +217,11 @@ GeometricBase.periodicity(equation::HDAE) = equation.periodicity
 
 hasvectorfield(::HDAE) = true
 hashamiltonian(::HDAE) = true
-hasinitialguess(::HDAE{vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable, <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType} = true
+function hasinitialguess(::HDAE{
+        vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable,
+        <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType}
+    true
+end
 
 function Base.show(io::IO, equation::HDAE)
     print(io, "Hamiltonian Differential Algebraic Equation (HDAE)", "\n")
@@ -234,23 +246,26 @@ function Base.show(io::IO, equation::HDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::HDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::HDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     ics = haskey(ics, :μ) ? ics : merge(ics, (μ = zeroalgebraic(ics.λ),))
 
     (
         q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p),
         λ = _algebraicvariable(ics.λ),
-        μ = _algebraicvariable(ics.μ),
+        μ = _algebraicvariable(ics.μ)
     )
 end
 
-function initialstate(equ::HDAE, q₀::InitialState, p₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+function initialstate(equ::HDAE, q₀::InitialState, p₀::InitialState,
+        λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
     initialstate(equ, (q = q₀, p = p₀, λ = λ₀, μ = μ₀))
 end
 
-function initialstate(equ::HDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [initialstate(equ, q, p, λ, μ) for (q,p,λ,μ) in zip(q₀,p₀,λ₀,μ₀)]
+function initialstate(equ::HDAE, q₀::InitialStateVector, p₀::InitialStateVector,
+        λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, p, λ, μ) for (q, p, λ, μ) in zip(q₀, p₀, λ₀, μ₀)]
 end
 
 function check_initial_conditions(equ::HDAE, ics::NamedTuple)
@@ -269,15 +284,27 @@ end
 function check_methods(equ::HDAE, timespan, ics::NamedTuple, params)
     applicable(equ.v, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
     applicable(equ.f, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
-    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
+    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
+    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
     applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, ics.p, params) || return false
     applicable(equ.hamiltonian, timespan[begin], ics.q, ics.p, params) || return false
-    equ.ū === nothing || applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    equ.ū === nothing ||
+        applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
+    equ.ḡ === nothing ||
+        applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+        return false
+    equ.ψ === nothing ||
+        applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.p,
+            vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.f̄ === nothing ||
+        applicable(equ.f̄, zero(ics.p), timespan[begin], ics.q, ics.p, params) ||
+        return false
     return true
 end
 
@@ -291,22 +318,23 @@ function GeometricBase.arrtype(equ::HDAE, ics::NamedTuple)
     return typeof(ics.q)
 end
 
-_get_v(equ::HDAE, params) = (v, t, q, p)       -> equ.v(v, t, q, p, params)
-_get_f(equ::HDAE, params) = (f, t, q, p)       -> equ.f(f, t, q, p, params)
-_get_u(equ::HDAE, params) = (u, t, q, p, λ)    -> equ.u(u, t, q, p, λ, params)
-_get_g(equ::HDAE, params) = (g, t, q, p, λ)    -> equ.g(g, t, q, p, λ, params)
-_get_ϕ(equ::HDAE, params) = (ϕ, t, q, p)       -> equ.ϕ(ϕ, t, q, p, params)
-_get_ū(equ::HDAE, params) = (u, t, q, p, λ)    -> equ.ū(u, t, q, p, λ, params)
-_get_ḡ(equ::HDAE, params) = (g, t, q, p, λ)    -> equ.ḡ(g, t, q, p, λ, params)
+_get_v(equ::HDAE, params) = (v, t, q, p) -> equ.v(v, t, q, p, params)
+_get_f(equ::HDAE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
+_get_u(equ::HDAE, params) = (u, t, q, p, λ) -> equ.u(u, t, q, p, λ, params)
+_get_g(equ::HDAE, params) = (g, t, q, p, λ) -> equ.g(g, t, q, p, λ, params)
+_get_ϕ(equ::HDAE, params) = (ϕ, t, q, p) -> equ.ϕ(ϕ, t, q, p, params)
+_get_ū(equ::HDAE, params) = (u, t, q, p, λ) -> equ.ū(u, t, q, p, λ, params)
+_get_ḡ(equ::HDAE, params) = (g, t, q, p, λ) -> equ.ḡ(g, t, q, p, λ, params)
 _get_ψ(equ::HDAE, params) = (ψ, t, q, p, v, f) -> equ.ψ(ψ, t, q, p, v, f, params)
-_get_v̄(equ::HDAE, params) = (v, t, q, p)       -> equ.v̄(v, t, q, p, params)
-_get_f̄(equ::HDAE, params) = (f, t, q, p)       -> equ.f̄(f, t, q, p, params)
-_get_h(equ::HDAE, params) = (p, t, q)          -> equ.hamiltonian(t, q, p, params)
-_get_invariant(::HDAE, inv, params) = (t,q,p)  -> inv(t, q, p, params)
+_get_v̄(equ::HDAE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
+_get_f̄(equ::HDAE, params) = (f, t, q, p) -> equ.f̄(f, t, q, p, params)
+_get_h(equ::HDAE, params) = (p, t, q) -> equ.hamiltonian(t, q, p, params)
+_get_invariant(::HDAE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 function _functions(equ::HDAE)
     if hassecondary(equ)
-        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, h = equ.hamiltonian)
+        (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ,
+            ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ, h = equ.hamiltonian)
     else
         (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, h = equ.hamiltonian)
     end
@@ -338,8 +366,9 @@ function _functions(equ::HDAE, params::OptionalParameters)
 end
 
 _initialguess(equ::HDAE) = (v = equ.v̄, f = equ.f̄)
-_initialguess(equ::HDAE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
-
+function _initialguess(equ::HDAE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+end
 
 @doc """
 `HDAEProblem`: Hamiltonian Differential Algebraic Equation
@@ -395,11 +424,12 @@ prob = HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, h, timespan, timestep, q₀, p�
 """
 const HDAEProblem = EquationProblem{HDAE}
 
-function HDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, timespan::Tuple, timestep::Real, ics...;
-                     v̄ = v, f̄ = f, invariants = NullInvariants(),
-                     parameters = NullParameters(), periodicity = NullPeriodicity())
+function HDAEProblem(
+        v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, timespan::Tuple, timestep::Real, ics...;
+        v̄ = v, f̄ = f, invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants,
-               parameter_types(parameters), periodicity)
+        parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
@@ -409,17 +439,23 @@ end
 
 function GeometricBase.periodicity(prob::HDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
-     μ = NullPeriodicity())
+        μ = NullPeriodicity())
 end
 
+function compute_vectorfields!(vecfield, sol, prob::HDAEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+end
 
-const HDAEEnsemble  = EnsembleProblem{HDAE}
+const HDAEEnsemble = EnsembleProblem{HDAE}
 
-function HDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
+function HDAEEnsemble(v, f, u, g, ϕ, ū, ḡ, ψ, hamiltonian, timespan::Tuple,
+        timestep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
+    equ = HDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, hamiltonian,
+        invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 

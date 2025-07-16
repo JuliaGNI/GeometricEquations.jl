@@ -78,7 +78,6 @@ The function `g` is used in projection methods that enforce ``p = ϑ(q)``.
 The functions `v̄` and `f̄` are used for initial guesses in nonlinear implicit solvers.
 """
 
-
 @doc """
 `IODE`: Implicit Ordinary Differential Equation
 
@@ -127,12 +126,11 @@ $(iode_functions)
 
 """
 struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
-            v̄Type <: OptionalCallable, f̄Type <: OptionalCallable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <:
+    v̄Type <: OptionalCallable, f̄Type <: OptionalCallable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <:
        AbstractEquationPODE{invType, parType, perType}
-
     ϑ::ϑType
     f::fType
     g::gType
@@ -147,9 +145,9 @@ struct IODE{ϑType <: Callable, fType <: Callable, gType <: Callable,
         _periodicity = promote_periodicity(periodicity)
         new{typeof(ϑ), typeof(f), typeof(g), typeof(v̄), typeof(f̄),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(ϑ, f, g, v̄, f̄,
-                                                                         invariants,
-                                                                         parameters,
-                                                                         _periodicity)
+            invariants,
+            parameters,
+            _periodicity)
     end
 end
 
@@ -157,7 +155,7 @@ _iode_default_g(g, t, q, v, λ, params) = nothing
 _iode_default_v̄(v, t, q, p, params) = nothing
 
 function IODE(ϑ, f, g; invariants = NullInvariants(), parameters = NullParameters(),
-              periodicity = NullPeriodicity(), v̄ = _iode_default_v̄, f̄ = f)
+        periodicity = NullPeriodicity(), v̄ = _iode_default_v̄, f̄ = f)
     IODE(ϑ, f, g, v̄, f̄, invariants, parameters, periodicity)
 end
 
@@ -166,8 +164,14 @@ GeometricBase.parameters(equation::IODE) = equation.parameters
 GeometricBase.periodicity(equation::IODE) = equation.periodicity
 
 hasvectorfield(::IODE) = true
-hasinitialguess(::IODE{ϑType, ftype, gtype, <:Callable, <:Callable}) where {ϑType, ftype, gtype} = true
-hasinitialguess(::IODE{ϑType, ftype, gtype, <:Nothing, <:Nothing}) where {ϑType, ftype, gtype} = false
+function hasinitialguess(::IODE{
+        ϑType, ftype, gtype, <:Callable, <:Callable}) where {ϑType, ftype, gtype}
+    true
+end
+function hasinitialguess(::IODE{
+        ϑType, ftype, gtype, <:Nothing, <:Nothing}) where {ϑType, ftype, gtype}
+    false
+end
 
 function Base.show(io::IO, equation::IODE)
     print(io, "Implicit Ordinary Differential Equation (IODE)", "\n")
@@ -181,7 +185,8 @@ function Base.show(io::IO, equation::IODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::IODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::IODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     if !haskey(ics, :v)
         v = zeroalgebraic(ics.q)
         equ.v̄(v, t, ics.q, ics.p, params)
@@ -191,7 +196,7 @@ function initialstate(equ::IODE, t::InitialTime, ics::NamedTuple, params::Option
     (
         q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p, NullPeriodicity()),
-        v = _algebraicvariable(ics.v),
+        v = _algebraicvariable(ics.v)
     )
 end
 
@@ -204,11 +209,12 @@ function initialstate(equ::IODE, q₀::InitialState, p₀::InitialState, v₀::I
 end
 
 function initialstate(equ::IODE, q₀::InitialStateVector, p₀::InitialStateVector)
-    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+    [initialstate(equ, q, p) for (q, p) in zip(q₀, p₀)]
 end
 
-function initialstate(equ::IODE, q₀::InitialStateVector, p₀::InitialStateVector, v₀::InitialAlgebraicVector)
-    [initialstate(equ, q, p, v) for (q,p,v) in zip(q₀,p₀,v₀)]
+function initialstate(equ::IODE, q₀::InitialStateVector,
+        p₀::InitialStateVector, v₀::InitialAlgebraicVector)
+    [initialstate(equ, q, p, v) for (q, p, v) in zip(q₀, p₀, v₀)]
 end
 
 function check_initial_conditions(::IODE, ics::NamedTuple)
@@ -224,11 +230,19 @@ function check_initial_conditions(::IODE, ics::NamedTuple)
 end
 
 function check_methods(equ::IODE, timespan, ics::NamedTuple, params)
-    applicable(equ.ϑ, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), params) || return false
-    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.g, vectorfield(ics.p), timespan[begin], ics.q, ics.v, zero(ics.v), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
+    applicable(equ.ϑ, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), params) ||
+        return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) ||
+        return false
+    applicable(
+        equ.g, vectorfield(ics.p), timespan[begin], ics.q, ics.v, zero(ics.v), params) ||
+        return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.f̄ === nothing ||
+        applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) ||
+        return false
     return true
 end
 
@@ -255,13 +269,14 @@ function _functions(equ::IODE, params::OptionalParameters)
     (
         ϑ = _get_ϑ(equ, params),
         f = _get_f(equ, params),
-        g = _get_g(equ, params),
+        g = _get_g(equ, params)
     )
 end
 
 _initialguess(equ::IODE) = (v = equ.v̄, f = equ.f̄)
-_initialguess(equ::IODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
-
+function _initialguess(equ::IODE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+end
 
 @doc """
 `IODEProblem`: Implicit Ordinary Differential Equation Problem
@@ -320,6 +335,10 @@ end
 
 @inline GeometricBase.nconstraints(prob::IODEProblem) = ndims(prob)
 
+function compute_vectorfields!(vecfield, sol, prob::IODEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.v, parameters(prob))
+end
 
 @doc """
 `IODEEnsemble`: Implicit Ordinary Differential Equation Ensemble
@@ -365,7 +384,7 @@ function IODEEnsemble(ϑ, f, g, timespan::Tuple, timestep::Real, ics...;
         periodicity = NullPeriodicity(),
         v̄ = _iode_default_v̄,
         f̄ = f
-    )
+)
     equ = IODE(ϑ, f, g, v̄, f̄, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

@@ -99,7 +99,6 @@ end
 ```
 """
 
-
 @doc """
 `IDAE`: Implicit Differential Algebraic Equation
 
@@ -159,13 +158,13 @@ $(idae_functions)
 
 """
 struct IDAE{ϑType <: Callable, fType <: Callable,
-            uType <: Callable, gType <: Callable, ϕType <: Callable,
-            ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
-            v̄Type <: Callable, f̄Type <: Callable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPDAE{invType,parType,perType,ψType}
-
+    uType <: Callable, gType <: Callable, ϕType <: Callable,
+    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+    v̄Type <: Callable, f̄Type <: Callable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <:
+       AbstractEquationPDAE{invType, parType, perType, ψType}
     ϑ::ϑType
     f::fType
     u::uType
@@ -200,14 +199,19 @@ struct IDAE{ϑType <: Callable, fType <: Callable,
             typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
+            ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
 _idae_default_v̄(t, q, v, p, params) = nothing
 
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄=_idae_default_v̄, f̄=f, kwargs...) = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
+function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+end
+function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄ = _idae_default_v̄, f̄ = f, kwargs...)
+    IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
+end
 IDAE(ϑ, f, u, g, ϕ; kwargs...) = IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::IDAE) = equation.invariants
@@ -215,7 +219,11 @@ GeometricBase.parameters(equation::IDAE) = equation.parameters
 GeometricBase.periodicity(equation::IDAE) = equation.periodicity
 
 hasvectorfield(::IDAE) = true
-hasinitialguess(::IDAE{ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable, <:Callable}) where {ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType} = true
+function hasinitialguess(::IDAE{
+        ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable,
+        <:Callable}) where {ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType}
+    true
+end
 
 function Base.show(io::IO, equation::IDAE)
     print(io, "Implicit Differential Algebraic Equation (IDAE)", "\n")
@@ -238,7 +246,8 @@ function Base.show(io::IO, equation::IDAE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::IDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::IDAE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     if !haskey(ics, :v)
         v = zeroalgebraic(ics.q)
         equ.v̄(v, t, ics.q, ics.p, params)
@@ -252,7 +261,7 @@ function initialstate(equ::IDAE, t::InitialTime, ics::NamedTuple, params::Option
         p = _statevariable(ics.p),
         v = _algebraicvariable(ics.v),
         λ = _algebraicvariable(ics.λ),
-        μ = _algebraicvariable(ics.μ),
+        μ = _algebraicvariable(ics.μ)
     )
 end
 
@@ -260,16 +269,20 @@ function initialstate(equ::IDAE, q₀::InitialState, p₀::InitialState, λ₀::
     initialstate(equ, (q = q₀, p = p₀, λ = λ₀))
 end
 
-function initialstate(equ::IDAE, q₀::InitialState, p₀::InitialState, v₀::InitialAlgebraic, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+function initialstate(equ::IDAE, q₀::InitialState, p₀::InitialState, v₀::InitialAlgebraic,
+        λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
     initialstate(equ, (q = q₀, p = p₀, v = v₀, λ = λ₀, μ = μ₀))
 end
 
-function initialstate(equ::IDAE, q₀::InitialStateVector, p₀::InitialStateVector, λ₀::InitialAlgebraicVector)
-    [initialstate(equ, q, p, λ) for (q,p,λ) in zip(q₀,p₀,λ₀)]
+function initialstate(equ::IDAE, q₀::InitialStateVector,
+        p₀::InitialStateVector, λ₀::InitialAlgebraicVector)
+    [initialstate(equ, q, p, λ) for (q, p, λ) in zip(q₀, p₀, λ₀)]
 end
 
-function initialstate(equ::IDAE, q₀::InitialStateVector, p₀::InitialStateVector, v₀::InitialAlgebraicVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [initialstate(equ, q, p, v, λ, μ) for (q,p,v,λ,μ) in zip(q₀,p₀,v₀,λ₀,μ₀)]
+function initialstate(equ::IDAE, q₀::InitialStateVector, p₀::InitialStateVector,
+        v₀::InitialAlgebraicVector, λ₀::InitialAlgebraicVector,
+        μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, p, v, λ, μ) for (q, p, v, λ, μ) in zip(q₀, p₀, v₀, λ₀, μ₀)]
 end
 
 function check_initial_conditions(equ::IDAE, ics::NamedTuple)
@@ -295,14 +308,30 @@ end
 function check_methods(equ::IDAE, timespan, ics::NamedTuple, params)
     applicable(equ.ϑ, zero(ics.p), timespan[begin], ics.q, ics.v, params) || return false
     applicable(equ.f, zero(ics.p), timespan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
-    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
-    applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, ics.v, ics.p, params) || return false
-    equ.ū === nothing || applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing || applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.v, ics.p, vectorfield(ics.q), vectorfield(ics.p), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), params) || return false
+    applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
+        return false
+    applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
+        return false
+    applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, ics.v, ics.p, params) ||
+        return false
+    equ.ū === nothing ||
+        applicable(
+            equ.ū, zero(ics.q), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
+        return false
+    equ.ḡ === nothing ||
+        applicable(
+            equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
+        return false
+    equ.ψ === nothing ||
+        applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.v, ics.p,
+            vectorfield(ics.q), vectorfield(ics.p), params) || return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.f̄ === nothing ||
+        applicable(
+            equ.f̄, zero(ics.p), timespan[begin], ics.q, vectorfield(ics.q), params) ||
+        return false
     return true
 end
 
@@ -316,21 +345,22 @@ function GeometricBase.arrtype(equ::IDAE, ics::NamedTuple)
     return typeof(ics.q)
 end
 
-_get_ϑ(equ::IDAE, params) = (ϑ, t, q, v)       -> equ.ϑ(ϑ, t, q, v, params)
-_get_f(equ::IDAE, params) = (f, t, q, v)       -> equ.f(f, t, q, v, params)
+_get_ϑ(equ::IDAE, params) = (ϑ, t, q, v) -> equ.ϑ(ϑ, t, q, v, params)
+_get_f(equ::IDAE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
 _get_u(equ::IDAE, params) = (u, t, q, v, p, λ) -> equ.u(u, t, q, v, p, λ, params)
 _get_g(equ::IDAE, params) = (g, t, q, v, p, λ) -> equ.g(g, t, q, v, p, λ, params)
-_get_ϕ(equ::IDAE, params) = (ϕ, t, q, v, p)    -> equ.ϕ(ϕ, t, q, v, p, params)
-_get_ū(equ::IDAE, params) = (u, t, q, v, p, λ)    -> equ.ū(u, t, q, v, p, λ, params)
-_get_ḡ(equ::IDAE, params) = (g, t, q, v, p, λ)    -> equ.ḡ(g, t, q, v, p, λ, params)
+_get_ϕ(equ::IDAE, params) = (ϕ, t, q, v, p) -> equ.ϕ(ϕ, t, q, v, p, params)
+_get_ū(equ::IDAE, params) = (u, t, q, v, p, λ) -> equ.ū(u, t, q, v, p, λ, params)
+_get_ḡ(equ::IDAE, params) = (g, t, q, v, p, λ) -> equ.ḡ(g, t, q, v, p, λ, params)
 _get_ψ(equ::IDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
-_get_v̄(equ::IDAE, params) = (v, t, q, p)       -> equ.v̄(v, t, q, p, params)
-_get_f̄(equ::IDAE, params) = (f, t, q, v)       -> equ.f̄(f, t, q, v, params)
+_get_v̄(equ::IDAE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
+_get_f̄(equ::IDAE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IDAE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
 function _functions(equ::IDAE)
     if hassecondary(equ)
-        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
+        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g,
+            ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
     else
         (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ)
     end
@@ -346,7 +376,7 @@ function _functions(equ::IDAE, params::OptionalParameters)
             ϕ = _get_ϕ(equ, params),
             ū = _get_ū(equ, params),
             ḡ = _get_ḡ(equ, params),
-            ψ = _get_ψ(equ, params),
+            ψ = _get_ψ(equ, params)
         )
     else
         (
@@ -354,14 +384,15 @@ function _functions(equ::IDAE, params::OptionalParameters)
             f = _get_f(equ, params),
             u = _get_u(equ, params),
             g = _get_g(equ, params),
-            ϕ = _get_ϕ(equ, params),
+            ϕ = _get_ϕ(equ, params)
         )
     end
 end
 
 _initialguess(equ::IDAE) = (v = equ.v̄, f = equ.f̄)
-_initialguess(equ::IDAE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
-
+function _initialguess(equ::IDAE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+end
 
 @doc """
 `IDAEProblem`: Implicit Differential Algebraic Equation Problem
@@ -402,10 +433,10 @@ $(idae_functions)
 const IDAEProblem = EquationProblem{IDAE}
 
 function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...;
-                     v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(),
-                     parameters = NullParameters(), periodicity = NullPeriodicity())
+        v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
     equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
-               periodicity)
+        periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
@@ -415,17 +446,23 @@ end
 
 function GeometricBase.periodicity(prob::IDAEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), λ = NullPeriodicity(),
-     μ = NullPeriodicity())
+        μ = NullPeriodicity())
 end
 
+function compute_vectorfields!(vecfield, sol, prob::IDAEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.v, parameters(prob))
+end
 
-const IDAEEnsemble  = EnsembleProblem{IDAE}
+const IDAEEnsemble = EnsembleProblem{IDAE}
 
-function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = _idae_default_v̄, f̄ = f,
+function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple,
+        timestep::Real, ics...; v̄ = _idae_default_v̄, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters), periodicity)
+    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants,
+        parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 

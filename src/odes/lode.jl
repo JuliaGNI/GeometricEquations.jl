@@ -97,7 +97,6 @@ end
 ```
 """
 
-
 @doc """
 `LODE`: Lagrangian Ordinary Differential Equation
 
@@ -148,12 +147,11 @@ $(lode_functions)
 
 """
 struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable, ωType <: Callable,
-            v̄Type <: OptionalCallable, f̄Type <: OptionalCallable,
-            lagType <: Callable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType,parType,perType}
-
+    v̄Type <: OptionalCallable, f̄Type <: OptionalCallable,
+    lagType <: Callable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType, parType, perType}
     ϑ::ϑType
     f::fType
     g::gType
@@ -180,14 +178,17 @@ struct LODE{ϑType <: Callable, fType <: Callable, gType <: Callable, ωType <: 
 
         new{typeof(ϑ), typeof(f), typeof(g), typeof(ω), typeof(v̄), typeof(f̄),
             typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                ϑ, f, g, ω, v̄, f̄, lagrangian, invariants, parameters, _periodicity)
+            ϑ, f, g, ω, v̄, f̄, lagrangian, invariants, parameters, _periodicity)
     end
 end
 
 _lode_default_g(g, t, q, v, λ, params) = nothing
 _lode_default_v̄(v, t, q, p, params) = nothing
 
-LODE(ϑ, f, g, ω, l; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity(), v̄=_lode_default_v̄, f̄=f) = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameters, periodicity)
+function LODE(ϑ, f, g, ω, l; invariants = NullInvariants(), parameters = NullParameters(),
+        periodicity = NullPeriodicity(), v̄ = _lode_default_v̄, f̄ = f)
+    LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameters, periodicity)
+end
 
 GeometricBase.invariants(equation::LODE) = equation.invariants
 GeometricBase.parameters(equation::LODE) = equation.parameters
@@ -195,8 +196,14 @@ GeometricBase.periodicity(equation::LODE) = equation.periodicity
 
 hasvectorfield(::LODE) = true
 haslagrangian(::LODE) = true
-hasinitialguess(::LODE{ϑType, ftype, gtype, ωType, <:Callable, <:Callable}) where {ϑType, ftype, gtype, ωType} = true
-hasinitialguess(::LODE{ϑType, ftype, gtype, ωType, <:Nothing, <:Nothing}) where {ϑType, ftype, gtype, ωType} = false
+function hasinitialguess(::LODE{ϑType, ftype, gtype, ωType, <:Callable,
+        <:Callable}) where {ϑType, ftype, gtype, ωType}
+    true
+end
+function hasinitialguess(::LODE{ϑType, ftype, gtype, ωType, <:Nothing,
+        <:Nothing}) where {ϑType, ftype, gtype, ωType}
+    false
+end
 
 function Base.show(io::IO, equation::LODE)
     print(io, "Lagrangian Ordinary Differential Equation (LODE)", "\n")
@@ -212,7 +219,8 @@ function Base.show(io::IO, equation::LODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::LODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::LODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     if !haskey(ics, :v)
         v = zeroalgebraic(ics.q)
         equ.v̄(v, t, ics.q, ics.p, params)
@@ -222,7 +230,7 @@ function initialstate(equ::LODE, t::InitialTime, ics::NamedTuple, params::Option
     (
         q = _statevariable(ics.q, periodicity(equ)),
         p = _statevariable(ics.p, NullPeriodicity()),
-        v = _algebraicvariable(ics.v),
+        v = _algebraicvariable(ics.v)
     )
 end
 
@@ -235,11 +243,12 @@ function initialstate(equ::LODE, q₀::InitialState, p₀::InitialState, v₀::I
 end
 
 function initialstate(equ::LODE, q₀::InitialStateVector, p₀::InitialStateVector)
-    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+    [initialstate(equ, q, p) for (q, p) in zip(q₀, p₀)]
 end
 
-function initialstate(equ::LODE, q₀::InitialStateVector, p₀::InitialStateVector, v₀::InitialAlgebraicVector)
-    [initialstate(equ, q, p, v) for (q,p,v) in zip(q₀,p₀,v₀)]
+function initialstate(equ::LODE, q₀::InitialStateVector,
+        p₀::InitialStateVector, v₀::InitialAlgebraicVector)
+    [initialstate(equ, q, p, v) for (q, p, v) in zip(q₀, p₀, v₀)]
 end
 
 function check_initial_conditions(::LODE, ics::NamedTuple)
@@ -256,11 +265,18 @@ end
 
 function check_methods(equ::LODE, timespan, ics, params)
     applicable(equ.ϑ, zero(ics.p), timespan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
-    applicable(equ.g, vectorfield(ics.p), timespan[begin], ics.q, ics.v, zero(ics.v), params) || return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) ||
+        return false
+    applicable(
+        equ.g, vectorfield(ics.p), timespan[begin], ics.q, ics.v, zero(ics.v), params) ||
+        return false
     # TODO add missing methods (namely ω)
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) || return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.f̄ === nothing ||
+        applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.v, params) ||
+        return false
     applicable(equ.lagrangian, timespan[begin], ics.q, ics.v, params) || return false
     return true
 end
@@ -281,22 +297,25 @@ _get_g(equ::LODE, params) = (g, t, q, v, λ) -> equ.g(g, t, q, v, λ, params)
 _get_ω(equ::LODE, params) = (ω, t, q, v) -> equ.ω(ω, t, q, v, params)
 _get_v̄(equ::LODE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::LODE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
-_get_l(equ::LODE, params) = (t, q, v)    -> equ.lagrangian(t, q, v, params)
+_get_l(equ::LODE, params) = (t, q, v) -> equ.lagrangian(t, q, v, params)
 _get_invariant(::LODE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
 _functions(equ::LODE) = (ϑ = equ.ϑ, f = equ.f, g = equ.g, ω = equ.ω, l = equ.lagrangian)
 
-_functions(equ::LODE, params::OptionalParameters) = (
+function _functions(equ::LODE, params::OptionalParameters)
+    (
         ϑ = _get_ϑ(equ, params),
         f = _get_f(equ, params),
         g = _get_g(equ, params),
         ω = _get_ω(equ, params),
-        l = _get_l(equ, params),
+        l = _get_l(equ, params)
     )
+end
 
 _initialguess(equ::LODE) = (v = equ.v̄, f = equ.f̄)
-_initialguess(equ::LODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
-
+function _initialguess(equ::LODE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+end
 
 @doc """
 `LODEProblem`: Lagrangian Ordinary Differential Equation Problem
@@ -346,13 +365,16 @@ function LODEProblem(ϑ, f, ω, l, args...; kwargs...)
     LODEProblem(ϑ, f, _lode_default_g, ω, l, args...; kwargs...)
 end
 
-
 function GeometricBase.periodicity(prob::LODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), v = NullPeriodicity())
 end
 
 @inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
 
+function compute_vectorfields!(vecfield, sol, prob::LODEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.v, parameters(prob))
+end
 
 @doc """
 `LODEEnsemble`: Lagrangian Ordinary Differential Equation Ensemble
@@ -396,7 +418,7 @@ function LODEEnsemble(ϑ, f, g, ω, l, timespan::Tuple, timestep::Real, ics...;
         periodicity = NullPeriodicity(),
         v̄ = _lode_default_v̄,
         f̄ = f
-    )
+)
     equ = LODE(ϑ, f, g, ω, v̄, f̄, l, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

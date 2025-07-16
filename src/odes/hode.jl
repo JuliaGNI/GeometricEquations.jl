@@ -42,7 +42,6 @@ fields on `t`, `q` and `p`, and params is a `NamedTuple` of
 additional parameters.
 """
 
-
 @doc """
 `HODE`: Hamiltonian Ordinary Differential Equation
 
@@ -79,14 +78,13 @@ $(hode_functions)
 
 """
 struct HODE{vType <: Callable, fType <: Callable,
-            v̄Type <: OptionalCallable,
-            f̄Type <: OptionalCallable,
-            hamType <: Callable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <:
+    v̄Type <: OptionalCallable,
+    f̄Type <: OptionalCallable,
+    hamType <: Callable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <:
        AbstractEquationPODE{invType, parType, perType}
-
     v::vType
     f::fType
     v̄::v̄Type
@@ -101,12 +99,12 @@ struct HODE{vType <: Callable, fType <: Callable,
         _periodicity = promote_periodicity(periodicity)
         new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(hamiltonian),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, f, v̄, f̄, hamiltonian, invariants, parameters, _periodicity)
+            v, f, v̄, f̄, hamiltonian, invariants, parameters, _periodicity)
     end
 end
 
 function HODE(v, f, hamiltonian; v̄ = v, f̄ = f, invariants = NullInvariants(),
-              parameters = NullParameters(), periodicity = NullPeriodicity())
+        parameters = NullParameters(), periodicity = NullPeriodicity())
     HODE(v, f, v̄, f̄, hamiltonian, invariants, parameters, periodicity)
 end
 
@@ -132,10 +130,11 @@ function Base.show(io::IO, equation::HODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::HODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::HODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
         q = _statevariable(ics.q, periodicity(equ)),
-        p = _statevariable(ics.p, NullPeriodicity()),
+        p = _statevariable(ics.p, NullPeriodicity())
     )
 end
 
@@ -144,9 +143,8 @@ function initialstate(equ::HODE, q₀::InitialState, p₀::InitialState)
 end
 
 function initialstate(equ::HODE, q₀::InitialStateVector, p₀::InitialStateVector)
-    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+    [initialstate(equ, q, p) for (q, p) in zip(q₀, p₀)]
 end
-
 
 function check_initial_conditions(::HODE, ics::NamedTuple)
     haskey(ics, :q) || return false
@@ -160,11 +158,17 @@ function check_initial_conditions(::HODE, ics::NamedTuple)
 end
 
 function check_methods(equ::HODE, timespan, ics, params)
-    applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) ||
+        return false
     applicable(equ.hamiltonian, timespan[begin], ics.q, ics.p, params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.f̄ === nothing ||
+        applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) ||
+        return false
     return true
 end
 
@@ -186,10 +190,13 @@ _get_h(equ::HODE, params) = (t, q, p) -> equ.hamiltonian(t, q, p, params)
 _get_invariant(::HODE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::HODE) = (v = equ.v, f = equ.f, h = equ.hamiltonian)
-_functions(equ::HODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params), h = _get_h(equ, params))
+function _functions(equ::HODE, params::OptionalParameters)
+    (v = _get_v(equ, params), f = _get_f(equ, params), h = _get_h(equ, params))
+end
 _initialguess(equ::HODE) = (v = equ.v̄, f = equ.f̄)
-_initialguess(equ::HODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
-
+function _initialguess(equ::HODE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+end
 
 @doc """
 `HODEProblem`: Hamiltonian Ordinary Differential Equation Problem
@@ -229,7 +236,8 @@ function HODEProblem(v, f, hamiltonian, timespan, timestep, ics...;
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = v, f̄ = f)
-    equ = HODE(v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
+    equ = HODE(
+        v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
@@ -237,6 +245,10 @@ function GeometricBase.periodicity(prob::HODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
 
+function compute_vectorfields!(vecfield, sol, prob::HODEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+end
 
 @doc """
 `HODEEnsemble`: Hamiltonian Ordinary Differential Equation Ensemble
@@ -271,6 +283,7 @@ function HODEEnsemble(v, f, hamiltonian, timespan, timestep, ics...;
         parameters = NullParameters(),
         periodicity = NullPeriodicity(),
         v̄ = v, f̄ = f)
-    equ = HODE(v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
+    equ = HODE(
+        v, f, v̄, f̄, hamiltonian, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
