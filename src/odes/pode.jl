@@ -31,7 +31,6 @@ fields ``v`` and ``f`` on `t`, `q` and `p`, and params is a `NamedTuple` of
 additional parameters.
 """
 
-
 @doc """
 `PODE`: Partitioned Ordinary Differential Equation
 
@@ -66,12 +65,11 @@ $(pode_functions)
 
 """
 struct PODE{vType <: Callable, fType <: Callable,
-            v̄Type <: OptionalCallable,
-            f̄Type <: OptionalCallable,
-            invType <: OptionalInvariants,
-            parType <: OptionalParameters,
-            perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType,parType,perType}
-
+    v̄Type <: OptionalCallable,
+    f̄Type <: OptionalCallable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <: AbstractEquationPODE{invType, parType, perType}
     v::vType
     f::fType
     v̄::v̄Type
@@ -83,12 +81,16 @@ struct PODE{vType <: Callable, fType <: Callable,
 
     function PODE(v, f, v̄, f̄, invariants, parameters, periodicity)
         _periodicity = promote_periodicity(periodicity)
-        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, f, v̄, f̄, invariants, parameters, _periodicity)
+        new{typeof(v), typeof(f), typeof(v̄), typeof(f̄),
+            typeof(invariants), typeof(parameters), typeof(_periodicity)}(
+            v, f, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
-PODE(v, f; v̄ = v, f̄ = f, invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = PODE(v, f, v̄, f̄, invariants, parameters, periodicity)
+function PODE(v, f; v̄ = v, f̄ = f, invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    PODE(v, f, v̄, f̄, invariants, parameters, periodicity)
+end
 
 GeometricBase.invariants(equation::PODE) = equation.invariants
 GeometricBase.parameters(equation::PODE) = equation.parameters
@@ -109,10 +111,11 @@ function Base.show(io::IO, equation::PODE)
     print(io, "   ", invariants(equation))
 end
 
-function initialstate(equ::PODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
+function initialstate(
+        equ::PODE, t::InitialTime, ics::NamedTuple, params::OptionalParameters)
     (
         q = _statevariable(ics.q, periodicity(equ)),
-        p = _statevariable(ics.p, NullPeriodicity()),
+        p = _statevariable(ics.p, NullPeriodicity())
     )
 end
 
@@ -121,7 +124,7 @@ function initialstate(equ::PODE, q₀::InitialState, p₀::InitialState)
 end
 
 function initialstate(equ::PODE, q₀::InitialStateVector, p₀::InitialStateVector)
-    [initialstate(equ, q, p) for (q,p) in zip(q₀,p₀)]
+    [initialstate(equ, q, p) for (q, p) in zip(q₀, p₀)]
 end
 
 function check_initial_conditions(::PODE, ics::NamedTuple)
@@ -136,10 +139,16 @@ function check_initial_conditions(::PODE, ics::NamedTuple)
 end
 
 function check_methods(equ::PODE, timespan, ics, params)
-    applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) || return false
-    equ.f̄ === nothing || applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) || return false
+    applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    applicable(equ.f, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, ics.p, params) ||
+        return false
+    equ.f̄ === nothing ||
+        applicable(equ.f̄, vectorfield(ics.p), timespan[begin], ics.q, ics.p, params) ||
+        return false
     return true
 end
 
@@ -157,13 +166,16 @@ _get_v(equ::PODE, params) = (v, t, q, p) -> equ.v(v, t, q, p, params)
 _get_f(equ::PODE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
 _get_v̄(equ::PODE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::PODE, params) = (f, t, q, p) -> equ.f̄(f, t, q, p, params)
-_get_invariant(::PODE, inv, params) = (t,q,p) -> inv(t, q, p, params)
+_get_invariant(::PODE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 _functions(equ::PODE) = (v = equ.v, f = equ.f)
-_functions(equ::PODE, params::OptionalParameters) = (v = _get_v(equ, params), f = _get_f(equ, params))
+function _functions(equ::PODE, params::OptionalParameters)
+    (v = _get_v(equ, params), f = _get_f(equ, params))
+end
 _initialguess(equ::PODE) = (v = equ.v̄, f = equ.f̄)
-_initialguess(equ::PODE, params::OptionalParameters) = (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
-
+function _initialguess(equ::PODE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
+end
 
 @doc """
 `PODEProblem`: Partitioned Ordinary Differential Equation Problem
@@ -180,7 +192,7 @@ PODEProblem(v, f, timespan, timestep, ics; kwargs...)
 PODEProblem(v, f, timespan, timestep, q₀::StateVariable, p₀::StateVariable; kwargs...)
 PODEProblem(v, f, timespan, timestep, q₀::AbstractArray, p₀::AbstractArray; kwargs...)
 ```
-where `v` and `f` are the function computing the vector fields, 
+where `v` and `f` are the function computing the vector fields,
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entries `q` and `p`.
@@ -210,6 +222,10 @@ function GeometricBase.periodicity(prob::PODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
 
+function compute_vectorfields!(vecfield, sol, prob::PODEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+end
 
 @doc """
 `PODEEnsemble`: Partitioned Ordinary Differential Equation Ensemble
@@ -225,7 +241,7 @@ PODEEnsemble(v, f, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwarg
 PODEEnsemble(v, f, timespan, timestep, q₀::AbstractVector{<: StateVariable}, p₀::AbstractVector{<: StateVariable}; kwargs...)
 PODEEnsemble(v, f, timespan, timestep, q₀::AbstractVector{<: AbstractArray}, p₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
-where `v` and `f` are the function computing the vector fields, 
+where `v` and `f` are the function computing the vector fields,
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `timestep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with entries `q` and `p`.
@@ -236,7 +252,7 @@ For the interfaces of the functions `v` and `f` see [`PODE`](@ref).
 For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref GeometricEquations.EnsembleProblem) subtypes.
 
 """
-const PODEEnsemble  = EnsembleProblem{PODE}
+const PODEEnsemble = EnsembleProblem{PODE}
 
 function PODEEnsemble(v, f, timespan, timestep, ics...;
         invariants = NullInvariants(),

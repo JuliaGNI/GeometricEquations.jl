@@ -225,6 +225,9 @@ function sde_B(B::AbstractMatrix, t, q, params)
     B[2, :] = μ * q[2]
 end
 
+const sde_eqs = (sde_v, sde_B)
+const sde_igs = (sde_v,)
+
 function psde_v(v, t, q, p, params)
     v[1] = p[1]
 end
@@ -242,6 +245,9 @@ function psde_G(G, t, q, p, params)
     @unpack noise_intensity = params
     G[1, 1] = -noise_intensity * q[1]
 end
+
+const psde_eqs = (psde_v, psde_f, psde_B, psde_G)
+const psde_igs = (psde_v, psde_f)
 
 function spsde_v(v, t, q, p, params)
     v[1] = p[1]
@@ -268,6 +274,9 @@ end
 function spsde_G2(G, t, q, p, params)
     G[1, 1] = 0
 end
+
+const spsde_eqs = (spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2)
+const spsde_igs = (spsde_v, spsde_f1)
 
 function dele_ld(t₀, t₁, q₀, q₁, params)
     h = (t₁ - t₀)

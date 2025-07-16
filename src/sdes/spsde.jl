@@ -141,6 +141,18 @@ GeometricBase.parameters(equation::SPSDE) = equation.parameters
 GeometricBase.periodicity(equation::SPSDE) = equation.periodicity
 
 hasvectorfield(::SPSDE) = true
+function hasinitialguess(::SPSDE{
+        vType, f1Type, f2Type, BType, G1Type, G2Type, <:Callable,
+        <:Callable}) where {
+        vType, f1Type, f2Type, BType, G1Type, G2Type}
+    true
+end
+function hasinitialguess(::SPSDE{
+        vType, f1Type, f2Type, BType, G1Type, G2Type, <:Nothing,
+        <:Nothing}) where {
+        vType, f1Type, f2Type, BType, G1Type, G2Type}
+    false
+end
 
 function Base.show(io::IO, equation::SPSDE)
     print(
@@ -234,8 +246,7 @@ end
 _get_invariant(::SPSDE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 function _functions(equ::SPSDE)
-    (v = equ.v, f1 = equ.f1, f2 = equ.f2, B = equ.B,
-        G1 = equ.G1, G2 = equ.G2, v̄ = equ.v̄, f̄ = equ.f̄)
+    (v = equ.v, f1 = equ.f1, f2 = equ.f2, B = equ.B, G1 = equ.G1, G2 = equ.G2)
 end
 function _functions(equ::SPSDE, params::OptionalParameters)
     (
@@ -244,10 +255,12 @@ function _functions(equ::SPSDE, params::OptionalParameters)
         f2 = _get_f2(equ, params),
         B = _get_B(equ, params),
         G1 = _get_G1(equ, params),
-        G2 = _get_G2(equ, params),
-        v̄ = _get_v̄(equ, params),
-        f̄ = _get_f̄(equ, params)
+        G2 = _get_G2(equ, params)
     )
+end
+_initialguess(equ::SPSDE) = (v = equ.v̄, f = equ.f̄)
+function _initialguess(equ::SPSDE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 end
 
 @doc """
@@ -292,5 +305,9 @@ function GeometricBase.periodicity(prob::SPSDEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
 
+function compute_vectorfields!(vecfield, sol, prob::SPSDEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+end
 
 const SPSDEEnsemble = EnsembleProblem{SPSDE}

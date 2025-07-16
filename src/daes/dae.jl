@@ -67,7 +67,6 @@ end
 ```
 """
 
-
 @doc """
 `DAE`: Differential Algebraic Equation
 
@@ -124,13 +123,12 @@ equ = DAE(v, u, ϕ, ū, ψ)
 ```
 """
 struct DAE{vType <: Callable,
-           uType <: Callable, ϕType <: Callable,
-           ūType <: OptionalCallable, ψType <: OptionalCallable,
-           v̄Type <: OptionalCallable,
-           invType <: OptionalInvariants,
-           parType <: OptionalParameters,
-           perType <: OptionalPeriodicity} <: AbstractEquationDAE{invType,parType,perType,ψType}
-
+    uType <: Callable, ϕType <: Callable,
+    ūType <: OptionalCallable, ψType <: OptionalCallable,
+    v̄Type <: OptionalCallable,
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <: AbstractEquationDAE{invType, parType, perType, ψType}
     v::vType
     u::uType
     ϕ::ϕType
@@ -154,12 +152,15 @@ struct DAE{vType <: Callable,
 
         new{typeof(v), typeof(u), typeof(ϕ), typeof(ū), typeof(ψ), typeof(v̄),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-                v, u, ϕ, ū, ψ, v̄, invariants, parameters, _periodicity)
+            v, u, ϕ, ū, ψ, v̄, invariants, parameters, _periodicity)
     end
 end
 
-DAE(v, u, ϕ, ū, ψ, v̄; invariants=NullInvariants(), parameters=NullParameters(), periodicity=NullPeriodicity()) = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
-DAE(v, u, ϕ, ū, ψ; v̄=v, kwargs...) = DAE(v, u, ϕ, ū, ψ, v̄; kwargs...)
+function DAE(v, u, ϕ, ū, ψ, v̄; invariants = NullInvariants(),
+        parameters = NullParameters(), periodicity = NullPeriodicity())
+    DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+end
+DAE(v, u, ϕ, ū, ψ; v̄ = v, kwargs...) = DAE(v, u, ϕ, ū, ψ, v̄; kwargs...)
 DAE(v, u, ϕ; kwargs...) = DAE(v, u, ϕ, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::DAE) = equation.invariants
@@ -167,7 +168,10 @@ GeometricBase.parameters(equation::DAE) = equation.parameters
 GeometricBase.periodicity(equation::DAE) = equation.periodicity
 
 hasvectorfield(::DAE) = true
-hasinitialguess(::DAE{vType, uType, ϕType, ūType, ψType, <:Callable}) where {vType, uType, ϕType, ūType, ψType} = true
+function hasinitialguess(::DAE{vType, uType, ϕType, ūType, ψType,
+        <:Callable}) where {vType, uType, ϕType, ūType, ψType}
+    true
+end
 
 function Base.show(io::IO, equation::DAE)
     print(io, "Differential Algebraic Equation (DAE)", "\n")
@@ -193,16 +197,18 @@ function initialstate(equ::DAE, t::InitialTime, ics::NamedTuple, params::Optiona
     (
         q = _statevariable(ics.q, periodicity(equ)),
         λ = _algebraicvariable(ics.λ),
-        μ = _algebraicvariable(ics.μ),
+        μ = _algebraicvariable(ics.μ)
     )
 end
 
-function initialstate(equ::DAE, q₀::InitialState, λ₀::InitialAlgebraic, μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
+function initialstate(equ::DAE, q₀::InitialState, λ₀::InitialAlgebraic,
+        μ₀::InitialAlgebraic = zeroalgebraic(λ₀))
     initialstate(equ, (q = q₀, λ = λ₀, μ = μ₀))
 end
 
-function initialstate(equ::DAE, q₀::InitialStateVector, λ₀::InitialAlgebraicVector, μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
-    [initialstate(equ, q, λ, μ) for (q,λ,μ) in zip(q₀,λ₀,μ₀)]
+function initialstate(equ::DAE, q₀::InitialStateVector, λ₀::InitialAlgebraicVector,
+        μ₀::InitialAlgebraicVector = zeroalgebraic(λ₀))
+    [initialstate(equ, q, λ, μ) for (q, λ, μ) in zip(q₀, λ₀, μ₀)]
 end
 
 function check_initial_conditions(equ::DAE, ics::NamedTuple)
@@ -221,9 +227,15 @@ function check_methods(equ::DAE, timespan, ics::NamedTuple, params)
     applicable(equ.v, zero(ics.q), timespan[begin], ics.q, params) || return false
     applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, params) || return false
-    equ.ū === nothing || applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.λ, params) || return false
-    equ.ψ === nothing || applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, vectorfield(ics.q), params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, params) || return false
+    equ.ū === nothing ||
+        applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.λ, params) ||
+        return false
+    equ.ψ === nothing ||
+        applicable(
+            equ.ψ, zero(ics.λ), timespan[begin], ics.q, vectorfield(ics.q), params) ||
+        return false
+    equ.v̄ === nothing || applicable(equ.v̄, zero(ics.q), timespan[begin], ics.q, params) ||
+        return false
     return true
 end
 
@@ -237,13 +249,13 @@ function GeometricBase.arrtype(equ::DAE, ics::NamedTuple)
     return typeof(ics.q)
 end
 
-_get_v(equ::DAE, params) = (v, t, q)    -> equ.v(v, t, q, params)
+_get_v(equ::DAE, params) = (v, t, q) -> equ.v(v, t, q, params)
 _get_u(equ::DAE, params) = (u, t, q, λ) -> equ.u(u, t, q, λ, params)
-_get_ϕ(equ::DAE, params) = (ϕ, t, q)    -> equ.ϕ(ϕ, t, q, params)
+_get_ϕ(equ::DAE, params) = (ϕ, t, q) -> equ.ϕ(ϕ, t, q, params)
 _get_ū(equ::DAE, params) = (u, t, q, λ) -> equ.ū(u, t, q, λ, params)
 _get_ψ(equ::DAE, params) = (ψ, t, q, v) -> equ.ψ(ψ, t, q, v, params)
-_get_v̄(equ::DAE, params) = (v, t, q)    -> equ.v̄(v, t, q, params)
-_get_invariant(::DAE, inv, params) = (t,q) -> inv(t, q, params)
+_get_v̄(equ::DAE, params) = (v, t, q) -> equ.v̄(v, t, q, params)
+_get_invariant(::DAE, inv, params) = (t, q) -> inv(t, q, params)
 
 function _functions(equ::DAE)
     if hassecondary(equ)
@@ -275,7 +287,6 @@ end
 
 _initialguess(equ::DAE) = (v = equ.v̄,)
 _initialguess(equ::DAE, params::OptionalParameters) = (v = _get_v̄(equ, params),)
-
 
 @doc """
 `DAEProblem`: Differential Algebraic Equation Problem
@@ -331,9 +342,9 @@ prob = DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, q₀, λ₀, μ₀)
 const DAEProblem = EquationProblem{DAE}
 
 function DAEProblem(v, u, ϕ, ū, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v,
-                    invariants = NullInvariants(),
-                    parameters = NullParameters(),
-                    periodicity = NullPeriodicity())
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
     equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
@@ -348,6 +359,9 @@ end
 
 @inline GeometricBase.nconstraints(prob::DAEProblem) = length(initial_conditions(prob).λ)
 
+function compute_vectorfields!(vecfield, sol, prob::DAEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+end
 
 const DAEEnsemble = EnsembleProblem{DAE}
 

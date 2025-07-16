@@ -1,4 +1,5 @@
 using GeometricEquations
+using GeometricEquations: VectorfieldVariable, functions
 using Test
 
 include("functions.jl")
@@ -73,6 +74,17 @@ end
     @test prob == ODEProblem(
         ode_eqs..., (t₀, t₁), Δt, ode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = x₀
+    v = VectorfieldVariable(q)
+    sol = (t = t₀, q = q)
+    vec = (q = VectorfieldVariable(q),)
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, parameters(prob))
+
+    @test vec.q == v
 end
 
 @testset "$(rpad("SODE Problem",80))" begin
@@ -144,6 +156,17 @@ end
     @test invariants(prob1) == invariants(prob)
     @test parameters(prob1) == parameters(prob)
     @test nsamples(prob1) == nsamples(prob)
+
+    # test compute_vectorfields!
+    q = x₀
+    v = VectorfieldVariable(q)
+    sol = (t = t₀, q = q)
+    vec = (q = VectorfieldVariable(q),)
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, parameters(prob))
+
+    @test vec.q == v
 end
 
 @testset "$(rpad("PODE Problem",80))" begin
@@ -171,6 +194,21 @@ end
     @test prob == PODEProblem(
         pode_eqs..., (t₀, t₁), Δt, pode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, p = p)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.p, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("IODE Problem",80))" begin
@@ -199,6 +237,21 @@ end
     @test prob == IODEProblem(
         iode_eqs..., (t₀, t₁), Δt, iode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, v = v₀, p = p)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.v, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("HODE Problem",80))" begin
@@ -227,6 +280,21 @@ end
     @test prob == HODEProblem(
         hode_eqs..., (t₀, t₁), Δt, hode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, p = p)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.p, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("LODE Problem",80))" begin
@@ -256,6 +324,21 @@ end
     @test prob == LODEProblem(
         lode_eqs..., (t₀, t₁), Δt, lode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, v = v₀, p = p)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.v, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("DAE Problem",80))" begin
@@ -324,6 +407,16 @@ end
     @test prob == DAEProblem(
         dae_eqs_full..., (t₀, t₁), Δt, dae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+    # test compute_vectorfields!
+    q = x₀
+    v = VectorfieldVariable(q)
+    sol = (t = t₀, q = q, λ = λ₀)
+    vec = (q = VectorfieldVariable(q),)
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, parameters(prob))
+
+    @test vec.q == v
 end
 
 @testset "$(rpad("PDAE Problem",80))" begin
@@ -393,6 +486,21 @@ end
     @test prob == PDAEProblem(
         pdae_eqs_full..., (t₀, t₁), Δt, pdae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, p = p, λ = λ₀)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.p, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("HDAE Problem",80))" begin
@@ -463,6 +571,21 @@ end
     @test prob == HDAEProblem(
         hdae_eqs_full..., (t₀, t₁), Δt, hdae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, p = p, λ = λ₀)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.p, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("IDAE Problem",80))" begin
@@ -532,6 +655,21 @@ end
     @test prob == IDAEProblem(
         idae_eqs_full..., (t₀, t₁), Δt, idae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, v = v₀, p = p, λ = λ₀)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.v, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("LDAE Problem",80))" begin
@@ -602,6 +740,21 @@ end
     @test prob == LDAEProblem(
         ldae_eqs_full..., (t₀, t₁), Δt, ldae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, v = v₀, p = p, λ = λ₀)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.v, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("SDE Problem",80))" begin
@@ -627,6 +780,20 @@ end
     @test prob == SDEProblem(sde_v, sde_B, TestNoise(), (t₀, t₁), Δt,
         sde_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = x₀
+    v = VectorfieldVariable(q)
+    sol = (t = t₀, q = q)
+    vec = (q = VectorfieldVariable(q),)
+
+    prob = SDEProblem(
+        sde_eqs..., TestNoise(), (t₀, t₁), Δt, sde_ics; parameters = sde_params)
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, parameters(prob))
+
+    @test vec.q == v
 end
 
 @testset "$(rpad("PSDE Problem",80))" begin
@@ -656,6 +823,24 @@ end
     @test prob == PSDEProblem(psde_v, psde_f, psde_B, psde_G, TestNoise(), (t₀, t₁),
         Δt, psde_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, p = p)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    prob = PSDEProblem(
+        psde_eqs..., TestNoise(), (t₀, t₁), Δt, psde_ics; parameters = sde_params)
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.p, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end
 
 @testset "$(rpad("SPSDE Problem",80))" begin
@@ -687,4 +872,22 @@ end
         spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, TestNoise(),
         (t₀, t₁), Δt, spsde_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    # test compute_vectorfields!
+    q = q₀
+    p = p₀
+    v = VectorfieldVariable(q)
+    f = VectorfieldVariable(p)
+    sol = (t = t₀, q = q, p = p)
+    vec = (q = VectorfieldVariable(q), p = VectorfieldVariable(p))
+
+    prob = SPSDEProblem(
+        spsde_eqs..., TestNoise(), (t₀, t₁), Δt, spsde_ics; parameters = sde_params)
+
+    compute_vectorfields!(vec, sol, prob)
+    initialguess(prob).v(v, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(f, sol.t, sol.q, sol.p, parameters(prob))
+
+    @test vec.q == v
+    @test vec.p == f
 end

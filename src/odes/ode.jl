@@ -22,7 +22,6 @@ vector which holds the result of evaluating the vector field ``v`` on `t` and
 vector field may depend.
 """
 
-
 @doc """
 `ODE`: Ordinary Differential Equation
 
@@ -55,10 +54,9 @@ $(ode_functions)
 
 """
 struct ODE{vType <: Callable, v̄Type <: OptionalCallable,
-           invType <: OptionalInvariants,
-           parType <: OptionalParameters,
-           perType <: OptionalPeriodicity} <: AbstractEquationODE{invType, parType, perType}
-
+    invType <: OptionalInvariants,
+    parType <: OptionalParameters,
+    perType <: OptionalPeriodicity} <: AbstractEquationODE{invType, parType, perType}
     v::vType
     v̄::v̄Type
 
@@ -76,14 +74,14 @@ struct ODE{vType <: Callable, v̄Type <: OptionalCallable,
             typeof(invariants),
             typeof(parameters),
             typeof(_periodicity)
-            }(v, v̄, invariants, parameters, _periodicity)
+        }(v, v̄, invariants, parameters, _periodicity)
     end
 end
 
 function ODE(v; v̄ = v,
-             invariants = NullInvariants(),
-             parameters = NullParameters(),
-             periodicity = NullPeriodicity())
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity())
     ODE(v, v̄, invariants, parameters, periodicity)
 end
 
@@ -128,7 +126,9 @@ end
 
 function check_methods(equ::ODE, timespan, ics, params)
     applicable(equ.v, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
-    equ.v̄ === nothing || applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, params) || return false
+    equ.v̄ === nothing ||
+        applicable(equ.v̄, vectorfield(ics.q), timespan[begin], ics.q, params) ||
+        return false
     return true
 end
 
@@ -151,7 +151,6 @@ _functions(equ::ODE, params::OptionalParameters) = (v = _get_v(equ, params),)
 _initialguess(equ::ODE) = (v = equ.v̄,)
 _initialguess(equ::ODE, params::OptionalParameters) = (v = _get_v̄(equ, params),)
 
-
 @doc """
 `ODEProblem`: Ordinary Differential Equation Problem
 
@@ -166,7 +165,7 @@ ODEProblem(v, timespan, timestep, ics::NamedTuple; kwargs...)
 ODEProblem(v, timespan, timestep, q₀::StateVariable; kwargs...)
 ODEProblem(v, timespan, timestep, q₀::AbstractArray; kwargs...)
 ```
-where `v` is the function computing the vector field, 
+where `v` is the function computing the vector field,
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q` of type `StateVariable`.
@@ -183,16 +182,19 @@ $(ode_functions)
 const ODEProblem = EquationProblem{ODE}
 
 function ODEProblem(v, timespan, timestep, ics...;
-                    invariants = NullInvariants(),
-                    parameters = NullParameters(),
-                    periodicity = NullPeriodicity(),
-                    v̄ = v)
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity(),
+        v̄ = v)
     equ = ODE(v, v̄, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
 
+function compute_vectorfields!(vecfield, sol, prob::ODEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+end
 
 @doc """
 `ODEEnsemble`: Ordinary Differential Equation Ensemble
@@ -208,9 +210,9 @@ ODEEnsemble(v, timespan, timestep, ics::AbstractVector{<: NamedTuple}; kwargs...
 ODEEnsemble(v, timespan, timestep, q₀::AbstractVector{<: StateVariable}; kwargs...)
 ODEEnsemble(v, timespan, timestep, q₀::AbstractVector{<: AbstractArray}; kwargs...)
 ```
-where `v` is the function computing the vector field, 
+where `v` is the function computing the vector field,
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
-`timestep` is the time step to be used in the simulation, and 
+`timestep` is the time step to be used in the simulation, and
 `ics` is an `AbstractVector` of `NamedTuple`, each with an entry `q`
 of type `StateVariable`.
 The initial condition `q₀` can also be prescribed as an `AbstractVector`
@@ -223,10 +225,10 @@ For possible keyword arguments see the documentation on [`EnsembleProblem`](@ref
 const ODEEnsemble = EnsembleProblem{ODE}
 
 function ODEEnsemble(v, timespan, timestep, ics...;
-                    invariants = NullInvariants(),
-                    parameters = NullParameters(),
-                    periodicity = NullPeriodicity(),
-                    v̄ = v)
+        invariants = NullInvariants(),
+        parameters = NullParameters(),
+        periodicity = NullPeriodicity(),
+        v̄ = v)
     equ = ODE(v, v̄, invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

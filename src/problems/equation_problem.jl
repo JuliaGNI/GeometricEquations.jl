@@ -53,13 +53,13 @@ with other values than zero is currently missing but can be added if demand aris
 
 """
 struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <: Real,
-                        arrayType <: AbstractArray{dType},
-                        equType <: GeometricEquation,
-                        functionsType <: NamedTuple,
-                        solutionsType <: NamedTuple,
-                        iguessType <: NamedTuple,
-                        icsType <: NamedTuple,
-                        paramsType <: OptionalParameters} <: GeometricProblem{superType}
+    arrayType <: AbstractArray{dType},
+    equType <: GeometricEquation,
+    functionsType <: NamedTuple,
+    solutionsType <: NamedTuple,
+    iguessType <: NamedTuple,
+    icsType <: NamedTuple,
+    paramsType <: OptionalParameters} <: GeometricProblem{superType}
     equation::equType
     functions::functionsType
     solutions::solutionsType
@@ -86,8 +86,9 @@ struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <:
         sols = solutions(equ)
         iguess = initialguess(equ)
 
-        new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs), typeof(sols), typeof(iguess), typeof(_ics), typeof(parameters)
-            }(equ, funcs, sols, iguess, _timespan, _timestep, _ics, parameters)
+        new{superType, dType, tType, arrayType, typeof(equ), typeof(funcs),
+            typeof(sols), typeof(iguess), typeof(_ics), typeof(parameters)
+        }(equ, funcs, sols, iguess, _timespan, _timestep, _ics, parameters)
     end
 end
 
@@ -103,15 +104,17 @@ end
 #                                                   hash(prob.timespan, hash(prob.timestep,
 #                                                   hash(prov.ics, hash(prov.parameters, h))))))
 
-Base.:(==)(prob1::EquationProblem, prob2::EquationProblem) = (
-                                prob1.equation   == prob2.equation
-                             && prob1.functions  == prob2.functions
-                             && prob1.solutions  == prob2.solutions
-                             && prob1.initialguess == prob2.initialguess
-                             && prob1.timespan      == prob2.timespan
-                             && prob1.timestep      == prob2.timestep
-                             && prob1.ics        == prob2.ics
-                             && prob1.parameters == prob2.parameters)
+function Base.:(==)(prob1::EquationProblem, prob2::EquationProblem)
+    (
+        prob1.equation == prob2.equation
+        && prob1.functions == prob2.functions
+        && prob1.solutions == prob2.solutions
+        && prob1.initialguess == prob2.initialguess
+        && prob1.timespan == prob2.timespan
+        && prob1.timestep == prob2.timestep
+        && prob1.ics == prob2.ics
+        && prob1.parameters == prob2.parameters)
+end
 
 @inline GeometricBase.datatype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
 @inline GeometricBase.timetype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
@@ -136,7 +139,9 @@ end
     invariants(equation(prob))
 end
 
-initial_conditions(prob::EquationProblem) = merge((t = initialtime(prob),), prob.ics)
+function initial_conditions(prob::EquationProblem)
+    merge((t = TimeVariable(initialtime(prob)),), prob.ics)
+end
 
 function Base.show(io::IO, prob::EquationProblem)
     print(io, "Geometric Equation Problem for ", equation(prob))
@@ -151,12 +156,15 @@ function Base.show(io::IO, prob::EquationProblem)
     print(io, "   ", parameters(prob))
 end
 
-function Base.similar(prob::EquationProblem, timespan, timestep = timestep(prob), ics = prob.ics,
-                      parameters = parameters(prob))
-    EquationProblem(equation(prob), timespan, timestep, initialstate(equation(prob), ics...), parameters)
+function Base.similar(
+        prob::EquationProblem, timespan, timestep = timestep(prob), ics = prob.ics,
+        parameters = parameters(prob))
+    EquationProblem(equation(prob), timespan, timestep,
+        initialstate(equation(prob), ics...), parameters)
 end
 
-function Base.similar(prob::EquationProblem; timespan = timespan(prob), timestep = timestep(prob),
-                      ics = prob.ics, parameters = parameters(prob))
+function Base.similar(
+        prob::EquationProblem; timespan = timespan(prob), timestep = timestep(prob),
+        ics = prob.ics, parameters = parameters(prob))
     similar(prob, timespan, timestep, initialstate(equation(prob), ics...), parameters)
 end

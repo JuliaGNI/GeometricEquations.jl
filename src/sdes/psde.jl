@@ -121,6 +121,16 @@ GeometricBase.parameters(equation::PSDE) = equation.parameters
 GeometricBase.periodicity(equation::PSDE) = equation.periodicity
 
 hasvectorfield(::PSDE) = true
+function hasinitialguess(::PSDE{
+        vType, fType, BType, GType, <:Callable, <:Callable}) where {
+        vType, fType, BType, GType}
+    true
+end
+function hasinitialguess(::PSDE{
+        vType, fType, BType, GType, <:Nothing, <:Nothing}) where {
+        vType, fType, BType, GType}
+    false
+end
 
 function Base.show(io::IO, equation::PSDE)
     print(io, "Stratonovich Partitioned Stochastic Differential Equation (PSDE)", "\n")
@@ -203,12 +213,15 @@ end
 _get_invariant(::PSDE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 
 function _functions(equ::PSDE)
-    (v = equ.v, f = equ.f, B = equ.B, G = equ.G, v̄ = equ.v̄, f̄ = equ.f̄)
+    (v = equ.v, f = equ.f, B = equ.B, G = equ.G)
 end
 function _functions(equ::PSDE, params::OptionalParameters)
     (v = _get_v(equ, params), f = _get_f(equ, params),
-        B = _get_B(equ, params), G = _get_G(equ, params),
-        v̄ = _get_v̄(equ, params), f̄ = _get_f̄(equ, params))
+        B = _get_B(equ, params), G = _get_G(equ, params))
+end
+_initialguess(equ::PSDE) = (v = equ.v̄, f = equ.f̄)
+function _initialguess(equ::PSDE, params::OptionalParameters)
+    (v = _get_v̄(equ, params), f = _get_f̄(equ, params))
 end
 
 @doc """
@@ -252,5 +265,9 @@ function GeometricBase.periodicity(prob::PSDEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
 
+function compute_vectorfields!(vecfield, sol, prob::PSDEProblem)
+    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+end
 
 const PSDEEnsemble = EnsembleProblem{PSDE}

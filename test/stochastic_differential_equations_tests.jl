@@ -23,8 +23,9 @@ include("initial_conditions.jl")
     @test hash(sde) == hash(sde3)
     @test hash(sde) == hash(sde4)
 
-    @test functions(sde) == NamedTuple{(:v, :B, :v̄)}((sde_v, sde_B, sde_v))
+    @test functions(sde) == NamedTuple{(:v, :B)}(sde_eqs)
     @test solutions(sde) == NamedTuple()
+    @test initialguess(sde) == NamedTuple{(:v,)}(sde_igs)
 
     @test parameters(sde) == NullParameters()
     @test invariants(sde) == NullInvariants()
@@ -92,9 +93,9 @@ end
     @test hash(psde) == hash(psde3)
     @test hash(psde) == hash(psde4)
 
-    @test functions(psde) == NamedTuple{(:v, :f, :B, :G, :v̄, :f̄)}((
-        psde_v, psde_f, psde_B, psde_G, psde_v, psde_f))
+    @test functions(psde) == NamedTuple{(:v, :f, :B, :G)}(psde_eqs)
     @test solutions(psde) == NamedTuple()
+    @test initialguess(psde) == NamedTuple{(:v, :f)}(psde_igs)
 
     @test parameters(psde) == NullParameters()
     @test invariants(psde) == NullInvariants()
@@ -162,9 +163,9 @@ end
     @test hash(psde) == hash(psde3)
     @test hash(psde) == hash(psde4)
 
-    @test functions(psde) == NamedTuple{(:v, :f1, :f2, :B, :G1, :G2, :v̄, :f̄)}((
-        spsde_v, spsde_f1, spsde_f2, spsde_B, spsde_G1, spsde_G2, spsde_v, spsde_f1))
+    @test functions(psde) == NamedTuple{(:v, :f1, :f2, :B, :G1, :G2)}(spsde_eqs)
     @test solutions(psde) == NamedTuple()
+    @test initialguess(psde) == NamedTuple{(:v, :f)}(spsde_igs)
 
     @test parameters(psde) == NullParameters()
     @test invariants(psde) == NullInvariants()
