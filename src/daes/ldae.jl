@@ -515,7 +515,7 @@ end
 
 function compute_vectorfields!(vecfield, sol, prob::LDAEProblem)
     initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
-    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.v, parameters(prob))
+    initialguess(prob).f(vecfield.p, sol.t, sol.q, vecfield.q, parameters(prob))
 end
 
 const LDAEEnsemble = EnsembleProblem{LDAE}
