@@ -1,10 +1,9 @@
 
 struct SubstepProblem{superType <: GeometricEquation, dType <: Number, tType <: Real,
-        problemType <: EquationProblem,
-        functionsType <: NamedTuple,
-        solutionsType <: NamedTuple,
-        cType <: Real} <: GeometricProblem{superType}
-
+    problemType <: EquationProblem,
+    functionsType <: NamedTuple,
+    solutionsType <: NamedTuple,
+    cType <: Real} <: GeometricProblem{superType}
     problem::problemType
     functions::functionsType
     solutions::solutionsType
@@ -28,7 +27,9 @@ struct SubstepProblem{superType <: GeometricEquation, dType <: Number, tType <: 
         end
         sol_tuple = NamedTuple{keys}(sols)
 
-        new{SODE, datatype(problem), timetype(problem), typeof(problem), typeof(fnc_tuple), typeof(sol_tuple), typeof(c)}(problem, fnc_tuple, sol_tuple, c, i)
+        new{SODE, datatype(problem), timetype(problem), typeof(problem),
+            typeof(fnc_tuple), typeof(sol_tuple), typeof(c)}(
+            problem, fnc_tuple, sol_tuple, c, i)
     end
 end
 
@@ -50,9 +51,11 @@ coefficient(ssp::SubstepProblem) = ssp.coefficient
 @inline GeometricBase.ndims(ssp::SubstepProblem) = ndims(problem(ssp))
 @inline GeometricBase.ntime(ssp::SubstepProblem) = ntime(problem(ssp))
 @inline GeometricBase.timespan(ssp::SubstepProblem) = timespan(problem(ssp))
-@inline GeometricBase.timestep(ssp::SubstepProblem) = coefficient(ssp) * timestep(problem(ssp))
+@inline GeometricBase.timestep(ssp::SubstepProblem) = coefficient(ssp) *
+                                                      timestep(problem(ssp))
 
 @inline GeometricBase.equation(ssp::SubstepProblem) = equation(problem(ssp))
+@inline GeometricBase.initialguess(ssp::SubstepProblem) = initialguess(problem(ssp))
 @inline GeometricBase.invariants(ssp::SubstepProblem) = invariants(problem(ssp))
 @inline GeometricBase.parameters(ssp::SubstepProblem) = parameters(problem(ssp))
 @inline GeometricBase.nsamples(ssp::SubstepProblem) = nsamples(problem(ssp))
