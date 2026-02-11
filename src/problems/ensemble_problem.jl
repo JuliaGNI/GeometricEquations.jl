@@ -87,29 +87,33 @@ EnsembleProblem(equ, timespan, timestep, ics; parameters = NullParameters()) =
 
 """
 struct EnsembleProblem{superType <: GeometricEquation, dType <: Number, tType <: Real,
-                 arrayType <: AbstractArray{dType},
-                 equType <: GeometricEquation,
-                 functionsType <: NamedTuple,
-                 solutionsType <: NamedTuple,
-                 iguessType <: NamedTuple,
-                 icsType <: AbstractVector{<:NamedTuple},
-                 paramsType <: AbstractVector{<:OptionalParameters}} <: GeometricProblem{superType}
+    arrayType <: AbstractArray{dType},
+    equType <: GeometricEquation,
+    functionsType <: NamedTuple,
+    solutionsType <: NamedTuple,
+    iguessType <: NamedTuple,
+    icsType <: AbstractVector{<:NamedTuple},
+    paramsType <: AbstractVector{<:OptionalParameters}} <:
+       GeometricProblem{superType, dType, tType}
     equation::equType
     functions::functionsType
     solutions::solutionsType
     initialguess::iguessType
-    timespan::Tuple{tType,tType}
+    timespan::Tuple{tType, tType}
     timestep::tType
     ics::icsType
     parameters::paramsType
 end
 
-function EnsembleProblem(equ::equType, timespan, timestep, ics::AbstractVector{<:NamedTuple}, parameters::AbstractVector{<:OptionalParameters}) where {equType}
+function EnsembleProblem(
+        equ::equType, timespan, timestep, ics::AbstractVector{<:NamedTuple},
+        parameters::AbstractVector{<:OptionalParameters}) where {equType}
     @assert axes(ics) == axes(parameters)
 
     _timespan = promote_timespan(timespan)
     _timespan, _timestep = promote_timespan_and_timestep(_timespan, timestep)
-    _ics = [initialstate(equ, _timespan[begin], ic, param) for (ic,param) in zip(ics,parameters)]
+    _ics = [initialstate(equ, _timespan[begin], ic, param)
+            for (ic, param) in zip(ics, parameters)]
 
     for i in eachindex(_ics)
         @assert check_initial_conditions(equ, _ics[i])
@@ -118,7 +122,8 @@ function EnsembleProblem(equ::equType, timespan, timestep, ics::AbstractVector{<
     @assert check_methods(equ, _timespan, _ics[begin], parameters[begin])
     @assert axes(parameters) == axes(ics)
 
-    length(_ics) == 1 && @warn("You created an EnsembleProblem with a single initial condition and a single set of parameters. You probably want to create a GeometricProblem instead.")
+    length(_ics) == 1 &&
+        @warn("You created an EnsembleProblem with a single initial condition and a single set of parameters. You probably want to create a GeometricProblem instead.")
 
     superType = eval(typeof(equ).name.name)
     tType = typeof(_timestep)
@@ -129,10 +134,13 @@ function EnsembleProblem(equ::equType, timespan, timestep, ics::AbstractVector{<
     sols = solutions(equ)
     iguesss = initialguess(equ)
 
-    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs), typeof(sols), typeof(iguesss), typeof(_ics), typeof(parameters)}(equ, funcs, sols, iguesss, _timespan, _timestep, _ics, parameters)
+    EnsembleProblem{superType, dType, tType, arrayType, equType, typeof(funcs),
+        typeof(sols), typeof(iguesss), typeof(_ics), typeof(parameters)}(
+        equ, funcs, sols, iguesss, _timespan, _timestep, _ics, parameters)
 end
 
-function EnsembleProblem(equ, timespan, timestep, ics::AbstractVector{<:NamedTuple}, parameters::OptionalParameters = NullParameters())
+function EnsembleProblem(equ, timespan, timestep, ics::AbstractVector{<:NamedTuple},
+        parameters::OptionalParameters = NullParameters())
     _params = similar(ics, typeof(parameters))
 
     for i in eachindex(_params)
@@ -142,7 +150,8 @@ function EnsembleProblem(equ, timespan, timestep, ics::AbstractVector{<:NamedTup
     EnsembleProblem(equ, timespan, timestep, ics, _params)
 end
 
-function EnsembleProblem(equ, timespan, timestep, ics::NamedTuple, parameters::AbstractVector{<:OptionalParameters})
+function EnsembleProblem(equ, timespan, timestep, ics::NamedTuple,
+        parameters::AbstractVector{<:OptionalParameters})
     _ics = similar(parameters, typeof(ics))
 
     for i in eachindex(_ics)
@@ -152,7 +161,8 @@ function EnsembleProblem(equ, timespan, timestep, ics::NamedTuple, parameters::A
     EnsembleProblem(equ, timespan, timestep, _ics, parameters)
 end
 
-function EnsembleProblem(equ, timespan, timestep, ics::NamedTuple, parameters::OptionalParameters)
+function EnsembleProblem(
+        equ, timespan, timestep, ics::NamedTuple, parameters::OptionalParameters)
     EnsembleProblem(equ, timespan, timestep, ics, [parameters])
 end
 
@@ -164,15 +174,17 @@ function EnsembleProblem(equ, timespan, timestep, ics; parameters = NullParamete
     EnsembleProblem(equ, timespan, timestep, ics, parameters)
 end
 
-Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
-                                ens1.equation   == ens2.equation
-                             && ens1.functions  == ens2.functions
-                             && ens1.solutions  == ens2.solutions
-                             && ens1.initialguess == ens2.initialguess
-                             && ens1.timespan      == ens2.timespan
-                             && ens1.timestep      == ens2.timestep
-                             && ens1.ics        == ens2.ics
-                             && ens1.parameters == ens2.parameters)
+function Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem)
+    (
+        ens1.equation == ens2.equation
+        && ens1.functions == ens2.functions
+        && ens1.solutions == ens2.solutions
+        && ens1.initialguess == ens2.initialguess
+        && ens1.timespan == ens2.timespan
+        && ens1.timestep == ens2.timestep
+        && ens1.ics == ens2.ics
+        && ens1.parameters == ens2.parameters)
+end
 
 @inline GeometricBase.datatype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
 @inline GeometricBase.timetype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
@@ -188,7 +200,6 @@ Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem) = (
 @inline GeometricBase.initialguess(ge::EnsembleProblem) = ge.initialguess
 @inline GeometricBase.parameters(ge::EnsembleProblem) = ge.parameters
 
-
 @inline GeometricBase.nsamples(ge::EnsembleProblem) = length(initial_conditions(ge))
 
 initial_conditions(ge::EnsembleProblem) = ge.ics
@@ -196,11 +207,16 @@ initial_condition(ge::EnsembleProblem, i) = initial_conditions(ge)[i]
 parameter(ge::EnsembleProblem, i) = parameters(ge)[i]
 
 function problem(ge::EnsembleProblem, i)
-    EquationProblem(equation(ge), timespan(ge), timestep(ge), initial_condition(ge, i), parameter(ge, i))
+    EquationProblem(equation(ge), timespan(ge), timestep(ge),
+        initial_condition(ge, i), parameter(ge, i))
 end
 
 Base.length(ge::EnsembleProblem) = nsamples(ge)
-Base.iterate(ge::EnsembleProblem, i=1) = i > nsamples(ge) ? nothing : (problem(ge, i), i+1)
-Base.getindex(ge::EnsembleProblem, i::Union{Integer,Base.AbstractCartesianIndex}) = problem(ge, i)
+function Base.iterate(ge::EnsembleProblem, i = 1)
+    i > nsamples(ge) ? nothing : (problem(ge, i), i + 1)
+end
+function Base.getindex(ge::EnsembleProblem, i::Union{Integer, Base.AbstractCartesianIndex})
+    problem(ge, i)
+end
 
 initialstate(::GeometricEquation, ics::AbstractVector{<:NamedTuple}) = ics

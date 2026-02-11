@@ -3,7 +3,8 @@ struct SubstepProblem{superType <: GeometricEquation, dType <: Number, tType <: 
     problemType <: EquationProblem,
     functionsType <: NamedTuple,
     solutionsType <: NamedTuple,
-    cType <: Real} <: GeometricProblem{superType}
+    cType <: Real} <:
+       GeometricProblem{superType, dType, tType}
     problem::problemType
     functions::functionsType
     solutions::solutionsType

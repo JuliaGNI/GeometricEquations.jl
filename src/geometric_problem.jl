@@ -1,10 +1,11 @@
 """
 Abstract type that describes a generic interface for different problem types.
 """
-abstract type GeometricProblem{superType} <: AbstractProblem end
+abstract type GeometricProblem{superType, dataType, timeType} <: AbstractProblem end
 
 "Returns the parent equation object of the problem."
-GeometricBase.equation(prob::GeometricProblem) = error("equation() not implemented for ", typeof(prob), ".")
+GeometricBase.equation(prob::GeometricProblem) = error(
+    "equation() not implemented for ", typeof(prob), ".")
 
 "Returns a NamedTuple containing all functions (e.g. vector fields) provided by the equation."
 GeometricBase.functions(prob::GeometricProblem) = functions(equation(prob))
@@ -15,10 +16,16 @@ GeometricBase.solutions(prob::GeometricProblem) = solutions(equation(prob))
 "Returns a NamedTuple containing all invariants provided by the equation."
 GeometricBase.invariants(prob::GeometricProblem) = invariants(equation(prob))
 
-GeometricBase.timespan(prob::GeometricProblem) = error("timespan() not implemented for ", typeof(prob), ".")
-GeometricBase.timestep(prob::GeometricProblem) = error("timestep() not implemented for ", typeof(prob), ".")
+function GeometricBase.timespan(prob::GeometricProblem)
+    error("timespan() not implemented for ", typeof(prob), ".")
+end
+function GeometricBase.timestep(prob::GeometricProblem)
+    error("timestep() not implemented for ", typeof(prob), ".")
+end
 
-GeometricBase.parameters(prob::GeometricProblem) = error("parameters() not implemented for ", typeof(prob), ".")
+function GeometricBase.parameters(prob::GeometricProblem)
+    error("parameters() not implemented for ", typeof(prob), ".")
+end
 GeometricBase.periodicity(prob::GeometricProblem) = periodicity(equation(prob))
 
 hassolution(prob::GeometricProblem) = hassolution(equation(prob))
