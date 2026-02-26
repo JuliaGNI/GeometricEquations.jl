@@ -58,7 +58,8 @@ export datatype, timetype, arrtype, equtype
 export initialtime, finaltime, timespan, timestep
 export problem, equation, equations, functions, solutions, initialguess
 export invariants, parameters, periodicity, getperiodicity
-export initial_conditions, compute_vectorfields!
+export initial_conditions, initial_state
+export compute_vectorfields!
 export ntime, nsamples, nconstraints, nsteps
 
 export hassolution, hasvectorfield, hasinitialguess, hasprimary, hassecondary,
