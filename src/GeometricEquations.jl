@@ -5,7 +5,7 @@ using GeometricBase
 import Base: Callable
 
 import GeometricBase: datatype, timetype, arrtype, equtype
-import GeometricBase: initialtime, finaltime, timespan, timestep
+import GeometricBase: initialstate, initialtime, finaltime, timespan, timestep
 import GeometricBase: equation, equations, functions, solutions, initialguess
 import GeometricBase: invariants, parameters, periodicity
 import GeometricBase: ntime, nsamples, nconstraints, nsteps
@@ -58,7 +58,7 @@ export datatype, timetype, arrtype, equtype
 export initialtime, finaltime, timespan, timestep
 export problem, equation, equations, functions, solutions, initialguess
 export invariants, parameters, periodicity, getperiodicity
-export initial_conditions, initial_state
+export initial_conditions, initialstate
 export compute_vectorfields!
 export ntime, nsamples, nconstraints, nsteps
 

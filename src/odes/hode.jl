@@ -245,9 +245,9 @@ function GeometricBase.periodicity(prob::HODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
 
-function compute_vectorfields!(vecfield, sol, prob::HODEProblem)
-    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
-    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+function compute_vectorfields!(state::State, prob::HODEProblem)
+    initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
 end
 
 @doc """

@@ -371,9 +371,9 @@ end
 
 @inline GeometricBase.nconstraints(prob::LODEProblem) = ndims(prob)
 
-function compute_vectorfields!(vecfield, sol, prob::LODEProblem)
-    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
-    initialguess(prob).f(vecfield.p, sol.t, sol.q, vecfield.q, parameters(prob))
+function compute_vectorfields!(state::State, prob::LODEProblem)
+    initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.q̇, parameters(prob))
 end
 
 @doc """

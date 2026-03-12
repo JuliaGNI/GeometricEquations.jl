@@ -144,8 +144,8 @@ function initial_conditions(prob::EquationProblem)
     merge((t = TimeVariable(initialtime(prob)),), prob.ics)
 end
 
-function initial_state(prob::EquationProblem)
-    State(initial_conditions(prob))
+function initialstate(prob::EquationProblem)
+    State(initialtime(prob), prob.ics)
 end
 
 function Base.show(io::IO, prob::EquationProblem)

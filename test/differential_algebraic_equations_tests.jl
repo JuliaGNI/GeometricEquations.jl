@@ -6,9 +6,7 @@ using Test
 include("functions.jl")
 include("initial_conditions.jl")
 
-
 @testset "$(rpad("Differential Algebraic Equations (DAE)",80))" begin
-
     dae = DAE(dae_eqs...)
 
     @test invariants(dae) == NullInvariants()
@@ -39,15 +37,14 @@ include("initial_conditions.jl")
 
     @test initialguess(dae) == NamedTuple{(:v,)}(dae_igs)
 
-
     dae_eqs1 = (dae_eqs..., nothing, nothing)
     dae_eqs2 = (dae_eqs..., nothing, nothing, dae_v)
 
     for eqs in (dae_eqs1, dae_eqs2)
         dae1 = DAE(eqs...)
-        dae2 = DAE(eqs...; invariants=NullInvariants())
-        dae3 = DAE(eqs...; parameters=NullParameters())
-        dae4 = DAE(eqs...; periodicity=NullPeriodicity())
+        dae2 = DAE(eqs...; invariants = NullInvariants())
+        dae3 = DAE(eqs...; parameters = NullParameters())
+        dae4 = DAE(eqs...; periodicity = NullPeriodicity())
 
         @test dae == dae1
         @test dae == dae2
@@ -60,11 +57,12 @@ include("initial_conditions.jl")
         @test hash(dae) == hash(dae4)
     end
 
-
     # Test for periodicity
-    dae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=([-π,0],[+π,2π]))
+    dae_args = (invariants = (h = pdae_h,), parameters = (a = 1,),
+        periodicity = ([-π, 0], [+π, 2π]))
 
-    dae = DAE(dae_eqs_full..., dae_v, dae_args.invariants, parameter_types(dae_args.parameters), dae_args.periodicity)
+    dae = DAE(dae_eqs_full..., dae_v, dae_args.invariants,
+        parameter_types(dae_args.parameters), dae_args.periodicity)
 
     @test invariants(dae) == dae_args.invariants
     @test parameters(dae) == parameter_types(dae_args.parameters)
@@ -99,8 +97,12 @@ include("initial_conditions.jl")
 
     @test initialguess(dae) == NamedTuple{(:v,)}(dae_igs)
 
-    dae1 = DAE(dae_eqs_full...; v̄=dae_v, invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
-    dae2 = DAE(dae_eqs_full...; invariants=dae_args.invariants, parameters=parameter_types(dae_args.parameters), periodicity=dae_args.periodicity)
+    dae1 = DAE(dae_eqs_full...; v̄ = dae_v, invariants = dae_args.invariants,
+        parameters = parameter_types(dae_args.parameters),
+        periodicity = dae_args.periodicity)
+    dae2 = DAE(dae_eqs_full...; invariants = dae_args.invariants,
+        parameters = parameter_types(dae_args.parameters),
+        periodicity = dae_args.periodicity)
 
     @test dae == dae1
     @test dae == dae2
@@ -108,32 +110,28 @@ include("initial_conditions.jl")
     @test hash(dae) == hash(dae1)
     @test hash(dae) == hash(dae2)
 
-
     # Test for periodicity
-    daep = DAE(dae_eqs...; periodicity=([-π,0],[+π,2π]))
+    daep = DAE(dae_eqs...; periodicity = ([-π, 0], [+π, 2π]))
 
-    @test periodicity(daep) == (Float64[-π,0],Float64[+π,2π])
-    @test getperiodicity(daep) == BitArray([true,true])
+    @test periodicity(daep) == (Float64[-π, 0], Float64[+π, 2π])
+    @test getperiodicity(daep) == BitArray([true, true])
     @test hasperiodicity(daep) == true
 
-    daep = DAE(dae_eqs...; periodicity=([-Inf,0],[+Inf,2π]))
+    daep = DAE(dae_eqs...; periodicity = ([-Inf, 0], [+Inf, 2π]))
 
-    @test periodicity(daep) == (Float64[-Inf,0],Float64[+Inf,2π])
-    @test getperiodicity(daep) == BitArray([false,true])
+    @test periodicity(daep) == (Float64[-Inf, 0], Float64[+Inf, 2π])
+    @test getperiodicity(daep) == BitArray([false, true])
     @test hasperiodicity(daep) == true
 
-    daep = DAE(dae_eqs...; periodicity=([-Inf,-Inf],[+Inf,+Inf]))
+    daep = DAE(dae_eqs...; periodicity = ([-Inf, -Inf], [+Inf, +Inf]))
 
     @test periodicity(daep) == NullPeriodicity()
     @test ismissing(getperiodicity(daep))
     @test hasperiodicity(daep) == false
-
 end
 
-
 @testset "$(rpad("Partitioned Differential Algebraic Equations (PDAE)",80))" begin
-
-    pdae  = PDAE(pdae_eqs...)
+    pdae = PDAE(pdae_eqs...)
 
     @test invariants(pdae) == NullInvariants()
     @test parameters(pdae) == NullParameters()
@@ -157,21 +155,20 @@ end
     @test igs.v == pdae_v == pdae.v̄
     @test igs.f == pdae_f == pdae.f̄
 
-    @test initialguess(pdae) == NamedTuple{(:v,:f)}(pdae_igs)
+    @test initialguess(pdae) == NamedTuple{(:v, :f)}(pdae_igs)
 
     # @test pdae == similar(pdae, t₀, q₀, p₀, λ₀)
     # @test pdae == similar(pdae, t₀, q₀, p₀)
     # @test pdae == similar(pdae, q₀, p₀)
-
 
     pdae_eqs1 = (pdae_eqs..., nothing, nothing, nothing)
     pdae_eqs2 = (pdae_eqs..., nothing, nothing, nothing, pdae_v, pdae_f)
 
     for eqs in (pdae_eqs1, pdae_eqs2)
         pdae1 = PDAE(eqs...)
-        pdae2 = PDAE(eqs...; invariants=NullInvariants())
-        pdae3 = PDAE(eqs...; parameters=NullParameters())
-        pdae4 = PDAE(eqs...; periodicity=NullPeriodicity())
+        pdae2 = PDAE(eqs...; invariants = NullInvariants())
+        pdae3 = PDAE(eqs...; parameters = NullParameters())
+        pdae4 = PDAE(eqs...; periodicity = NullPeriodicity())
 
         @test pdae == pdae1
         @test pdae == pdae2
@@ -184,10 +181,11 @@ end
         @test hash(pdae) == hash(pdae4)
     end
 
+    pdae_args = (
+        invariants = (h = pdae_h,), parameters = (a = 1,), periodicity = ([0.0], [2π]))
 
-    pdae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=([0.0,],[2π]))
-
-    pdae  = PDAE(pdae_eqs_full..., pdae_v, pdae_f, pdae_args.invariants, parameter_types(pdae_args.parameters), pdae_args.periodicity)
+    pdae = PDAE(pdae_eqs_full..., pdae_v, pdae_f, pdae_args.invariants,
+        parameter_types(pdae_args.parameters), pdae_args.periodicity)
 
     @test invariants(pdae) == pdae_args.invariants
     @test parameters(pdae) == parameter_types(pdae_args.parameters)
@@ -224,11 +222,15 @@ end
     @test funcs.ḡ != pdae_g
     @test funcs.ψ != pdae_ψ
 
-    @test initialguess(pdae) == NamedTuple{(:v,:f)}(pdae_igs)
+    @test initialguess(pdae) == NamedTuple{(:v, :f)}(pdae_igs)
 
-
-    pdae1 = PDAE(pdae_eqs_full...; v̄=pdae_v, f̄=pdae_f, invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
-    pdae2 = PDAE(pdae_eqs_full...; invariants=pdae_args.invariants, parameters=parameter_types(pdae_args.parameters), periodicity=pdae_args.periodicity)
+    pdae1 = PDAE(
+        pdae_eqs_full...; v̄ = pdae_v, f̄ = pdae_f, invariants = pdae_args.invariants,
+        parameters = parameter_types(pdae_args.parameters),
+        periodicity = pdae_args.periodicity)
+    pdae2 = PDAE(pdae_eqs_full...; invariants = pdae_args.invariants,
+        parameters = parameter_types(pdae_args.parameters),
+        periodicity = pdae_args.periodicity)
 
     @test pdae == pdae1
     @test pdae == pdae2
@@ -236,26 +238,22 @@ end
     @test hash(pdae) == hash(pdae1)
     @test hash(pdae) == hash(pdae2)
 
-
     # Test for periodicity
-    pdaep = PDAE(pdae_eqs...; periodicity=([0.0,],[2π]))
+    pdaep = PDAE(pdae_eqs...; periodicity = ([0.0], [2π]))
 
-    @test periodicity(pdaep) == (Float64[0],Float64[2π])
+    @test periodicity(pdaep) == (Float64[0], Float64[2π])
     @test getperiodicity(pdaep) == BitArray([true])
     @test hasperiodicity(pdaep) == true
 
-    pdaep = PDAE(pdae_eqs...; periodicity=([-Inf],[+Inf]))
+    pdaep = PDAE(pdae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(pdaep) == NullPeriodicity()
     @test ismissing(getperiodicity(pdaep))
     @test hasperiodicity(pdaep) == false
-
 end
 
-
 @testset "$(rpad("Implicit Differential Algebraic Equations (IDAE)",80))" begin
-
-    idae  = IDAE(idae_eqs...)
+    idae = IDAE(idae_eqs...)
 
     @test invariants(idae) == NullInvariants()
     @test parameters(idae) == NullParameters()
@@ -279,17 +277,16 @@ end
     @test igs.v == idae_v == idae.v̄
     @test igs.f == idae_f == idae.f̄
 
-    @test initialguess(idae) == NamedTuple{(:v,:f)}(idae_igs)
-
+    @test initialguess(idae) == NamedTuple{(:v, :f)}(idae_igs)
 
     idae_eqs1 = (idae_eqs..., nothing, nothing, nothing)
     idae_eqs2 = (idae_eqs..., nothing, nothing, nothing, idae_v, idae_f)
 
     for eqs in (idae_eqs1, idae_eqs2)
         idae1 = IDAE(eqs...)
-        idae2 = IDAE(eqs...; invariants=NullInvariants())
-        idae3 = IDAE(eqs...; parameters=NullParameters())
-        idae4 = IDAE(eqs...; periodicity=NullPeriodicity())
+        idae2 = IDAE(eqs...; invariants = NullInvariants())
+        idae3 = IDAE(eqs...; parameters = NullParameters())
+        idae4 = IDAE(eqs...; periodicity = NullPeriodicity())
 
         @test idae == idae1
         @test idae == idae2
@@ -302,10 +299,11 @@ end
         @test hash(idae) == hash(idae4)
     end
 
+    idae_args = (
+        invariants = (h = pdae_h,), parameters = (a = 1,), periodicity = ([0.0], [2π]))
 
-    idae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=([0.0,],[2π]))
-
-    idae  = IDAE(idae_eqs_full..., idae_v, idae_f, idae_args.invariants, parameter_types(idae_args.parameters), idae_args.periodicity)
+    idae = IDAE(idae_eqs_full..., idae_v, idae_f, idae_args.invariants,
+        parameter_types(idae_args.parameters), idae_args.periodicity)
 
     @test invariants(idae) == idae_args.invariants
     @test parameters(idae) == parameter_types(idae_args.parameters)
@@ -342,11 +340,15 @@ end
     @test funcs.ḡ != idae_g
     @test funcs.ψ != idae_ψ
 
-    @test initialguess(idae) == NamedTuple{(:v,:f)}(idae_igs)
+    @test initialguess(idae) == NamedTuple{(:v, :f)}(idae_igs)
 
-
-    idae1 = IDAE(idae_eqs_full...; v̄=idae_v, f̄=idae_f, invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
-    idae2 = IDAE(idae_eqs_full...; invariants=idae_args.invariants, parameters=parameter_types(idae_args.parameters), periodicity=idae_args.periodicity)
+    idae1 = IDAE(
+        idae_eqs_full...; v̄ = idae_v, f̄ = idae_f, invariants = idae_args.invariants,
+        parameters = parameter_types(idae_args.parameters),
+        periodicity = idae_args.periodicity)
+    idae2 = IDAE(idae_eqs_full...; invariants = idae_args.invariants,
+        parameters = parameter_types(idae_args.parameters),
+        periodicity = idae_args.periodicity)
 
     @test idae == idae1
     @test idae == idae2
@@ -354,25 +356,21 @@ end
     @test hash(idae) == hash(idae1)
     @test hash(idae) == hash(idae2)
 
-
     # Test for periodicity
-    idaep = IDAE(idae_eqs...; periodicity=([0.0,],[2π]))
+    idaep = IDAE(idae_eqs...; periodicity = ([0.0], [2π]))
 
-    @test periodicity(idaep) == (Float64[0],Float64[2π])
+    @test periodicity(idaep) == (Float64[0], Float64[2π])
     @test getperiodicity(idaep) == BitArray([true])
     @test hasperiodicity(idaep) == true
 
-    idaep = IDAE(idae_eqs...; periodicity=([-Inf],[+Inf]))
+    idaep = IDAE(idae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(idaep) == NullPeriodicity()
     @test ismissing(getperiodicity(idaep))
     @test hasperiodicity(idaep) == false
-
 end
 
-
 @testset "$(rpad("Hamiltonian Differential Algebraic Equations (HDAE)",80))" begin
-
     hdae = HDAE(hdae_eqs...)
 
     @test hasvectorfield(hdae) == true
@@ -395,17 +393,16 @@ end
     @test igs.v == pdae_v == hdae.v̄
     @test igs.f == pdae_f == hdae.f̄
 
-    @test initialguess(hdae) == NamedTuple{(:v,:f)}(hdae_igs)
-
+    @test initialguess(hdae) == NamedTuple{(:v, :f)}(hdae_igs)
 
     hdae_eqs1 = (pdae_eqs..., nothing, nothing, nothing, pdae_h)
     hdae_eqs2 = (pdae_eqs..., nothing, nothing, nothing, pdae_v, pdae_f, pdae_h)
 
     for eqs in (hdae_eqs1, hdae_eqs2)
         hdae1 = HDAE(eqs...)
-        hdae2 = HDAE(eqs...; invariants=NullInvariants())
-        hdae3 = HDAE(eqs...; parameters=NullParameters())
-        hdae4 = HDAE(eqs...; periodicity=NullPeriodicity())
+        hdae2 = HDAE(eqs...; invariants = NullInvariants())
+        hdae3 = HDAE(eqs...; parameters = NullParameters())
+        hdae4 = HDAE(eqs...; periodicity = NullPeriodicity())
 
         @test hdae == hdae1
         @test hdae == hdae2
@@ -418,10 +415,11 @@ end
         @test hash(hdae) == hash(hdae4)
     end
 
+    hdae_args = (
+        invariants = (h = pdae_h,), parameters = (a = 1,), periodicity = ([0.0], [2π]))
 
-    hdae_args = (invariants=(h=pdae_h,), parameters=(a=1,), periodicity=([0.0,],[2π]))
-
-    hdae = HDAE(hdae_eqs_main..., hdae_args.invariants, parameter_types(hdae_args.parameters), hdae_args.periodicity)
+    hdae = HDAE(hdae_eqs_main..., hdae_args.invariants,
+        parameter_types(hdae_args.parameters), hdae_args.periodicity)
 
     @test hasvectorfield(hdae) == true
     @test hasinitialguess(hdae) == true
@@ -457,11 +455,15 @@ end
     @test funcs.ψ != pdae_ψ
     @test funcs.h != pdae_h
 
-    @test initialguess(hdae) == NamedTuple{(:v,:f)}(hdae_igs)
+    @test initialguess(hdae) == NamedTuple{(:v, :f)}(hdae_igs)
 
-
-    hdae1 = HDAE(hdae_eqs_full...; v̄=pdae_v, f̄=pdae_f, invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
-    hdae2 = HDAE(hdae_eqs_full...; invariants=hdae_args.invariants, parameters=parameter_types(hdae_args.parameters), periodicity=hdae_args.periodicity)
+    hdae1 = HDAE(
+        hdae_eqs_full...; v̄ = pdae_v, f̄ = pdae_f, invariants = hdae_args.invariants,
+        parameters = parameter_types(hdae_args.parameters),
+        periodicity = hdae_args.periodicity)
+    hdae2 = HDAE(hdae_eqs_full...; invariants = hdae_args.invariants,
+        parameters = parameter_types(hdae_args.parameters),
+        periodicity = hdae_args.periodicity)
 
     @test hdae == hdae1
     @test hdae == hdae2
@@ -469,25 +471,21 @@ end
     @test hash(hdae) == hash(hdae1)
     @test hash(hdae) == hash(hdae2)
 
-
     # Test for periodicity
-    hdaep = HDAE(hdae_eqs...; periodicity=([0.0,],[2π]))
+    hdaep = HDAE(hdae_eqs...; periodicity = ([0.0], [2π]))
 
-    @test periodicity(hdaep) == (Float64[0],Float64[2π])
+    @test periodicity(hdaep) == (Float64[0], Float64[2π])
     @test getperiodicity(hdaep) == BitArray([true])
     @test hasperiodicity(hdaep) == true
 
-    hdaep = HDAE(hdae_eqs...; periodicity=([-Inf],[+Inf]))
+    hdaep = HDAE(hdae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(hdaep) == NullPeriodicity()
     @test ismissing(getperiodicity(hdaep))
     @test hasperiodicity(hdaep) == false
-
 end
 
-
 @testset "$(rpad("Variational Differential Algebraic Equations (LDAE)",80))" begin
-
     ldae = LDAE(ldae_eqs...)
 
     @test hassecondary(ldae) == false
@@ -509,17 +507,16 @@ end
     @test igs.v == ldae_v == ldae.v̄
     @test igs.f == ldae_f == ldae.f̄
 
-    @test initialguess(ldae) == NamedTuple{(:v,:f)}(ldae_igs)
-
+    @test initialguess(ldae) == NamedTuple{(:v, :f)}(ldae_igs)
 
     ldae_eqs1 = (idae_eqs..., nothing, nothing, nothing, ldae_ω, ldae_l)
     ldae_eqs2 = (idae_eqs..., nothing, nothing, nothing, ldae_ω, ldae_v, ldae_f, ldae_l)
 
     for eqs in (ldae_eqs1, ldae_eqs2)
         ldae1 = LDAE(eqs...)
-        ldae2 = LDAE(eqs...; invariants=NullInvariants())
-        ldae3 = LDAE(eqs...; parameters=NullParameters())
-        ldae4 = LDAE(eqs...; periodicity=NullPeriodicity())
+        ldae2 = LDAE(eqs...; invariants = NullInvariants())
+        ldae3 = LDAE(eqs...; parameters = NullParameters())
+        ldae4 = LDAE(eqs...; periodicity = NullPeriodicity())
 
         @test ldae.ϑ == ldae1.ϑ
         @test ldae.f == ldae1.f
@@ -540,10 +537,11 @@ end
         @test hash(ldae) == hash(ldae4)
     end
 
+    ldae_args = (
+        invariants = (h = iode_h,), parameters = (a = 1,), periodicity = ([0.0], [2π]))
 
-    ldae_args = (invariants=(h=iode_h,), parameters=(a=1,), periodicity=([0.0,],[2π]))
-
-    ldae = LDAE(idae_eqs_full..., ldae_ω, ldae_v, ldae_f, ldae_l, ldae_args.invariants, parameter_types(ldae_args.parameters), ldae_args.periodicity)
+    ldae = LDAE(idae_eqs_full..., ldae_ω, ldae_v, ldae_f, ldae_l, ldae_args.invariants,
+        parameter_types(ldae_args.parameters), ldae_args.periodicity)
 
     @test hassecondary(ldae) == true
     @test hasinitialguess(ldae) == true
@@ -573,8 +571,7 @@ end
     @test funcs.ω != ldae_ω
     @test funcs.l != ldae_l
 
-    @test initialguess(ldae) == NamedTuple{(:v,:f)}(ldae_igs)
-
+    @test initialguess(ldae) == NamedTuple{(:v, :f)}(ldae_igs)
 
     # ldae1 = LDAE(ldae_eqs..., lode_l, lode_ω, t₀, [q₀], [p₀], [λ₀], [λ₀]; v̄=iode_v, ldae_args...)
     # ldae2 = LDAE(ldae_eqs..., lode_l, lode_ω, t₀, [q₀], [p₀], [λ₀]; v̄=iode_v, ldae_args...)
@@ -603,22 +600,19 @@ end
     # @test hash(ldae) == hash(ldae7)
     # @test hash(ldae) == hash(ldae8)
 
-
     # Test for periodicity
-    ldaep = LDAE(ldae_eqs...; periodicity=([0.0,],[2π]))
+    ldaep = LDAE(ldae_eqs...; periodicity = ([0.0], [2π]))
 
-    @test periodicity(ldaep) == (Float64[0],Float64[2π])
+    @test periodicity(ldaep) == (Float64[0], Float64[2π])
     @test getperiodicity(ldaep) == BitArray([true])
     @test hasperiodicity(ldaep) == true
 
-    ldaep = LDAE(ldae_eqs...; periodicity=([-Inf],[+Inf]))
+    ldaep = LDAE(ldae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(ldaep) == NullPeriodicity()
     @test ismissing(getperiodicity(ldaep))
     @test hasperiodicity(ldaep) == false
-
 end
-
 
 # @testset "$(rpad("Split Partitioned Differential Algebraic Equations (SPDAE)",80))" begin
 

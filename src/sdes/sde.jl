@@ -202,8 +202,8 @@ end
 
 GeometricBase.periodicity(prob::SDEProblem) = (q = periodicity(equation(prob)),)
 
-function compute_vectorfields!(vecfield, sol, prob::SDEProblem)
-    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+function compute_vectorfields!(state::State, prob::SDEProblem)
+    initialguess(prob).v(state.q̇, state.t, state.q, parameters(prob))
 end
 
 const SDEEnsemble = EnsembleProblem{SDE}

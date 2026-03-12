@@ -359,8 +359,8 @@ end
 
 @inline GeometricBase.nconstraints(prob::DAEProblem) = length(initial_conditions(prob).λ)
 
-function compute_vectorfields!(vecfield, sol, prob::DAEProblem)
-    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+function compute_vectorfields!(state::State, prob::DAEProblem)
+    initialguess(prob).v(state.q̇, state.t, state.q, parameters(prob))
 end
 
 const DAEEnsemble = EnsembleProblem{DAE}

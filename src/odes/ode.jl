@@ -192,8 +192,8 @@ end
 
 GeometricBase.periodicity(prob::ODEProblem) = (q = periodicity(equation(prob)),)
 
-function compute_vectorfields!(vecfield, sol, prob::ODEProblem)
-    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+function compute_vectorfields!(state::State, prob::ODEProblem)
+    initialguess(prob).v(state.q̇, state.t, state.q, parameters(prob))
 end
 
 @doc """

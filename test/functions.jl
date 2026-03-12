@@ -187,7 +187,7 @@ const hdae_igs = (pdae_v, pdae_f)
 
 const idae_ϑ = iode_ϑ
 const idae_f = iode_f
-const idae_v = _idae_default_v̄
+const idae_v = _idae_default_v̄#iode_v
 
 idae_u(u, t, q, v, p, λ, params) = pdae_u(u, t, q, p, λ, params)
 idae_g(g, t, q, v, p, λ, params) = pdae_g(g, t, q, p, λ, params)
@@ -201,11 +201,11 @@ const idae_igs = (idae_v, idae_f)
 const ldae_ω = lode_ω
 const ldae_l = lode_l
 const ldae_f = idae_f
-const ldae_v = _ldae_default_v̄
+const ldae_v = _ldae_default_v̄#idae_v
 
 const ldae_eqs = (idae_eqs..., ldae_ω, ldae_l)
 const ldae_eqs_full = (idae_eqs_full..., ldae_ω, ldae_l)
-const ldae_igs = (ldae_v, idae_f)
+const ldae_igs = (ldae_v, ldae_f)
 
 function sde_v(v, t, q, params)
     @unpack λ = params

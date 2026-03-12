@@ -265,8 +265,8 @@ end
 GeometricBase.nsteps(prob::SODEProblem) = nsteps(equation(prob))
 GeometricBase.periodicity(prob::SODEProblem) = (q = periodicity(equation(prob)),)
 
-function compute_vectorfields!(vecfield, sol, prob::SODEProblem)
-    initialguess(prob).v(vecfield.q, sol.t, sol.q, parameters(prob))
+function compute_vectorfields!(state::State, prob::SODEProblem)
+    initialguess(prob).v(state.q̇, state.t, state.q, parameters(prob))
 end
 
 @doc """

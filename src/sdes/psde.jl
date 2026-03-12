@@ -265,9 +265,9 @@ function GeometricBase.periodicity(prob::PSDEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity())
 end
 
-function compute_vectorfields!(vecfield, sol, prob::PSDEProblem)
-    initialguess(prob).v(vecfield.q, sol.t, sol.q, sol.p, parameters(prob))
-    initialguess(prob).f(vecfield.p, sol.t, sol.q, sol.p, parameters(prob))
+function compute_vectorfields!(state::State, prob::PSDEProblem)
+    initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
 end
 
 const PSDEEnsemble = EnsembleProblem{PSDE}

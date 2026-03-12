@@ -222,8 +222,8 @@ end
 
 GeometricBase.periodicity(prob::DELEProblem) = (q = periodicity(equation(prob)),)
 
-function compute_vectorfields!(vecfield, sol, prob::DELEProblem)
-    vecfield.q .= (sol.q .- sol.q̄) ./ timestep(prob)
+function compute_vectorfields!(state::State, prob::DELEProblem)
+    state.q̇ .= (state.q .- state.q̄) ./ timestep(prob)
 end
 
 @doc """
