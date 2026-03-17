@@ -1,6 +1,6 @@
 name = "GeometricEquations"
 uuid = "c85262ba-a08a-430a-b926-d29770767bf2"
-version = "0.20.5"
+version = "0.21.0"
 authors = ["Michael Kraus"]
 
 [deps]
