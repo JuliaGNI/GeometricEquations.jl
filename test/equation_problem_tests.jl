@@ -273,6 +273,8 @@ end
         iode_eqs..., (t₀, t₁), Δt, iode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
 
+    @test nconstraints(prob) == length(initial_conditions(prob).v)
+
     # test compute_vectorfields!
     prob = IODEProblem(iode_eqs..., (t₀, t₁), Δt, iode_ics; v̄ = iode_v, f̄ = iode_f)
 
@@ -315,6 +317,8 @@ end
     @test prob == LODEProblem(
         lode_eqs..., (t₀, t₁), Δt, lode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    @test nconstraints(prob) == length(initial_conditions(prob).v)
 
     # test compute_vectorfields!
     prob = LODEProblem(lode_eqs..., (t₀, t₁), Δt, lode_ics; v̄ = lode_v, f̄ = lode_f)
@@ -362,13 +366,14 @@ end
         dae_eqs..., (t₀, t₁), Δt, dae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
 
+    @test nconstraints(prob) == 1
+
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
     # @test arrtype(dae)
     # @test axes(dae) == axes(x₀)
     # @test ndims(dae) == 2
     # @test nsamples(dae) == 1
-    # @test nconstraints(dae) == 1
 
     dae = DAE(dae_eqs_full...)
     prob = EquationProblem(dae, (t₀, t₁), Δt, dae_ics_full)
@@ -440,13 +445,14 @@ end
         pdae_eqs..., (t₀, t₁), Δt, pdae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
 
+    @test nconstraints(prob) == 1
+
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
     # @test arrtype(dae)
     # @test axes(dae) == axes(x₀)
     # @test ndims(dae) == 2
     # @test nsamples(dae) == 1
-    # @test nconstraints(dae) == 1
 
     pdae = PDAE(pdae_eqs_full...)
     prob = EquationProblem(pdae, (t₀, t₁), Δt, pdae_ics_full)
@@ -522,13 +528,14 @@ end
         hdae_eqs..., (t₀, t₁), Δt, hdae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
 
+    @test nconstraints(prob) == 1
+
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
     # @test arrtype(dae)
     # @test axes(dae) == axes(x₀)
     # @test ndims(dae) == 2
     # @test nsamples(dae) == 1
-    # @test nconstraints(dae) == 1
 
     hdae = HDAE(hdae_eqs_full...)
     prob = EquationProblem(hdae, (t₀, t₁), Δt, hdae_ics_full)
@@ -603,13 +610,14 @@ end
         idae_eqs..., (t₀, t₁), Δt, idae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
 
+    @test nconstraints(prob) == 1
+
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
     # @test arrtype(dae)
     # @test axes(dae) == axes(x₀)
     # @test ndims(dae) == 2
     # @test nsamples(dae) == 1
-    # @test nconstraints(dae) == 1
 
     idae = IDAE(idae_eqs_full...)
     prob = EquationProblem(idae, (t₀, t₁), Δt, idae_ics_full)
@@ -687,13 +695,14 @@ end
         ldae_eqs..., (t₀, t₁), Δt, ldae_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
 
+    @test nconstraints(prob) == 1
+
     # @test initial_conditions(dae) == (t₀, [x₀], [λ₀], [λ₀])
     # @test eltype(dae)
     # @test arrtype(dae)
     # @test axes(dae) == axes(x₀)
     # @test ndims(dae) == 2
     # @test nsamples(dae) == 1
-    # @test nconstraints(dae) == 1
 
     ldae = LDAE(ldae_eqs_full...)
     prob = EquationProblem(ldae, (t₀, t₁), Δt, ldae_ics_full)
