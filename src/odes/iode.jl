@@ -333,7 +333,7 @@ function GeometricBase.periodicity(prob::IODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), v = NullPeriodicity())
 end
 
-@inline GeometricBase.nconstraints(prob::IODEProblem) = ndims(prob)
+@inline GeometricBase.nconstraints(prob::IODEProblem) = length(vec(initial_conditions(prob).q))
 
 function compute_vectorfields!(state::State, prob::IODEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
