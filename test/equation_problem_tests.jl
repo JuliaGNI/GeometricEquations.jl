@@ -273,6 +273,8 @@ end
         iode_eqs..., (t₀, t₁), Δt, iode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
 
+    @test nconstraints(prob) == length(initial_conditions(prob).v)
+
     # test compute_vectorfields!
     prob = IODEProblem(iode_eqs..., (t₀, t₁), Δt, iode_ics; v̄ = iode_v, f̄ = iode_f)
 
@@ -315,6 +317,8 @@ end
     @test prob == LODEProblem(
         lode_eqs..., (t₀, t₁), Δt, lode_ics_raw...; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
+
+    @test nconstraints(prob) == length(initial_conditions(prob).v)
 
     # test compute_vectorfields!
     prob = LODEProblem(lode_eqs..., (t₀, t₁), Δt, lode_ics; v̄ = lode_v, f̄ = lode_f)
