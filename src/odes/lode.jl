@@ -369,7 +369,7 @@ function GeometricBase.periodicity(prob::LODEProblem)
     (q = periodicity(equation(prob)), p = NullPeriodicity(), v = NullPeriodicity())
 end
 
-@inline GeometricBase.nconstraints(prob::LODEProblem) = length(vec(initial_conditions(prob).q))
+@inline GeometricBase.nconstraints(prob::LODEProblem) = length(initial_conditions(prob).q)
 
 function compute_vectorfields!(state::State, prob::LODEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
