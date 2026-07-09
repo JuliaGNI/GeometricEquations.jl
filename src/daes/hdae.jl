@@ -442,6 +442,8 @@ function GeometricBase.periodicity(prob::HDAEProblem)
         μ = NullPeriodicity())
 end
 
+@inline GeometricBase.nconstraints(prob::HDAEProblem) = length(initial_conditions(prob).λ)
+
 function compute_vectorfields!(state::State, prob::HDAEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
     initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
