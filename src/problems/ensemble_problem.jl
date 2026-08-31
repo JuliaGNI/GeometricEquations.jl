@@ -186,8 +186,10 @@ function Base.:(==)(ens1::EnsembleProblem, ens2::EnsembleProblem)
         && ens1.parameters == ens2.parameters)
 end
 
-@inline GeometricBase.datatype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
-@inline GeometricBase.timetype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
+@inline GeometricBase.datatype(::EnsembleProblem{
+    ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
+@inline GeometricBase.timetype(::EnsembleProblem{
+    ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
 @inline GeometricBase.arrtype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = AT
 @inline GeometricBase.equtype(::EnsembleProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = ST
 

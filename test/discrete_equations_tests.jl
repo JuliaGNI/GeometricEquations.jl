@@ -5,15 +5,13 @@ using Test
 include("functions.jl")
 include("initial_conditions.jl")
 
-
 @testset "$(rpad("Discrete Euler-Lagrange Equations (DELE)",80))" begin
-
-    dele  = DELE(dele_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
+    dele = DELE(dele_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
     # dele  = DELE(dele_eqs..., dele_igs..., NullInvariants(), NullParameters(), NullPeriodicity())
     dele1 = DELE(dele_eqs...)
-    dele2 = DELE(dele_eqs...; invariants=NullInvariants())
-    dele3 = DELE(dele_eqs...; parameters=NullParameters())
-    dele4 = DELE(dele_eqs...; periodicity=NullPeriodicity())
+    dele2 = DELE(dele_eqs...; invariants = NullInvariants())
+    dele3 = DELE(dele_eqs...; parameters = NullParameters())
+    dele4 = DELE(dele_eqs...; periodicity = NullPeriodicity())
 
     @test dele == dele1
     @test dele == dele2
@@ -25,7 +23,7 @@ include("initial_conditions.jl")
     @test hash(dele) == hash(dele3)
     @test hash(dele) == hash(dele4)
 
-    @test functions(dele) == NamedTuple{(:Ld,:D1Ld,:D2Ld)}(dele_eqs)
+    @test functions(dele) == NamedTuple{(:Ld, :D1Ld, :D2Ld)}(dele_eqs)
     @test solutions(dele) == NamedTuple()
     @test initialguess(dele) == NamedTuple()
 
@@ -58,24 +56,22 @@ include("initial_conditions.jl")
     # @test_nowarn funcs.D1Ld(zero(x₀), t₀, t₁, x₀, x₁)
     # @test_nowarn funcs.D2Ld(zero(x₀), t₀, t₁, x₀, x₁)
 
-
     # Test for periodicity
-    delep = DELE(dele_eqs...; periodicity=([-π,0],[+π,2π]))
+    delep = DELE(dele_eqs...; periodicity = ([-π, 0], [+π, 2π]))
 
-    @test periodicity(delep) == (Float64[-π,0],Float64[+π,2π])
-    @test getperiodicity(delep) == BitArray([true,true])
+    @test periodicity(delep) == (Float64[-π, 0], Float64[+π, 2π])
+    @test getperiodicity(delep) == BitArray([true, true])
     @test hasperiodicity(delep) == true
 
-    delep = DELE(dele_eqs...; periodicity=([-Inf,0],[+Inf,2π]))
+    delep = DELE(dele_eqs...; periodicity = ([-Inf, 0], [+Inf, 2π]))
 
-    @test periodicity(delep) == (Float64[-Inf,0],Float64[+Inf,2π])
-    @test getperiodicity(delep) == BitArray([false,true])
+    @test periodicity(delep) == (Float64[-Inf, 0], Float64[+Inf, 2π])
+    @test getperiodicity(delep) == BitArray([false, true])
     @test hasperiodicity(delep) == true
 
-    delep = DELE(dele_eqs...; periodicity=([-Inf,-Inf],[+Inf,+Inf]))
+    delep = DELE(dele_eqs...; periodicity = ([-Inf, -Inf], [+Inf, +Inf]))
 
     @test periodicity(delep) == NullPeriodicity()
     @test ismissing(getperiodicity(delep))
     @test hasperiodicity(delep) == false
-
 end

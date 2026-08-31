@@ -117,8 +117,10 @@ function Base.:(==)(prob1::EquationProblem, prob2::EquationProblem)
         && prob1.parameters == prob2.parameters)
 end
 
-@inline GeometricBase.datatype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
-@inline GeometricBase.timetype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
+@inline GeometricBase.datatype(::EquationProblem{
+    ST, DT, TT, AT}) where {ST, DT, TT, AT} = DT
+@inline GeometricBase.timetype(::EquationProblem{
+    ST, DT, TT, AT}) where {ST, DT, TT, AT} = TT
 @inline GeometricBase.arrtype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = AT
 @inline GeometricBase.equtype(::EquationProblem{ST, DT, TT, AT}) where {ST, DT, TT, AT} = ST
 

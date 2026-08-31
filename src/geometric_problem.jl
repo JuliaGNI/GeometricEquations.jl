@@ -4,8 +4,10 @@ Abstract type that describes a generic interface for different problem types.
 abstract type GeometricProblem{superType, dataType, timeType} <: AbstractProblem end
 
 "Returns the parent equation object of the problem."
-GeometricBase.equation(prob::GeometricProblem) = error(
-    "equation() not implemented for ", typeof(prob), ".")
+function GeometricBase.equation(prob::GeometricProblem)
+    error(
+        "equation() not implemented for ", typeof(prob), ".")
+end
 
 "Returns a NamedTuple containing all functions (e.g. vector fields) provided by the equation."
 GeometricBase.functions(prob::GeometricProblem) = functions(equation(prob))

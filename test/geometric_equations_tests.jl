@@ -5,15 +5,14 @@ using GeometricEquations: check_initial_conditions, check_parameters
 using GeometricEquations: _functions, _solutions, _invariants
 using Test
 
-@test AbstractEquationODE  <: GeometricEquation
-@test AbstractEquationDAE  <: GeometricEquation
-@test AbstractEquationSDE  <: GeometricEquation
+@test AbstractEquationODE <: GeometricEquation
+@test AbstractEquationDAE <: GeometricEquation
+@test AbstractEquationSDE <: GeometricEquation
 @test AbstractEquationPODE <: GeometricEquation
 @test AbstractEquationPDAE <: GeometricEquation
 @test AbstractEquationPSDE <: GeometricEquation
 
-
-struct TestEquation <: GeometricEquation{Nothing,Nothing,Nothing} end
+struct TestEquation <: GeometricEquation{Nothing, Nothing, Nothing} end
 
 testeq = TestEquation()
 
