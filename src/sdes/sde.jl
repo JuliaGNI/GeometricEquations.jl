@@ -97,6 +97,7 @@ end
 GeometricBase.invariants(equation::SDE) = equation.invariants
 GeometricBase.parameters(equation::SDE) = equation.parameters
 GeometricBase.periodicity(equation::SDE) = equation.periodicity
+GeometricBase.noise(equation::SDE) = equation.noise
 
 hasvectorfield(::SDE) = true
 hasinitialguess(::SDE{vType, BType, <:Callable}) where {vType, BType} = true

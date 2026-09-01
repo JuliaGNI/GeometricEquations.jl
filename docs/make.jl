@@ -20,6 +20,7 @@ makedocs(;
         "Equations" => "equations.md",
         "Problems" => "problems.md",
         "Ensembles" => "ensembles.md",
+        "Stochastic Equations" => "stochastic.md",
         "Index" => "reference.md"
     ]
 )

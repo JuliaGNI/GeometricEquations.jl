@@ -74,6 +74,9 @@ LDAE
 
 ## Stochastic Differential Equations
 
+These describe systems driven by a Wiener process, in the Stratonovich sense. The
+[Stochastic Equations](@ref) page covers the theory, the noise processes and worked examples.
+
 ```@docs
 SDE
 PSDE

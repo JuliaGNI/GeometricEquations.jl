@@ -9,6 +9,7 @@ import GeometricBase: initialstate, initialtime, finaltime, timespan, timestep
 import GeometricBase: equation, equations, functions, solutions, initialguess
 import GeometricBase: invariants, parameters, periodicity
 import GeometricBase: ntime, nsamples, nconstraints, nsteps
+import GeometricBase: noise, noisedims
 import GeometricBase: AbstractStateVariable, AbstractStochasticProcess
 
 export NullInvariants, NullParameters, NullPeriodicity
@@ -54,6 +55,8 @@ export DAEEnsemble, IDAEEnsemble, PDAEEnsemble,
 export SDEEnsemble, PSDEEnsemble, SPSDEEnsemble
 export DELEEnsemble
 
+export AbstractStochasticProcess, WienerProcess, GridProcess
+
 export datatype, timetype, arrtype, equtype
 export initialtime, finaltime, timespan, timestep
 export problem, equation, equations, functions, solutions, initialguess
@@ -61,6 +64,7 @@ export invariants, parameters, periodicity, getperiodicity
 export initial_conditions, initialstate
 export compute_vectorfields!
 export ntime, nsamples, nconstraints, nsteps
+export noise, noisedims
 
 export hassolution, hasvectorfield, hasinitialguess, hasprimary, hassecondary,
        hasinvariants, hasparameters, hasperiodicity,
@@ -89,6 +93,7 @@ include("daes/pdae.jl")
 include("odes/sode.jl")
 # include("daes/spdae.jl")
 
+include("sdes/processes.jl")
 include("sdes/sde.jl")
 include("sdes/psde.jl")
 include("sdes/spsde.jl")

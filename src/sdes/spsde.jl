@@ -139,6 +139,7 @@ end
 GeometricBase.invariants(equation::SPSDE) = equation.invariants
 GeometricBase.parameters(equation::SPSDE) = equation.parameters
 GeometricBase.periodicity(equation::SPSDE) = equation.periodicity
+GeometricBase.noise(equation::SPSDE) = equation.noise
 
 hasvectorfield(::SPSDE) = true
 function hasinitialguess(::SPSDE{
