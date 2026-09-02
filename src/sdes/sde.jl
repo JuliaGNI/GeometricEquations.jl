@@ -97,6 +97,7 @@ end
 GeometricBase.invariants(equation::SDE) = equation.invariants
 GeometricBase.parameters(equation::SDE) = equation.parameters
 GeometricBase.periodicity(equation::SDE) = equation.periodicity
+GeometricBase.noise(equation::SDE) = equation.noise
 
 hasvectorfield(::SDE) = true
 hasinitialguess(::SDE{vType, BType, <:Callable}) where {vType, BType} = true
@@ -173,10 +174,12 @@ $(sde_equations)
 ### Constructors
 
 ```julia
-SDEProblem(v, B, timespan, timestep, ics::NamedTuple; kwargs...)
-SDEProblem(v, B, timespan, timestep, q₀::StateVariable; kwargs...)
+SDEProblem(v, B, noise, timespan, timestep, ics::NamedTuple; kwargs...)
+SDEProblem(v, B, noise, timespan, timestep, q₀::StateVariable; kwargs...)
 ```
-where `v` is the function computing the vector field and `B` computes the diffusion matrix
+where `v` is the function computing the vector field and `B` computes the diffusion matrix,
+`noise` is the driving process, an `AbstractStochasticProcess`
+such as [`WienerProcess`](@ref) or [`GridProcess`](@ref),
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.
