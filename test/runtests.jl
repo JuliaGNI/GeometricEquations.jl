@@ -16,6 +16,9 @@ end
 @safetestset "Stochastic Differential Equations                                               " begin
     include("stochastic_differential_equations_tests.jl")
 end
+@safetestset "Stochastic Processes                                                            " begin
+    include("stochastic_processes_tests.jl")
+end
 @safetestset "Discrete Equations                                                              " begin
     include("discrete_equations_tests.jl")
 end

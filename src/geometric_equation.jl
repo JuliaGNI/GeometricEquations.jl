@@ -197,6 +197,10 @@ function check_methods(equ::GeometricEquation, timespan, ics, params)
         ".")
 end
 
+# Only the stochastic equations carry a driving process that can be too short for a run; for
+# everything else there is nothing to check. Specialised in src/sdes/processes.jl.
+check_noise(::GeometricEquation, timespan, timestep) = true
+
 function check_parameters(equ::GeometricEquation, params::NamedTuple)
     typeof(parameters(equ)) <: NamedTuple || return false
     keys(parameters(equ)) == keys(params) || return false

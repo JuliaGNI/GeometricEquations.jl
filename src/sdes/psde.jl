@@ -233,11 +233,13 @@ $(psde_equations)
 ### Constructors
 
 ```julia
-PSDEProblem(v, f, B, G, timespan, timestep, ics::NamedTuple; kwargs...)
-PSDEProblem(v, f, B, G, timespan, timestep, q₀::StateVariable; p₀::StateVariable; kwargs...)
+PSDEProblem(v, f, B, G, noise, timespan, timestep, ics::NamedTuple; kwargs...)
+PSDEProblem(v, f, B, G, noise, timespan, timestep, q₀::StateVariable; p₀::StateVariable; kwargs...)
 ```
 where `v` and `f` are the functions computing the vector field and `B` and `G`
 compute the diffusion matrices,
+`noise` is the driving process, an `AbstractStochasticProcess`
+such as [`WienerProcess`](@ref) or [`GridProcess`](@ref),
 `timespan` is the time interval `(t₀,t₁)` for the problem to be solved in,
 `timestep` is the time step to be used in the simulation, and
 `ics` is a `NamedTuple` with entry `q`.

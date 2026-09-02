@@ -77,6 +77,7 @@ struct EquationProblem{superType <: GeometricEquation, dType <: Number, tType <:
 
         @assert check_initial_conditions(equ, _ics)
         @assert check_methods(equ, _timespan, _ics, parameters)
+        check_noise(equ, _timespan, _timestep)
 
         superType = eval(typeof(equ).name.name)
         tType = typeof(_timestep)
@@ -134,8 +135,12 @@ end
 @inline GeometricBase.parameters(prob::EquationProblem) = prob.parameters
 @inline GeometricBase.nsamples(::EquationProblem) = 1
 
+@inline function ntimesteps(timespan, timestep)
+    Int(abs(div(timespan[end] - timespan[begin], timestep, RoundUp)))
+end
+
 @inline function GeometricBase.ntime(prob::EquationProblem)
-    Int(abs(div(finaltime(prob) - initialtime(prob), timestep(prob), RoundUp)))
+    ntimesteps(timespan(prob), timestep(prob))
 end
 
 @inline function GeometricBase.invariants(prob::EquationProblem)

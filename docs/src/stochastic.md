@@ -130,7 +130,14 @@ whether the scheme it implements needs strong or weak increments.
 ```@docs
 WienerProcess
 GridProcess
+GeometricBase.ntime(::GridProcess)
+GeometricEquations.check_noise
 ```
+
+A `GridProcess` also knows how long it is, through `ntime(process)` — the number of time steps it
+prescribes increments for. Building a problem whose run is longer than that is an error, raised by
+[`check_noise`](@ref GeometricEquations.check_noise) when the problem is constructed rather than
+by an integrator reading past the end of `ΔW` partway through.
 
 The dimension of the noise lives with the process, and hence with the problem. Two accessors,
 declared in `GeometricBase` and extended here, reach it:
