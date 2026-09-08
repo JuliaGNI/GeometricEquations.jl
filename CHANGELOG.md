@@ -41,6 +41,26 @@ makes it worth keeping.
   that this is not the same as having no combining marks — `q̇`, `v̄`, `f̄`, `x̄` and `t̄` have no
   precomposed codepoint and remain two codepoints under NFC.
 
+### Removed
+
+- The `SPDAE` split partitioned DAE type, together with `SPDAEProblem` and `SPDAEEnsemble`.
+
+  No code written against 0.21.3 is affected. `src/daes/spdae.jl` had not been part of the package
+  since February 2024, when its `include` and all three exports were commented out rather than
+  repaired, so `using GeometricEquations` never defined `SPDAE` and no caller could name it. No
+  integrator ever used it either: in GeometricIntegrators the type appeared only in an export list,
+  a `get_invariants` type union and the definition itself, all of which went when the equations
+  moved to this package.
+
+  What remained was a file stale against the refactor that moved initial conditions out of the
+  equation types. `SPDAE` still carried `d`, `m`, `t₀`, `q₀`, `p₀`, `λ₀` and `μ₀` as fields and
+  defined `Base.similar` on the equation rather than `initialstate` — an interface no other
+  equation type has had for two years. A half-finished `StateVector` → `StateVariable` rename had
+  additionally collapsed two `similar` methods onto one signature and left the surviving
+  constructors forwarding to methods that no longer existed. Reviving the type would mean redoing
+  that migration for something with no consumer, so it is removed instead;
+  `git log --follow -- src/daes/spdae.jl` has it if it is ever wanted back.
+
 ## [0.21.3] — 2026-09-02
 
 Nothing existing is renamed or removed, so code written against 0.21.2 keeps working — with two
@@ -75,6 +95,12 @@ heading for an out-of-bounds read partway through the integration.
   reports how many steps a process prescribes increments for.
 
 ## Open Issues
+
+- `initial_multiplier` in `src/utils.jl` now has no caller in the package. `SPDAE` was its only
+  one, and since that file stopped being compiled in February 2024 it has in practice had none for
+  two years. It is unexported and its own testset in `test/utils_tests.jl` still passes, so it is
+  left in place rather than removed alongside `SPDAE`; whether it is wanted for a future
+  constrained equation type is a separate decision.
 
 - `ntime(problem)` rounds up, and for some floating-point combinations of time span and time step
   it therefore reports one step more than the run actually needs: with `Δt = 0.01` over
