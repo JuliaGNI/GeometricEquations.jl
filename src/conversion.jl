@@ -81,7 +81,7 @@ end
 
 function Base.convert(::Type{IODEProblem}, prob::LODEProblem)
     IODEProblem(equation(prob).ϑ, equation(prob).f, equation(prob).g,
-        prob.timespan, prob.tspep, prob.ics.q, prob.ics.p, prob.ics.λ;
+        prob.timespan, prob.timestep, prob.ics.q, prob.ics.p, prob.ics.v;
         v̄ = equation(prob).v̄, f̄ = equation(prob).f̄, invariants = invariants(equation(prob)),
         parameters = parameters(prob), periodicity = periodicity(equation(prob)))
 end

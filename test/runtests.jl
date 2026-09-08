@@ -31,6 +31,9 @@ end
 @safetestset "Ensemble Problem                                                                " begin
     include("ensemble_problem_tests.jl")
 end
+@safetestset "Conversion                                                                      " begin
+    include("conversion_tests.jl")
+end
 @safetestset "Test Problems                                                                   " begin
     include("tests_tests.jl")
 end
