@@ -1,13 +1,13 @@
 #!/usr/bin/env julia
 #
-# Verifies that every tracked source file in this repository is Unicode NFC-normalised, which is
-# the claim the "Unicode normalisation" CHANGELOG entry makes.
+# Verifies that every tracked `.jl`, `.md` and `.toml` file in this repository is Unicode
+# NFC-normalised.
 #
 #     julia --startup-file=no scripts/verify_nfc.jl
 #
 # Exit status is 0 when every file is normalised and 1 otherwise, so this is usable as a gate.
 #
-# Why it is worth asserting. Much of this tree used to be NFD-normalised, inherited from macOS:
+# Why the invariant is worth asserting. NFD normalisation leaves the letters
 # `ū`, `ḡ`, `ṗ` and `ẋ` stored as a base letter plus a combining mark rather than as one
 # codepoint. That makes no difference to the compiled code -- Julia's parser normalises
 # identifiers to NFC, so an NFD source file produces byte-identical symbols -- but it defeats
@@ -41,7 +41,7 @@ for path in FILES
     source == Unicode.normalize(source, :NFC) || push!(failures, "$path: not NFC")
 end
 
-println(length(FILES), " tracked files checked")
+println(length(FILES), " tracked source files checked")
 
 if isempty(failures)
     println("all NFC-normalised")
