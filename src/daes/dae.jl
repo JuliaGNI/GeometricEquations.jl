@@ -24,7 +24,7 @@ In this case, the system of equations is modified as follows
 const dae_constructors = raw"""
 The functions `v` and `u` compute the vector field and the projection, respectively,
 `ϕ` provides the algebraic constraint.
-The functions `ψ` and `ū` are optional and provide the secondary constraint, that is the time
+The functions `ψ` and `ū` are optional and provide the secondary constraint, that is the time
 derivative of the algebraic constraint, and the corresponding projection.
 """
 
@@ -55,7 +55,7 @@ on `t`, `q` and `λ`.
 Some integrators also enforce the secondary constraint ``\psi`` and require
 the following additional functions
 ```
-function ū(u, t, q, μ, params)
+function ū(u, t, q, μ, params)
     u[1] = ...
     u[2] = ...
     ...
@@ -77,7 +77,7 @@ $(dae_equations)
 * `vType <: Callable`: type of `v`
 * `uType <: Callable`: type of `u`
 * `ϕType <: Callable`: type of `ϕ`
-* `ūType <: OptionalCallable`: type of `ū`
+* `ūType <: OptionalCallable`: type of `ū`
 * `ψType <: OptionalCallable`: type of `ψ`
 * `v̄Type <: Callable`: type of `v̄`
 * `invType <: OptionalInvariants`: invariants type
@@ -89,7 +89,7 @@ $(dae_equations)
 * `v`: function computing the vector field `v(v, t, q, params)`
 * `u`: function computing the projection `u(u, t, q, λ, params)`
 * `ϕ`: algebraic constraint `ϕ(ϕ, t, q, params)`
-* `ū`: function computing the secondary projection field `ū(ū, t, q, λ, params)` (*optional*)
+* `ū`: function computing the secondary projection field `ū(ū, t, q, λ, params)` (*optional*)
 * `ψ`: secondary constraint `ψ(ψ, t, q, v, params)` (*optional*)
 * `v̄`: function computing an initial guess for the velocity field ``v`` (defaults to `v`)
 * `invariants`: functions for the computation of invariants, either a `NamedTuple` containing the equation's invariants or `NullInvariants`
@@ -99,8 +99,8 @@ $(dae_equations)
 ### Constructors
 
 ```julia
-DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
-DAE(v, u, ϕ, ū, ψ; kwargs...)
+DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+DAE(v, u, ϕ, ū, ψ; kwargs...)
 DAE(v, u, ϕ; kwargs...)
 ```
 
@@ -119,12 +119,12 @@ equ = DAE(v, u, ϕ)
 ```
 or
 ```julia
-equ = DAE(v, u, ϕ, ū, ψ)
+equ = DAE(v, u, ϕ, ū, ψ)
 ```
 """
 struct DAE{vType <: Callable,
     uType <: Callable, ϕType <: Callable,
-    ūType <: OptionalCallable, ψType <: OptionalCallable,
+    ūType <: OptionalCallable, ψType <: OptionalCallable,
     v̄Type <: OptionalCallable,
     invType <: OptionalInvariants,
     parType <: OptionalParameters,
@@ -132,7 +132,7 @@ struct DAE{vType <: Callable,
     v::vType
     u::uType
     ϕ::ϕType
-    ū::ūType
+    ū::ūType
     ψ::ψType
     v̄::v̄Type
 
@@ -140,27 +140,27 @@ struct DAE{vType <: Callable,
     parameters::parType
     periodicity::perType
 
-    function DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+    function DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
         @assert !isempty(methods(v))
         @assert !isempty(methods(u))
         @assert !isempty(methods(ϕ))
-        @assert !isempty(methods(ū)) || ū === nothing
+        @assert !isempty(methods(ū)) || ū === nothing
         @assert !isempty(methods(ψ)) || ψ === nothing
         @assert !isempty(methods(v̄))
 
         _periodicity = promote_periodicity(periodicity)
 
-        new{typeof(v), typeof(u), typeof(ϕ), typeof(ū), typeof(ψ), typeof(v̄),
+        new{typeof(v), typeof(u), typeof(ϕ), typeof(ū), typeof(ψ), typeof(v̄),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-            v, u, ϕ, ū, ψ, v̄, invariants, parameters, _periodicity)
+            v, u, ϕ, ū, ψ, v̄, invariants, parameters, _periodicity)
     end
 end
 
-function DAE(v, u, ϕ, ū, ψ, v̄; invariants = NullInvariants(),
+function DAE(v, u, ϕ, ū, ψ, v̄; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
-    DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
+    DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameters, periodicity)
 end
-DAE(v, u, ϕ, ū, ψ; v̄ = v, kwargs...) = DAE(v, u, ϕ, ū, ψ, v̄; kwargs...)
+DAE(v, u, ϕ, ū, ψ; v̄ = v, kwargs...) = DAE(v, u, ϕ, ū, ψ, v̄; kwargs...)
 DAE(v, u, ϕ; kwargs...) = DAE(v, u, ϕ, nothing, nothing; kwargs...)
 
 GeometricBase.invariants(equation::DAE) = equation.invariants
@@ -168,8 +168,8 @@ GeometricBase.parameters(equation::DAE) = equation.parameters
 GeometricBase.periodicity(equation::DAE) = equation.periodicity
 
 hasvectorfield(::DAE) = true
-function hasinitialguess(::DAE{vType, uType, ϕType, ūType, ψType,
-        <:Callable}) where {vType, uType, ϕType, ūType, ψType}
+function hasinitialguess(::DAE{vType, uType, ϕType, ūType, ψType,
+        <:Callable}) where {vType, uType, ϕType, ūType, ψType}
     true
 end
 
@@ -180,7 +180,7 @@ function Base.show(io::IO, equation::DAE)
     print(io, "\n")
     print(io, "   v = ", equation.v, "\n")
     print(io, "   u = ", equation.u, "\n")
-    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
     print(io, "\n")
     print(io, " and constraints")
     print(io, "\n")
@@ -227,7 +227,7 @@ function check_methods(equ::DAE, timespan, ics::NamedTuple, params)
     applicable(equ.v, zero(ics.q), timespan[begin], ics.q, params) || return false
     applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.λ, params) || return false
     applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, params) || return false
-    equ.ū === nothing ||
+    equ.ū === nothing ||
         applicable(equ.u, zero(ics.q), timespan[begin], ics.q, ics.λ, params) ||
         return false
     equ.ψ === nothing ||
@@ -252,14 +252,14 @@ end
 _get_v(equ::DAE, params) = (v, t, q) -> equ.v(v, t, q, params)
 _get_u(equ::DAE, params) = (u, t, q, λ) -> equ.u(u, t, q, λ, params)
 _get_ϕ(equ::DAE, params) = (ϕ, t, q) -> equ.ϕ(ϕ, t, q, params)
-_get_ū(equ::DAE, params) = (u, t, q, λ) -> equ.ū(u, t, q, λ, params)
+_get_ū(equ::DAE, params) = (u, t, q, λ) -> equ.ū(u, t, q, λ, params)
 _get_ψ(equ::DAE, params) = (ψ, t, q, v) -> equ.ψ(ψ, t, q, v, params)
 _get_v̄(equ::DAE, params) = (v, t, q) -> equ.v̄(v, t, q, params)
 _get_invariant(::DAE, inv, params) = (t, q) -> inv(t, q, params)
 
 function _functions(equ::DAE)
     if hassecondary(equ)
-        (v = equ.v, u = equ.u, ϕ = equ.ϕ, ū = equ.ū, ψ = equ.ψ)
+        (v = equ.v, u = equ.u, ϕ = equ.ϕ, ū = equ.ū, ψ = equ.ψ)
     else
         (v = equ.v, u = equ.u, ϕ = equ.ϕ)
     end
@@ -271,7 +271,7 @@ function _functions(equ::DAE, params::OptionalParameters)
             v = _get_v(equ, params),
             u = _get_u(equ, params),
             ϕ = _get_ϕ(equ, params),
-            ū = _get_ū(equ, params),
+            ū = _get_ū(equ, params),
             ψ = _get_ψ(equ, params),
             v̄ = _get_v̄(equ, params)
         )
@@ -301,8 +301,8 @@ values in ``\\mathbb{R}^{m} \\times \\mathbb{R}^{m}``.
 ### Constructors
 
 ```julia
-DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, ics::NamedTuple; kwargs...)
-DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, q₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
+DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, ics::NamedTuple; kwargs...)
+DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, q₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
 DAEProblem(v, u, ϕ, timespan, timestep, ics::NamedTuple; kwargs...)
 DAEProblem(v, u, ϕ, timespan, timestep, q₀::StateVariable, λ₀::StateVariable; kwargs...)
 ```
@@ -314,7 +314,7 @@ $(dae_constructors)
 `ics` is a `NamedTuple` with entries `q`, `λ` and `μ`.
 The initial conditions `q₀`, `λ₀` and `μ₀` can also be prescribed directly,
 with `StateVariable` an `AbstractArray{<:Number}`.
-For the interfaces of the functions `v`, `u`, `ϕ`, `ū`, `ψ` see [`DAE`](@ref).
+For the interfaces of the functions `v`, `u`, `ϕ`, `ū`, `ψ` see [`DAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `DAEProblem` accepts a function `v̄` for the computation of an initial guess for the vector field with default value `v̄ = v`.
@@ -336,16 +336,16 @@ prob = DAEProblem(v, u, ϕ, timespan, timestep, q₀, λ₀)
 ```
 or
 ```julia
-prob = DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, q₀, λ₀, μ₀)
+prob = DAEProblem(v, u, ϕ, ū, ψ, timespan, timestep, q₀, λ₀, μ₀)
 ```
 """
 const DAEProblem = EquationProblem{DAE}
 
-function DAEProblem(v, u, ϕ, ū, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v,
+function DAEProblem(v, u, ϕ, ū, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
+    equ = DAE(v, u, ϕ, ū, ψ, v̄, invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 
@@ -365,11 +365,11 @@ end
 
 const DAEEnsemble = EnsembleProblem{DAE}
 
-function DAEEnsemble(v, u, ϕ, ū, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v,
+function DAEEnsemble(v, u, ϕ, ū, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = DAE(v, u, ϕ, ū, ψ, v̄)
+    equ = DAE(v, u, ϕ, ū, ψ, v̄)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
 

@@ -310,7 +310,7 @@ end
 
 function compute_vectorfields!(state::State, prob::SPSDEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
-    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
 end
 
 const SPSDEEnsemble = EnsembleProblem{SPSDE}

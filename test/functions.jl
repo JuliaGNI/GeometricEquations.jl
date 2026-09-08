@@ -8,9 +8,9 @@ import GeometricEquations: _idae_default_v̄, _ldae_default_v̄
 
 struct TestNoise <: AbstractStochasticProcess end
 
-function ode_v(ẋ, t, x, params)
-    ẋ[1] = x[2]
-    ẋ[2] = 2x[1]
+function ode_v(ẋ, t, x, params)
+    ẋ[1] = x[2]
+    ẋ[2] = 2x[1]
 end
 
 const ode_eqs = (ode_v,)
@@ -125,7 +125,7 @@ function dae_u(u, t, x, λ, params)
     u[2] = -λ[1]
 end
 
-function dae_ū(u, t, x, λ, params)
+function dae_ū(u, t, x, λ, params)
     u[1] = +λ[1]
     u[2] = -λ[1]
 end
@@ -139,7 +139,7 @@ function dae_ψ(ψ, t, x, v, params)
 end
 
 const dae_eqs = (dae_v, dae_u, dae_ϕ)
-const dae_eqs_full = (dae_v, dae_u, dae_ϕ, dae_ū, dae_ψ)
+const dae_eqs_full = (dae_v, dae_u, dae_ϕ, dae_ū, dae_ψ)
 const dae_igs = (dae_v,)
 
 function pdae_v(v, t, q, p, params)
@@ -166,7 +166,7 @@ function pdae_ϕ(ϕ, t, q, p, params)
     ϕ[1] = p[1] - q[1]
 end
 
-function pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
+function pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
     ψ[1] = μ[1] - λ[1]
 end
 
@@ -192,7 +192,7 @@ const idae_v = _idae_default_v̄#iode_v
 idae_u(u, t, q, v, p, λ, params) = pdae_u(u, t, q, p, λ, params)
 idae_g(g, t, q, v, p, λ, params) = pdae_g(g, t, q, p, λ, params)
 idae_ϕ(ϕ, t, q, v, p, params) = pdae_ϕ(ϕ, t, q, p, params)
-idae_ψ(ψ, t, q, v, p, q̇, ṗ, params) = pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
+idae_ψ(ψ, t, q, v, p, q̇, ṗ, params) = pdae_ψ(ψ, t, q, p, q̇, ṗ, params)
 
 const idae_eqs = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ)
 const idae_eqs_full = (idae_ϑ, idae_f, idae_u, idae_g, idae_ϕ, idae_u, idae_g, idae_ψ)

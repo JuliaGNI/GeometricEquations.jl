@@ -24,7 +24,7 @@ include("initial_conditions.jl")
     @test funcs.v == dae_v == dae.v
     @test funcs.u == dae_u == dae.u
     @test funcs.ϕ == dae_ϕ == dae.ϕ
-    @test !haskey(funcs, :ū)
+    @test !haskey(funcs, :ū)
     @test !haskey(funcs, :ψ)
 
     igs = initialguess(dae)
@@ -81,7 +81,7 @@ include("initial_conditions.jl")
     @test funcs.v == dae_v == dae.v
     @test funcs.u == dae_u == dae.u
     @test funcs.ϕ == dae_ϕ == dae.ϕ
-    @test funcs.ū == dae_ū == dae.ū
+    @test funcs.ū == dae_ū == dae.ū
     @test funcs.ψ == dae_ψ == dae.ψ
 
     igs = initialguess(dae)
@@ -91,7 +91,7 @@ include("initial_conditions.jl")
     @test funcs.v != dae_v
     @test funcs.u != dae_u
     @test funcs.ϕ != dae_ϕ
-    @test funcs.ū != dae_ū
+    @test funcs.ū != dae_ū
     @test funcs.ψ != dae_ψ
     @test funcs.v̄ != dae_v
 
@@ -204,8 +204,8 @@ end
     @test funcs.u == pdae_u == pdae.u
     @test funcs.g == pdae_g == pdae.g
     @test funcs.ϕ == pdae_ϕ == pdae.ϕ
-    @test funcs.ū == pdae_u == pdae.ū
-    @test funcs.ḡ == pdae_g == pdae.ḡ
+    @test funcs.ū == pdae_u == pdae.ū
+    @test funcs.ḡ == pdae_g == pdae.ḡ
     @test funcs.ψ == pdae_ψ == pdae.ψ
 
     igs = initialguess(pdae)
@@ -218,8 +218,8 @@ end
     @test funcs.u != pdae_u
     @test funcs.g != pdae_g
     @test funcs.ϕ != pdae_ϕ
-    @test funcs.ū != pdae_u
-    @test funcs.ḡ != pdae_g
+    @test funcs.ū != pdae_u
+    @test funcs.ḡ != pdae_g
     @test funcs.ψ != pdae_ψ
 
     @test initialguess(pdae) == NamedTuple{(:v, :f)}(pdae_igs)
@@ -322,8 +322,8 @@ end
     @test funcs.u == idae_u == idae.u
     @test funcs.g == idae_g == idae.g
     @test funcs.ϕ == idae_ϕ == idae.ϕ
-    @test funcs.ū == idae_u == idae.ū
-    @test funcs.ḡ == idae_g == idae.ḡ
+    @test funcs.ū == idae_u == idae.ū
+    @test funcs.ḡ == idae_g == idae.ḡ
     @test funcs.ψ == idae_ψ == idae.ψ
 
     igs = initialguess(idae)
@@ -336,8 +336,8 @@ end
     @test funcs.u != idae_u
     @test funcs.g != idae_g
     @test funcs.ϕ != idae_ϕ
-    @test funcs.ū != idae_u
-    @test funcs.ḡ != idae_g
+    @test funcs.ū != idae_u
+    @test funcs.ḡ != idae_g
     @test funcs.ψ != idae_ψ
 
     @test initialguess(idae) == NamedTuple{(:v, :f)}(idae_igs)
@@ -435,8 +435,8 @@ end
     @test funcs.u == pdae_u == hdae.u
     @test funcs.g == pdae_g == hdae.g
     @test funcs.ϕ == pdae_ϕ == hdae.ϕ
-    @test funcs.ū == pdae_u == hdae.ū
-    @test funcs.ḡ == pdae_g == hdae.ḡ
+    @test funcs.ū == pdae_u == hdae.ū
+    @test funcs.ḡ == pdae_g == hdae.ḡ
     @test funcs.ψ == pdae_ψ == hdae.ψ
     @test funcs.h == pdae_h == hdae.hamiltonian
 
@@ -450,8 +450,8 @@ end
     @test funcs.u != pdae_u
     @test funcs.g != pdae_g
     @test funcs.ϕ != pdae_ϕ
-    @test funcs.ū != pdae_u
-    @test funcs.ḡ != pdae_g
+    @test funcs.ū != pdae_u
+    @test funcs.ḡ != pdae_g
     @test funcs.ψ != pdae_ψ
     @test funcs.h != pdae_h
 
