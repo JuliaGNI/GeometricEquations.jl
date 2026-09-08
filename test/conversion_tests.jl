@@ -89,9 +89,9 @@ include("initial_conditions.jl")
     @test equation(iode).f̄ === equation(lode).f̄
 
     # Periodicity is extended when the state vectors are concatenated: the momentum block
-    # is not periodic, which `getperiodicity` reads off as `(-Inf, +Inf)`.
-    # `extend_periodicity` still assumes periodicity is a single vector and calls
-    # `zero` on the `(lower, upper)` tuple, so both conversions currently throw.
+    # is not periodic, which the package encodes as the bounds `(-Inf, +Inf)`.
+    # `extend_periodicity` assumes periodicity is a single vector and calls `zero` on the
+    # `(lower, upper)` tuple, so both conversions throw a `MethodError`.
 
     podep = PODEProblem(pode_eqs..., (t₀, t₁), Δt, pode_ics;
         periodicity = ([0.0], [2π]))
