@@ -88,6 +88,50 @@ makes it worth keeping.
   The four `# TODO: Convert invariants and pass to ODE`-style comments in the same file are
   untouched. That work is still open; it would be written against `invariants(equ, params)`.
 
+### Fixed
+
+- `convert(IODEProblem, prob::LODEProblem)` threw on every call. It now works.
+
+  Two field names on the same line were wrong. `prob.tspep` is not a field of anything — it is a
+  slip of `prob.timestep`, left behind by commit `ee73472` (`tstep -> timestep and tspan ->
+  timespan`), which renamed the field everywhere else including the three sibling conversions in
+  the same file. And `prob.ics.λ` names a field that a `LODEProblem` does not have: the initial
+  conditions of an `LODE` are `(q, p, v)`, and the third positional argument of `IODEProblem` is
+  the initial `v`, so it is now `prob.ics.v`.
+
+  The two are independent, and the `λ` one is the one that actually surfaces: positional arguments
+  of this call are not evaluated left to right, so `prob.ics.λ` raises its `FieldError` first and
+  hides `tspep` behind it. Repairing only the typo would have left the method throwing.
+
+  This is the only one of the four `Base.convert` methods that was broken, and it had been broken
+  since `ee73472`. Nothing caught it because `src/conversion.jl` had no live test coverage at all —
+  see below.
+
+- Converting a `PODEProblem` or `HODEProblem` that has periodicity to an `ODEProblem` or
+  `SODEProblem` threw. `extend_periodicity` treated `periodicity(equ)`, a `(lower, upper)` tuple, as
+  a single vector and called `zero` on the tuple itself. It now extends each half separately: the
+  momentum block appended to `lower` and `upper` is filled with `-Inf`/`+Inf` respectively, the
+  package's own encoding of "not periodic". Only the periodic case was affected — the default
+  `NullPeriodicity` returns early and was already covered.
+
+### Added
+
+- `test/conversion_tests.jl`, covering all four `Base.convert` methods between problem types.
+
+  Every `convert` assertion in the suite had been commented out since commit `3db1ccb`, the split
+  of equations into equations and problems. They could not simply be uncommented: they call
+  `convert(ODE, pode)` on *equations*, read `equ.t₀` and `equ.q₀[begin]`, and use the pre-`f3ed29c`
+  argument order — an interface that no longer exists on either side. Conversion moved to problems
+  in that same split, so the tests are written fresh against the current one.
+
+  Each conversion is checked for the resulting problem type, that the timespan, timestep and
+  initial conditions carry over, and that the vector fields of the converted problem agree with the
+  reference ones. That last part is what a one-line field-name slip surviving a package-wide rename
+  needs in order to be caught.
+
+  The suite also covers the periodicity extension across the `ODEProblem`/`SODEProblem`
+  conversions, which is what caught the `extend_periodicity` defect fixed above.
+
 ## [0.21.3] — 2026-09-02
 
 Nothing existing is renamed or removed, so code written against 0.21.2 keeps working — with two

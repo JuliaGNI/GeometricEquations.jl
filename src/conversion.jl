@@ -16,8 +16,14 @@ end
 end
 
 function extend_periodicity(equ::AbstractEquationPODE)
-    periodicity(equ) == NullPeriodicity() ? periodicity(equ) :
-    vcat(periodicity(equ), zero(periodicity(equ)))
+    if periodicity(equ) == NullPeriodicity()
+        periodicity(equ)
+    else
+        per_lo, per_hi = periodicity(equ)
+        DT = eltype(per_lo)
+        (vcat(per_lo, fill(-DT(Inf), length(per_lo))),
+            vcat(per_hi, fill(+DT(Inf), length(per_hi))))
+    end
 end
 
 function convert_periodicity(::Union{Type{ODE}, Type{SODE}}, equ::Union{PODE, HODE})
@@ -81,7 +87,7 @@ end
 
 function Base.convert(::Type{IODEProblem}, prob::LODEProblem)
     IODEProblem(equation(prob).ϑ, equation(prob).f, equation(prob).g,
-        prob.timespan, prob.tspep, prob.ics.q, prob.ics.p, prob.ics.λ;
+        prob.timespan, prob.timestep, prob.ics.q, prob.ics.p, prob.ics.v;
         v̄ = equation(prob).v̄, f̄ = equation(prob).f̄, invariants = invariants(equation(prob)),
         parameters = parameters(prob), periodicity = periodicity(equation(prob)))
 end
