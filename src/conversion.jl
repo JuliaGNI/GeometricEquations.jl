@@ -16,8 +16,14 @@ end
 end
 
 function extend_periodicity(equ::AbstractEquationPODE)
-    periodicity(equ) == NullPeriodicity() ? periodicity(equ) :
-    vcat(periodicity(equ), zero(periodicity(equ)))
+    if periodicity(equ) == NullPeriodicity()
+        periodicity(equ)
+    else
+        per_lo, per_hi = periodicity(equ)
+        DT = eltype(per_lo)
+        (vcat(per_lo, fill(-DT(Inf), length(per_lo))),
+            vcat(per_hi, fill(+DT(Inf), length(per_hi))))
+    end
 end
 
 function convert_periodicity(::Union{Type{ODE}, Type{SODE}}, equ::Union{PODE, HODE})

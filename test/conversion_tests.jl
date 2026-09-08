@@ -11,93 +11,109 @@ include("initial_conditions.jl")
 
     # PODEProblem -> ODEProblem
 
-    ode = convert(ODEProblem, pode)
+    ode_from_pode = convert(ODEProblem, pode)
 
-    @test typeof(ode) <: ODEProblem
-    @test timespan(ode) == timespan(pode)
-    @test timestep(ode) == timestep(pode)
-    @test initial_conditions(ode) == (t = t₀, q = vcat(q₀, p₀))
+    @test typeof(ode_from_pode) <: ODEProblem
+    @test timespan(ode_from_pode) == timespan(pode)
+    @test timestep(ode_from_pode) == timestep(pode)
+    @test initial_conditions(ode_from_pode) == (t = t₀, q = vcat(q₀, p₀))
 
     ẋ₁ = zero(x₀)
     ẋ₂ = zero(x₀)
     ode_v(ẋ₁, t₀, x₀, NullParameters())
-    equation(ode).v(ẋ₂, t₀, x₀, NullParameters())
+    equation(ode_from_pode).v(ẋ₂, t₀, x₀, NullParameters())
     @test ẋ₁ == ẋ₂
 
     # PODEProblem -> SODEProblem
 
-    sode = convert(SODEProblem, pode)
+    sode_from_pode = convert(SODEProblem, pode)
 
-    @test typeof(sode) <: SODEProblem
-    @test timespan(sode) == timespan(pode)
-    @test timestep(sode) == timestep(pode)
-    @test initial_conditions(sode) == (t = t₀, q = vcat(q₀, p₀))
+    @test typeof(sode_from_pode) <: SODEProblem
+    @test timespan(sode_from_pode) == timespan(pode)
+    @test timestep(sode_from_pode) == timestep(pode)
+    @test initial_conditions(sode_from_pode) == (t = t₀, q = vcat(q₀, p₀))
 
     ẋ₁ = zero(x₀)
     ẋ₂ = zero(x₀)
     sode_v1(ẋ₁, t₀, x₀, NullParameters())
-    equation(sode).v[1](ẋ₂, t₀, x₀, NullParameters())
+    equation(sode_from_pode).v[1](ẋ₂, t₀, x₀, NullParameters())
     @test ẋ₁ == ẋ₂
 
     ẋ₁ = zero(x₀)
     ẋ₂ = zero(x₀)
     sode_v2(ẋ₁, t₀, x₀, NullParameters())
-    equation(sode).v[2](ẋ₂, t₀, x₀, NullParameters())
+    equation(sode_from_pode).v[2](ẋ₂, t₀, x₀, NullParameters())
     @test ẋ₁ == ẋ₂
 
     # HODEProblem -> ODEProblem and SODEProblem
 
-    ode = convert(ODEProblem, hode)
+    ode_from_hode = convert(ODEProblem, hode)
 
-    @test typeof(ode) <: ODEProblem
-    @test timespan(ode) == timespan(hode)
-    @test timestep(ode) == timestep(hode)
-    @test initial_conditions(ode) == (t = t₀, q = vcat(q₀, p₀))
+    @test typeof(ode_from_hode) <: ODEProblem
+    @test timespan(ode_from_hode) == timespan(hode)
+    @test timestep(ode_from_hode) == timestep(hode)
+    @test initial_conditions(ode_from_hode) == (t = t₀, q = vcat(q₀, p₀))
 
-    sode = convert(SODEProblem, hode)
+    ẋ₁ = zero(x₀)
+    ẋ₂ = zero(x₀)
+    ode_v(ẋ₁, t₀, x₀, NullParameters())
+    equation(ode_from_hode).v(ẋ₂, t₀, x₀, NullParameters())
+    @test ẋ₁ == ẋ₂
 
-    @test typeof(sode) <: SODEProblem
-    @test timespan(sode) == timespan(hode)
-    @test timestep(sode) == timestep(hode)
-    @test initial_conditions(sode) == (t = t₀, q = vcat(q₀, p₀))
+    sode_from_hode = convert(SODEProblem, hode)
+
+    @test typeof(sode_from_hode) <: SODEProblem
+    @test timespan(sode_from_hode) == timespan(hode)
+    @test timestep(sode_from_hode) == timestep(hode)
+    @test initial_conditions(sode_from_hode) == (t = t₀, q = vcat(q₀, p₀))
+
+    ẋ₁ = zero(x₀)
+    ẋ₂ = zero(x₀)
+    sode_v1(ẋ₁, t₀, x₀, NullParameters())
+    equation(sode_from_hode).v[1](ẋ₂, t₀, x₀, NullParameters())
+    @test ẋ₁ == ẋ₂
+
+    ẋ₁ = zero(x₀)
+    ẋ₂ = zero(x₀)
+    sode_v2(ẋ₁, t₀, x₀, NullParameters())
+    equation(sode_from_hode).v[2](ẋ₂, t₀, x₀, NullParameters())
+    @test ẋ₁ == ẋ₂
 
     # HODEProblem -> PODEProblem
 
-    pode = convert(PODEProblem, hode)
+    pode_from_hode = convert(PODEProblem, hode)
 
-    @test typeof(pode) <: PODEProblem
-    @test timespan(pode) == timespan(hode)
-    @test timestep(pode) == timestep(hode)
-    @test initial_conditions(pode) == (t = t₀, q = q₀, p = p₀)
+    @test typeof(pode_from_hode) <: PODEProblem
+    @test timespan(pode_from_hode) == timespan(hode)
+    @test timestep(pode_from_hode) == timestep(hode)
+    @test initial_conditions(pode_from_hode) == (t = t₀, q = q₀, p = p₀)
 
-    @test equation(pode).v === equation(hode).v
-    @test equation(pode).f === equation(hode).f
+    @test equation(pode_from_hode).v === equation(hode).v
+    @test equation(pode_from_hode).f === equation(hode).f
 
     # LODEProblem -> IODEProblem
 
-    iode = convert(IODEProblem, lode)
+    iode_from_lode = convert(IODEProblem, lode)
 
-    @test typeof(iode) <: IODEProblem
-    @test timespan(iode) == timespan(lode)
-    @test timestep(iode) == timestep(lode)
-    @test initial_conditions(iode) == (t = t₀, q = q₀, p = p₀, v = v₀)
+    @test typeof(iode_from_lode) <: IODEProblem
+    @test timespan(iode_from_lode) == timespan(lode)
+    @test timestep(iode_from_lode) == timestep(lode)
+    @test initial_conditions(iode_from_lode) == (t = t₀, q = q₀, p = p₀, v = v₀)
 
-    @test equation(iode).ϑ === equation(lode).ϑ
-    @test equation(iode).f === equation(lode).f
-    @test equation(iode).g === equation(lode).g
-    @test equation(iode).v̄ === equation(lode).v̄
-    @test equation(iode).f̄ === equation(lode).f̄
+    @test equation(iode_from_lode).ϑ === equation(lode).ϑ
+    @test equation(iode_from_lode).f === equation(lode).f
+    @test equation(iode_from_lode).g === equation(lode).g
+    @test equation(iode_from_lode).v̄ === equation(lode).v̄
+    @test equation(iode_from_lode).f̄ === equation(lode).f̄
 
     # Periodicity is extended when the state vectors are concatenated: the momentum block
     # is not periodic, which the package encodes as the bounds `(-Inf, +Inf)`.
-    # `extend_periodicity` assumes periodicity is a single vector and calls `zero` on the
-    # `(lower, upper)` tuple, so both conversions throw a `MethodError`.
 
     podep = PODEProblem(pode_eqs..., (t₀, t₁), Δt, pode_ics;
         periodicity = ([0.0], [2π]))
 
-    @test_broken periodicity(equation(convert(ODEProblem, podep))) ==
-                 ([0.0, -Inf], [2π, +Inf])
-    @test_broken periodicity(equation(convert(SODEProblem, podep))) ==
-                 ([0.0, -Inf], [2π, +Inf])
+    @test periodicity(equation(convert(ODEProblem, podep))) ==
+          ([0.0, -Inf], [2π, +Inf])
+    @test periodicity(equation(convert(SODEProblem, podep))) ==
+          ([0.0, -Inf], [2π, +Inf])
 end

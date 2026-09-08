@@ -107,6 +107,13 @@ makes it worth keeping.
   since `ee73472`. Nothing caught it because `src/conversion.jl` had no live test coverage at all —
   see below.
 
+- Converting a `PODEProblem` or `HODEProblem` that has periodicity to an `ODEProblem` or
+  `SODEProblem` threw. `extend_periodicity` treated `periodicity(equ)`, a `(lower, upper)` tuple, as
+  a single vector and called `zero` on the tuple itself. It now extends each half separately: the
+  momentum block appended to `lower` and `upper` is filled with `-Inf`/`+Inf` respectively, the
+  package's own encoding of "not periodic". Only the periodic case was affected — the default
+  `NullPeriodicity` returns early and was already covered.
+
 ### Added
 
 - `test/conversion_tests.jl`, covering all four `Base.convert` methods between problem types.
@@ -122,13 +129,8 @@ makes it worth keeping.
   reference ones. That last part is what a one-line field-name slip surviving a package-wide rename
   needs in order to be caught.
 
-  Two of the assertions are `@test_broken`, and they name a defect this release does *not* fix.
-  Converting a `PODEProblem` or `HODEProblem` that has periodicity to an `ODEProblem` or
-  `SODEProblem` throws: `extend_periodicity` still assumes periodicity is a single vector and calls
-  `zero` on what is now a `(lower, upper)` tuple. Only the periodic case is affected — the default
-  `NullPeriodicity` returns early and is covered by the passing tests. The expected value the two
-  markers carry is `([0.0, -Inf], [2π, +Inf])`, the package's own encoding of "the momentum block is
-  not periodic", so that they flip to a failure the day the function is repaired.
+  The suite also covers the periodicity extension across the `ODEProblem`/`SODEProblem`
+  conversions, which is what caught the `extend_periodicity` defect fixed above.
 
 ## [0.21.3] — 2026-09-02
 
