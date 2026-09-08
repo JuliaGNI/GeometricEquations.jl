@@ -61,6 +61,33 @@ makes it worth keeping.
   that migration for something with no consumer, so it is removed instead;
   `git log --follow -- src/daes/spdae.jl` has it if it is ever wanted back.
 
+- The three unexported `get_invariants` methods in `src/conversion.jl`.
+
+  No code written against 0.21.3 is affected: the name is not exported, is not documented, and has
+  no caller in this package, in GeometricIntegrators, or anywhere else under `Packages/` or
+  `Experiments/`.
+
+  They are the pre-split accessor. Born 2021-03-04 in GeometricIntegrators
+  (`src/equations/conversion.jl`, commit `a8fff44b`) and imported here with the rest of the
+  equations in July 2021, they were left behind by commit `8ef01fc` of August 2021, which renamed
+  `get_functions`/`get_solutions`/`get_invariants` to `functions`/`solutions`/`invariants`
+  throughout — `conversion.jl` is not among the twenty-one files in that commit, so its three
+  copies kept the old name and stopped being reachable through the public interface.
+
+  What replaced them is `invariants(equ, params)` in `src/geometric_equation.jl`, which dispatches
+  the argument list through the per-type `_get_invariant`. That is the same computation, generic
+  rather than three hand-written type unions, and it also covers `SDE`, `PSDE` and `SPSDE`, which
+  `get_invariants` never did.
+
+  The third method's union read `Union{PODE, HODE, PDAE, PDAE}` — `PDAE` twice, so `HDAE` matched
+  none of the three methods and `get_invariants` of an `HDAE` was a `MethodError`. The duplicate
+  was present in the 2021 original, which is the evidence that these methods were never once
+  called. Repairing the union to `Union{PODE, HODE, PDAE, HDAE}` would have revived a second,
+  redundant implementation of a working accessor, so the methods are deleted instead.
+
+  The four `# TODO: Convert invariants and pass to ODE`-style comments in the same file are
+  untouched. That work is still open; it would be written against `invariants(equ, params)`.
+
 ## [0.21.3] — 2026-09-02
 
 Nothing existing is renamed or removed, so code written against 0.21.2 keeps working — with two
