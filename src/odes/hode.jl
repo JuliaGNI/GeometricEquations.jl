@@ -247,7 +247,7 @@ end
 
 function compute_vectorfields!(state::State, prob::HODEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
-    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
 end
 
 @doc """

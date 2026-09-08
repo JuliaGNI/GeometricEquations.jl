@@ -29,7 +29,7 @@ p(t) &= ϑ(t, q(t), v(t)) , && \\
 const idae_constructors = raw"""
 The function `ϑ` computes the momentum, `f` computes the force field, `u` and `g` compute
 the projections, and `ϕ` provides the algebraic constraint.
-The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint, that is
+The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint, that is
 the time derivative of the algebraic constraint, and the corresponding projection.
 """
 
@@ -81,19 +81,19 @@ end
 Some integrators also enforce the secondary constraint ``\psi`` and require
 the following additional functions
 ```
-function ū(u, t, q, v, p, μ, params)
+function ū(u, t, q, v, p, μ, params)
     u[1] = ...
     u[2] = ...
     ...
 end
 
-function ḡ(g, t, q, v, p, μ, params)
+function ḡ(g, t, q, v, p, μ, params)
     g[1] = ...
     g[2] = ...
     ...
 end
 
-function ψ(ψ, t, q, v, p, q̇, ṗ, params)
+function ψ(ψ, t, q, v, p, q̇, ṗ, params)
     ψ[1] = ...
 end
 ```
@@ -111,8 +111,8 @@ $(idae_equations)
 * `uType <: Callable`: type of `u`
 * `gType <: Callable`: type of `g`
 * `ϕType <: Callable`: type of `ϕ`
-* `ūType <: Callable`: type of `ū`
-* `ḡType <: Callable`: type of `ḡ`
+* `ūType <: Callable`: type of `ū`
+* `ḡType <: Callable`: type of `ḡ`
 * `ψType <: Callable`: type of `ψ`
 * `v̄Type <: Callable`: type of `v̄`
 * `f̄Type <: Callable`: type of `f̄`
@@ -127,8 +127,8 @@ $(idae_equations)
 * `u`: function computing the projection for ``q``
 * `g`: function computing the projection for ``p``
 * `ϕ`: algebraic constraints
-* `ū`: function computing the secondary projection field ``\\bar{u}`` (*optional*)
-* `ḡ`: function computing the secondary projection field ``\\bar{g}`` (*optional*)
+* `ū`: function computing the secondary projection field ``\\bar{u}`` (*optional*)
+* `ḡ`: function computing the secondary projection field ``\\bar{g}`` (*optional*)
 * `ψ`: secondary constraints (*optional*)
 * `v̄`: function computing an initial guess for the velocity field ``v`` (*optional*)
 * `f̄`: function computing an initial guess for the force field ``f`` (*optional*)
@@ -139,8 +139,8 @@ $(idae_equations)
 ### Constructors
 
 ```julia
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
-IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 IDAE(ϑ, f, u, g, ϕ; v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
@@ -159,7 +159,7 @@ $(idae_functions)
 """
 struct IDAE{ϑType <: Callable, fType <: Callable,
     uType <: Callable, gType <: Callable, ϕType <: Callable,
-    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
     v̄Type <: Callable, f̄Type <: Callable,
     invType <: OptionalInvariants,
     parType <: OptionalParameters,
@@ -170,8 +170,8 @@ struct IDAE{ϑType <: Callable, fType <: Callable,
     u::uType
     g::gType
     ϕ::ϕType
-    ū::ūType
-    ḡ::ḡType
+    ū::ūType
+    ḡ::ḡType
     ψ::ψType
     v̄::v̄Type
     f̄::f̄Type
@@ -180,14 +180,14 @@ struct IDAE{ϑType <: Callable, fType <: Callable,
     parameters::parType
     periodicity::perType
 
-    function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+    function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
         @assert !isempty(methods(ϑ))
         @assert !isempty(methods(f))
         @assert !isempty(methods(u))
         @assert !isempty(methods(g))
         @assert !isempty(methods(ϕ))
-        @assert !isempty(methods(ū)) || ū === nothing
-        @assert !isempty(methods(ḡ)) || ḡ === nothing
+        @assert !isempty(methods(ū)) || ū === nothing
+        @assert !isempty(methods(ḡ)) || ḡ === nothing
         @assert !isempty(methods(ψ)) || ψ === nothing
         @assert !isempty(methods(v̄))
         @assert !isempty(methods(f̄))
@@ -196,21 +196,21 @@ struct IDAE{ϑType <: Callable, fType <: Callable,
 
         new{typeof(ϑ), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
-            typeof(ū), typeof(ḡ), typeof(ψ),
+            typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-            ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
+            ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
 _idae_default_v̄(t, q, v, p, params) = nothing
 
-function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants = NullInvariants(),
+function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
-    IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+    IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
 end
-function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄ = _idae_default_v̄, f̄ = f, kwargs...)
-    IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
+function IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ; v̄ = _idae_default_v̄, f̄ = f, kwargs...)
+    IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
 end
 IDAE(ϑ, f, u, g, ϕ; kwargs...) = IDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
@@ -220,8 +220,8 @@ GeometricBase.periodicity(equation::IDAE) = equation.periodicity
 
 hasvectorfield(::IDAE) = true
 function hasinitialguess(::IDAE{
-        ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable,
-        <:Callable}) where {ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType}
+        ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable,
+        <:Callable}) where {ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType}
     true
 end
 
@@ -234,8 +234,8 @@ function Base.show(io::IO, equation::IDAE)
     print(io, "   f = ", equation.f, "\n")
     print(io, "   u = ", equation.u, "\n")
     print(io, "   g = ", equation.g, "\n")
-    print(io, "   ū = ", equation.ū, "\n")
-    print(io, "   ḡ = ", equation.ḡ, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "   ḡ = ", equation.ḡ, "\n")
     print(io, "\n")
     print(io, " and constraints")
     print(io, "\n")
@@ -314,13 +314,13 @@ function check_methods(equ::IDAE, timespan, ics::NamedTuple, params)
         return false
     applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, ics.v, ics.p, params) ||
         return false
-    equ.ū === nothing ||
+    equ.ū === nothing ||
         applicable(
-            equ.ū, zero(ics.q), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
+            equ.ū, zero(ics.q), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
         return false
-    equ.ḡ === nothing ||
+    equ.ḡ === nothing ||
         applicable(
-            equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
+            equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.v, ics.p, ics.λ, params) ||
         return false
     equ.ψ === nothing ||
         applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.v, ics.p,
@@ -350,9 +350,9 @@ _get_f(equ::IDAE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
 _get_u(equ::IDAE, params) = (u, t, q, v, p, λ) -> equ.u(u, t, q, v, p, λ, params)
 _get_g(equ::IDAE, params) = (g, t, q, v, p, λ) -> equ.g(g, t, q, v, p, λ, params)
 _get_ϕ(equ::IDAE, params) = (ϕ, t, q, v, p) -> equ.ϕ(ϕ, t, q, v, p, params)
-_get_ū(equ::IDAE, params) = (u, t, q, v, p, λ) -> equ.ū(u, t, q, v, p, λ, params)
-_get_ḡ(equ::IDAE, params) = (g, t, q, v, p, λ) -> equ.ḡ(g, t, q, v, p, λ, params)
-_get_ψ(equ::IDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
+_get_ū(equ::IDAE, params) = (u, t, q, v, p, λ) -> equ.ū(u, t, q, v, p, λ, params)
+_get_ḡ(equ::IDAE, params) = (g, t, q, v, p, λ) -> equ.ḡ(g, t, q, v, p, λ, params)
+_get_ψ(equ::IDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
 _get_v̄(equ::IDAE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::IDAE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_invariant(::IDAE, inv, params) = (t, q, v) -> inv(t, q, v, params)
@@ -360,7 +360,7 @@ _get_invariant(::IDAE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 function _functions(equ::IDAE)
     if hassecondary(equ)
         (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g,
-            ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
+            ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
     else
         (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ)
     end
@@ -374,8 +374,8 @@ function _functions(equ::IDAE, params::OptionalParameters)
             u = _get_u(equ, params),
             g = _get_g(equ, params),
             ϕ = _get_ϕ(equ, params),
-            ū = _get_ū(equ, params),
-            ḡ = _get_ḡ(equ, params),
+            ū = _get_ū(equ, params),
+            ḡ = _get_ḡ(equ, params),
             ψ = _get_ψ(equ, params)
         )
     else
@@ -406,8 +406,8 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 ### Constructors
 
 ```julia
-IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, ics; kwargs...)
-IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀), μ₀::StateVariable = zero(λ₀); kwargs...)
+IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, ics; kwargs...)
+IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀), μ₀::StateVariable = zero(λ₀); kwargs...)
 IDAEProblem(ϑ, f, u, g, ϕ, timespan, timestep, ics; kwargs...)
 IDAEProblem(ϑ, f, u, g, ϕ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
@@ -419,7 +419,7 @@ $(idae_constructors)
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`.
-For the interfaces of the functions `ϑ`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ` see [`IDAE`](@ref).
+For the interfaces of the functions `ϑ`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ` see [`IDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 an `IDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
@@ -432,10 +432,10 @@ $(idae_functions)
 """
 const IDAEProblem = EquationProblem{IDAE}
 
-function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...;
+function IDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...;
         v̄ = _idae_default_v̄, f̄ = f, invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
-    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
+    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameter_types(parameters),
         periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
@@ -453,17 +453,17 @@ end
 
 function compute_vectorfields!(state::State, prob::IDAEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
-    initialguess(prob).f(state.ṗ, state.t, state.q, state.q̇, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.q̇, parameters(prob))
 end
 
 const IDAEEnsemble = EnsembleProblem{IDAE}
 
-function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple,
+function IDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple,
         timestep::Real, ics...; v̄ = _idae_default_v̄, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants,
+    equ = IDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants,
         parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

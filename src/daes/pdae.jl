@@ -27,7 +27,7 @@ In this case, the system of equations is modified as follows
 const pdae_constructors = raw"""
 The functions `v` and `f` compute the vector field, `u` and `g` compute the projections,
 and `ϕ` provides the algebraic constraint.
-The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint and the
+The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint and the
 corresponding projection.
 """
 
@@ -70,13 +70,13 @@ algebraic constraint ``\phi``, evaluated on `t`, `q`, `p` and `λ`.
 Some integrators also enforce the secondary constraint ``\psi`` and require
 the following additional functions
 ```
-function ū(u, t, q, p, μ, params)
+function ū(u, t, q, p, μ, params)
     u[1] = ...
     u[2] = ...
     ...
 end
 
-function ḡ(g, t, q, p, μ, params)
+function ḡ(g, t, q, p, μ, params)
     g[1] = ...
     g[2] = ...
     ...
@@ -100,8 +100,8 @@ $(pdae_equations)
 * `uType <: Callable`: type of `u`
 * `gType <: Callable`: type of `g`
 * `ϕType <: Callable`: type of `ϕ`
-* `ūType <: Callable`: type of `ū`
-* `ḡType <: Callable`: type of `ḡ`
+* `ūType <: Callable`: type of `ū`
+* `ḡType <: Callable`: type of `ḡ`
 * `ψType <: Callable`: type of `ψ`
 * `v̄Type <: Callable`: type of `v̄`
 * `f̄Type <: Callable`: type of `f̄`
@@ -116,8 +116,8 @@ $(pdae_equations)
 * `u`: function computing the projection for ``q``
 * `g`: function computing the projection for ``p``
 * `ϕ`: algebraic constraints
-* `ū`: function computing the secondary projection field ``\\bar{u}`` (*optional*)
-* `ḡ`: function computing the secondary projection field ``\\bar{g}`` (*optional*)
+* `ū`: function computing the secondary projection field ``\\bar{u}`` (*optional*)
+* `ḡ`: function computing the secondary projection field ``\\bar{g}`` (*optional*)
 * `ψ`: secondary constraints (*optional*)
 * `v̄`: function computing an initial guess for the velocity field ``v`` (*optional*, defaults to `v`)
 * `f̄`: function computing an initial guess for the force field ``f`` (*optional*, defaults to `f`)
@@ -128,8 +128,8 @@ $(pdae_equations)
 ### Constructors
 
 ```julia
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
-PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; kwargs...)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; kwargs...)
 PDAE(v, f, u, g, ϕ; kwargs...)
 ```
 
@@ -148,12 +148,12 @@ equ = PDAE(v, f, u, g, ϕ)
 ```
 or
 ```julia
-equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ)
+equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ)
 ```
 """
 struct PDAE{vType <: Callable, fType <: Callable,
     uType <: Callable, gType <: Callable, ϕType <: Callable,
-    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
     v̄Type <: Callable, f̄Type <: Callable,
     invType <: OptionalInvariants,
     parType <: OptionalParameters,
@@ -164,8 +164,8 @@ struct PDAE{vType <: Callable, fType <: Callable,
     u::uType
     g::gType
     ϕ::ϕType
-    ū::ūType
-    ḡ::ḡType
+    ū::ūType
+    ḡ::ḡType
     ψ::ψType
     v̄::v̄Type
     f̄::f̄Type
@@ -174,14 +174,14 @@ struct PDAE{vType <: Callable, fType <: Callable,
     parameters::parType
     periodicity::perType
 
-    function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+    function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
         @assert !isempty(methods(v))
         @assert !isempty(methods(f))
         @assert !isempty(methods(u))
         @assert !isempty(methods(g))
         @assert !isempty(methods(ϕ))
-        @assert !isempty(methods(ū)) || ū === nothing
-        @assert !isempty(methods(ḡ)) || ḡ === nothing
+        @assert !isempty(methods(ū)) || ū === nothing
+        @assert !isempty(methods(ḡ)) || ḡ === nothing
         @assert !isempty(methods(ψ)) || ψ === nothing
         @assert !isempty(methods(v̄))
         @assert !isempty(methods(f̄))
@@ -190,19 +190,19 @@ struct PDAE{vType <: Callable, fType <: Callable,
 
         new{typeof(v), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
-            typeof(ū), typeof(ḡ), typeof(ψ),
+            typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(v̄), typeof(f̄),
             typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-            v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
+            v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, _periodicity)
     end
 end
 
-function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants = NullInvariants(),
+function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
-    PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
+    PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants, parameters, periodicity)
 end
-function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄ = v, f̄ = f, kwargs...)
-    PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
+function PDAE(v, f, u, g, ϕ, ū, ḡ, ψ; v̄ = v, f̄ = f, kwargs...)
+    PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄; kwargs...)
 end
 PDAE(v, f, u, g, ϕ; kwargs...) = PDAE(v, f, u, g, ϕ, nothing, nothing, nothing; kwargs...)
 
@@ -212,8 +212,8 @@ GeometricBase.periodicity(equation::PDAE) = equation.periodicity
 
 hasvectorfield(::PDAE) = true
 function hasinitialguess(::PDAE{
-        vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable,
-        <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType}
+        vType, fType, uType, gType, ϕType, ūType, ḡType, ψType, <:Callable,
+        <:Callable}) where {vType, fType, uType, gType, ϕType, ūType, ḡType, ψType}
     true
 end
 
@@ -224,10 +224,10 @@ function Base.show(io::IO, equation::PDAE)
     print(io, "\n")
     print(io, "   v = ", equation.v, "\n")
     print(io, "   u = ", equation.u, "\n")
-    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
     print(io, "   f = ", equation.f, "\n")
     print(io, "   g = ", equation.g, "\n")
-    print(io, "   ḡ = ", equation.ḡ, "\n")
+    print(io, "   ḡ = ", equation.ḡ, "\n")
     print(io, "\n")
     print(io, " and constraints")
     print(io, "\n")
@@ -281,11 +281,11 @@ function check_methods(equ::PDAE, timespan, ics::NamedTuple, params)
     applicable(equ.g, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) ||
         return false
     applicable(equ.ϕ, zero(ics.λ), timespan[begin], ics.q, ics.p, params) || return false
-    equ.ū === nothing ||
-        applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+    equ.ū === nothing ||
+        applicable(equ.ū, zero(ics.q), timespan[begin], ics.q, ics.p, ics.λ, params) ||
         return false
-    equ.ḡ === nothing ||
-        applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) ||
+    equ.ḡ === nothing ||
+        applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q, ics.p, ics.λ, params) ||
         return false
     equ.ψ === nothing ||
         applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, ics.p,
@@ -314,8 +314,8 @@ _get_f(equ::PDAE, params) = (f, t, q, p) -> equ.f(f, t, q, p, params)
 _get_u(equ::PDAE, params) = (u, t, q, p, λ) -> equ.u(u, t, q, p, λ, params)
 _get_g(equ::PDAE, params) = (g, t, q, p, λ) -> equ.g(g, t, q, p, λ, params)
 _get_ϕ(equ::PDAE, params) = (ϕ, t, q, p) -> equ.ϕ(ϕ, t, q, p, params)
-_get_ū(equ::PDAE, params) = (u, t, q, p, λ) -> equ.ū(u, t, q, p, λ, params)
-_get_ḡ(equ::PDAE, params) = (g, t, q, p, λ) -> equ.ḡ(g, t, q, p, λ, params)
+_get_ū(equ::PDAE, params) = (u, t, q, p, λ) -> equ.ū(u, t, q, p, λ, params)
+_get_ḡ(equ::PDAE, params) = (g, t, q, p, λ) -> equ.ḡ(g, t, q, p, λ, params)
 _get_ψ(equ::PDAE, params) = (ψ, t, q, p, v, f) -> equ.ψ(ψ, t, q, p, v, f, params)
 _get_v̄(equ::PDAE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::PDAE, params) = (f, t, q, p) -> equ.f̄(f, t, q, p, params)
@@ -324,7 +324,7 @@ _get_invariant(::PDAE, inv, params) = (t, q, p) -> inv(t, q, p, params)
 function _functions(equ::PDAE)
     if hassecondary(equ)
         (v = equ.v, f = equ.f, u = equ.u, g = equ.g,
-            ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
+            ϕ = equ.ϕ, ū = equ.ū, ḡ = equ.ḡ, ψ = equ.ψ)
     else
         (v = equ.v, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ)
     end
@@ -338,8 +338,8 @@ function _functions(equ::PDAE, params::OptionalParameters)
             u = _get_u(equ, params),
             g = _get_g(equ, params),
             ϕ = _get_ϕ(equ, params),
-            ū = _get_ū(equ, params),
-            ḡ = _get_ḡ(equ, params),
+            ū = _get_ū(equ, params),
+            ḡ = _get_ḡ(equ, params),
             ψ = _get_ψ(equ, params),
             v̄ = _get_v̄(equ, params),
             f̄ = _get_f̄(equ, params))
@@ -372,8 +372,8 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 ### Constructors
 
 ```julia
-PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, ics::NamedTuple; kwargs...)
-PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, ics::NamedTuple; kwargs...)
+PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable, μ₀::StateVariable = zero(λ₀); kwargs...)
 PDAEProblem(v, f, u, g, ϕ, timespan, timestep, ics::NamedTuple; kwargs...)
 PDAEProblem(v, f, u, g, ϕ, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable; kwargs...)
 ```
@@ -385,7 +385,7 @@ $(pdae_constructors)
 `ics` is a `NamedTuple` with entries `q`, `p`, `λ` and `μ`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed directly,
 with `StateVariable` an `AbstractArray{<:Number}`.
-For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ` see [`PDAE`](@ref).
+For the interfaces of the functions `v`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ` see [`PDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `PDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
@@ -409,17 +409,17 @@ prob = PDAEProblem(v, f, u, g, ϕ, timespan, timestep, q₀, p₀, λ₀)
 ```
 or
 ```julia
-prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀, p₀, λ₀, μ₀)
+prob = PDAEProblem(v, f, u, g, ϕ, ū, ḡ, ψ, timespan, timestep, q₀, p₀, λ₀, μ₀)
 ```
 """
 const PDAEProblem = EquationProblem{PDAE}
 
 function PDAEProblem(
-        v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
+        v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄,
+    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄,
         invariants, parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
@@ -436,17 +436,17 @@ end
 
 function compute_vectorfields!(state::State, prob::PDAEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
-    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.p, parameters(prob))
 end
 
 const PDAEEnsemble = EnsembleProblem{PDAE}
 
 function PDAEEnsemble(
-        v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
+        v, f, u, g, ϕ, ū, ḡ, ψ, timespan::Tuple, timestep::Real, ics...; v̄ = v, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants,
+    equ = PDAE(v, f, u, g, ϕ, ū, ḡ, ψ, v̄, f̄, invariants,
         parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end

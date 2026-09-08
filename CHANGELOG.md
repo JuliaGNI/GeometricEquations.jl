@@ -12,6 +12,35 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
+## [Unreleased] — targeting 0.21.4
+
+### Changed
+
+- Every tracked source file is now Unicode NFC-normalised. The package was largely NFD — exactly
+  four graphemes are rewritten, `ū` (215 times), `ḡ` (166), `ṗ` (32) and `ẋ` (10), each stored as a
+  base letter followed by a combining mark rather than as one codepoint — which is an artefact of
+  macOS rather than a decision.
+
+  For ten of the fifteen files this is invisible: Julia's parser normalises identifiers to NFC, so
+  the compiled symbols were already precomposed and nothing about dispatch, field names or method
+  resolution changes. What changes is that the source now matches what a keyboard, an editor
+  search, a `grep` pattern or an automated replacement produces. In an NFD file a pattern typed in
+  NFC matches nothing at all, silently, and that is the failure this removes.
+
+  The one behavioural difference is in `Base.show`, in the five remaining files. `HDAE`, `IDAE`,
+  `LDAE` and `PDAE` print the literals `"   ū = "` and `"   ḡ = "`, and `DAE` prints the first of
+  them; string literals are *not* parser-normalised, so those nine lines previously emitted
+  decomposed bytes. Rendered output is unchanged to a reader, but code comparing it byte-for-byte
+  against a string written in NFC would have failed before and succeeds now. No package in this
+  tree that depends on GeometricEquations makes such a comparison, `src` and `test` contain no
+  `Symbol("…")` literal at all, and the package has no doctests.
+
+  The diff is mechanical and can be checked as such: every changed file is exactly the NFC
+  normalisation of its predecessor. `scripts/verify_nfc.jl` asserts the standing invariant that
+  every tracked `.jl`, `.md` and `.toml` file satisfies `s == Unicode.normalize(s, :NFC)`. Note
+  that this is not the same as having no combining marks — `q̇`, `v̄`, `f̄`, `x̄` and `t̄` have no
+  precomposed codepoint and remain two codepoints under NFC.
+
 ## [0.21.3] — 2026-09-02
 
 Nothing existing is renamed or removed, so code written against 0.21.2 keeps working — with two

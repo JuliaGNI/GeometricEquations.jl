@@ -11,8 +11,8 @@ end
     n = div(length(eachindex(x)), 2)
     q = @view x[eachindex(x)[1:n]]
     p = @view x[eachindex(x)[(n + 1):2n]]
-    q̇ = @view ẋ[eachindex(ẋ)[1:n]]
-    ṗ = @view ẋ[eachindex(ẋ)[(n + 1):2n]]
+    q̇ = @view ẋ[eachindex(ẋ)[1:n]]
+    ṗ = @view ẋ[eachindex(ẋ)[(n + 1):2n]]
 end
 
 function extend_periodicity(equ::AbstractEquationPODE)
@@ -37,10 +37,10 @@ function Base.convert(::Type{ODEProblem},
     # extend periodicity
     ode_periodicity = convert_periodicity(ODE, prob)
 
-    v = (ẋ, t, x, params) -> begin
+    v = (ẋ, t, x, params) -> begin
         @_create_pode_argument_views
         equation(prob).v(q̇, t, q, p, params)
-        equation(prob).f(ṗ, t, q, p, params)
+        equation(prob).f(ṗ, t, q, p, params)
     end
 
     ODEProblem(v, prob.timespan, prob.timestep, x₀;
@@ -58,13 +58,13 @@ function Base.convert(::Type{SODEProblem},
     # extend periodicity
     ode_periodicity = convert_periodicity(SODE, prob)
 
-    v₁ = (ẋ, t, x, params) -> begin
+    v₁ = (ẋ, t, x, params) -> begin
         @_create_pode_argument_views
         equation(prob).v(q̇, t, q, p, params)
     end
-    v₂ = (ẋ, t, x, params) -> begin
+    v₂ = (ẋ, t, x, params) -> begin
         @_create_pode_argument_views
-        equation(prob).f(ṗ, t, q, p, params)
+        equation(prob).f(ṗ, t, q, p, params)
     end
 
     SODEProblem((v₁, v₂), prob.timespan, prob.timestep, x₀;

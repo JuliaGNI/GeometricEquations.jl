@@ -203,7 +203,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.p, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("HODE Problem",80))" begin
@@ -243,7 +243,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.p, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("IODE Problem",80))" begin
@@ -287,7 +287,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.q̇, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("LODE Problem",80))" begin
@@ -332,7 +332,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.q̇, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("DAE Problem",80))" begin
@@ -492,7 +492,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.p, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("HDAE Problem",80))" begin
@@ -575,7 +575,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.p, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("IDAE Problem",80))" begin
@@ -659,7 +659,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.q̇, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("LDAE Problem",80))" begin
@@ -744,7 +744,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.q̇, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("SDE Problem",80))" begin
@@ -825,7 +825,7 @@ end
     initialguess(prob).f(f, st.t, st.q, st.p, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end
 
 @testset "$(rpad("SPSDE Problem",80))" begin
@@ -871,5 +871,5 @@ end
     initialguess(prob).f(f, st.t, st.q, st.p, parameters(prob))
 
     @test st.q̇ == v
-    @test st.ṗ == f
+    @test st.ṗ == f
 end

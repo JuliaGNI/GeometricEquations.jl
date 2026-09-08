@@ -26,7 +26,7 @@ variables ``(q,p)`` and algebraic variables ``v``, ``\lambda`` and ``\mu``.
 const ldae_constructors = raw"""
 The function `ϑ` computes the momentum, `f` computes the force field, `u` and `g` compute
 the projections, and `ϕ` provides the algebraic constraint.
-The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint, that is
+The functions `ψ`, `ū` and `ḡ` are optional and provide the secondary constraint, that is
 the time derivative of the algebraic constraint, and the corresponding projection.
 """
 
@@ -91,19 +91,19 @@ end
 Some integrators also enforce the secondary constraint ``\psi`` and require
 the following additional functions
 ```
-function ū(u, t, q, v, p, μ, params)
+function ū(u, t, q, v, p, μ, params)
     u[1] = ...
     u[2] = ...
     ...
 end
 
-function ḡ(g, t, q, v, p, μ, params)
+function ḡ(g, t, q, v, p, μ, params)
     g[1] = ...
     g[2] = ...
     ...
 end
 
-function ψ(ψ, t, q, v, p, q̇, ṗ, params)
+function ψ(ψ, t, q, v, p, q̇, ṗ, params)
     ψ[1] = ...
 end
 ```
@@ -121,8 +121,8 @@ $(ldae_equations)
 * `uType <: Callable`: type of `u`
 * `gType <: Callable`: type of `g`
 * `ϕType <: Callable`: type of `ϕ`
-* `ūType <: Callable`: type of `ū`
-* `ḡType <: Callable`: type of `ḡ`
+* `ūType <: Callable`: type of `ū`
+* `ḡType <: Callable`: type of `ḡ`
 * `ψType <: Callable`: type of `ψ`
 * `ωType <: Callable`: type of `ω`
 * `v̄Type <: Callable`: type of `v̄`
@@ -138,8 +138,8 @@ $(ldae_equations)
 * `u`: function computing the projection for ``q``, for a degenerate system given by ``\\lambda``
 * `g`: function computing the projection for ``p``, for a degenerate system given by ``\\nabla \\vartheta (q) \\cdot \\lambda``
 * `ϕ`: primary constraints, for a degenerate system given by ``p - \\vartheta (t,q)``
-* `ū`: function computing the secondary projection field ``\\bar{u}``, for a degenerate system given by ``\\lambda`` (*optional*)
-* `ḡ`: function computing the secondary projection field ``\\bar{g}``, for a degenerate system given by ``\\lambda \\cdot \\nabla \\vartheta (t,q)`` (*optional*)
+* `ū`: function computing the secondary projection field ``\\bar{u}``, for a degenerate system given by ``\\lambda`` (*optional*)
+* `ḡ`: function computing the secondary projection field ``\\bar{g}``, for a degenerate system given by ``\\lambda \\cdot \\nabla \\vartheta (t,q)`` (*optional*)
 * `ψ`: secondary constraints, for a degenerate system given by ``\\dot{p} - \\dot{q} \\cdot \\nabla \\vartheta (t,q)`` (*optional*)
 * `ω`: function computing the symplectic matrix
 * `v̄`: function computing an initial guess for the velocity field ``v`` (*optional*)
@@ -153,8 +153,8 @@ $(ldae_equations)
 ### Constructors
 
 ```julia
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
-LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants, parameters, periodicity)
+LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 LDAE(ϑ, f, u, g, ϕ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(), parameters = NullParameters(), periodicity = NullPeriodicity())
 ```
 
@@ -173,7 +173,7 @@ $(ldae_functions)
 """
 struct LDAE{ϑType <: Callable, fType <: Callable,
     uType <: Callable, gType <: Callable, ϕType <: Callable,
-    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
+    ūType <: OptionalCallable, ḡType <: OptionalCallable, ψType <: OptionalCallable,
     ωType <: Callable, v̄Type <: Callable, f̄Type <: Callable,
     lagType <: Callable,
     invType <: OptionalInvariants,
@@ -185,8 +185,8 @@ struct LDAE{ϑType <: Callable, fType <: Callable,
     u::uType
     g::gType
     ϕ::ϕType
-    ū::ūType
-    ḡ::ḡType
+    ū::ūType
+    ḡ::ḡType
     ψ::ψType
     ω::ωType
 
@@ -198,15 +198,15 @@ struct LDAE{ϑType <: Callable, fType <: Callable,
     parameters::parType
     periodicity::perType
 
-    function LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
+    function LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
             invariants, parameters, periodicity)
         @assert !isempty(methods(ϑ))
         @assert !isempty(methods(f))
         @assert !isempty(methods(u))
         @assert !isempty(methods(g))
         @assert !isempty(methods(ϕ))
-        @assert !isempty(methods(ū)) || ū === nothing
-        @assert !isempty(methods(ḡ)) || ḡ === nothing
+        @assert !isempty(methods(ū)) || ū === nothing
+        @assert !isempty(methods(ḡ)) || ḡ === nothing
         @assert !isempty(methods(ψ)) || ψ === nothing
         @assert !isempty(methods(ω))
         @assert !isempty(methods(v̄))
@@ -217,10 +217,10 @@ struct LDAE{ϑType <: Callable, fType <: Callable,
 
         new{typeof(ϑ), typeof(f),
             typeof(u), typeof(g), typeof(ϕ),
-            typeof(ū), typeof(ḡ), typeof(ψ),
+            typeof(ū), typeof(ḡ), typeof(ψ),
             typeof(ω), typeof(v̄), typeof(f̄),
             typeof(lagrangian), typeof(invariants), typeof(parameters), typeof(_periodicity)}(
-            ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
+            ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
             invariants, parameters, _periodicity)
     end
 end
@@ -228,14 +228,14 @@ end
 _ldae_default_v̄(t, q, v, p, params) = nothing
 
 function LDAE(
-        ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; invariants = NullInvariants(),
+        ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
-    LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
+    LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
         invariants, parameters, periodicity)
 end
 function LDAE(
-        ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, kwargs...)
-    LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; kwargs...)
+        ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian; v̄ = _ldae_default_v̄, f̄ = f, kwargs...)
+    LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian; kwargs...)
 end
 function LDAE(ϑ, f, u, g, ϕ, ω, lagrangian; kwargs...)
     LDAE(ϑ, f, u, g, ϕ, nothing, nothing, nothing, ω, lagrangian; kwargs...)
@@ -252,12 +252,12 @@ function hasinitialguess(::LDAE{ϑType,
         uType,
         gType,
         ϕType,
-        ūType,
-        ḡType,
+        ūType,
+        ḡType,
         ψType,
         ωType,
         <:Callable,
-        <:Callable}) where {ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, ωType}
+        <:Callable}) where {ϑType, fType, uType, gType, ϕType, ūType, ḡType, ψType, ωType}
     true
 end
 
@@ -270,8 +270,8 @@ function Base.show(io::IO, equation::LDAE)
     print(io, "   f = ", equation.f, "\n")
     print(io, "   u = ", equation.u, "\n")
     print(io, "   g = ", equation.g, "\n")
-    print(io, "   ū = ", equation.ū, "\n")
-    print(io, "   ḡ = ", equation.ḡ, "\n")
+    print(io, "   ū = ", equation.ū, "\n")
+    print(io, "   ḡ = ", equation.ḡ, "\n")
     print(io, "\n")
     print(io, " and constraints")
     print(io, "\n")
@@ -356,11 +356,11 @@ function check_methods(equ::LDAE, timespan, ics::NamedTuple, params)
         return false
     applicable(equ.lagrangian, timespan[begin], ics.q, vectorfield(ics.q), params) ||
         return false
-    equ.ū === nothing ||
-        applicable(equ.ū, zero(ics.q), timespan[begin], ics.q,
+    equ.ū === nothing ||
+        applicable(equ.ū, zero(ics.q), timespan[begin], ics.q,
             vectorfield(ics.q), ics.p, ics.λ, params) || return false
-    equ.ḡ === nothing ||
-        applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q,
+    equ.ḡ === nothing ||
+        applicable(equ.ḡ, zero(ics.p), timespan[begin], ics.q,
             vectorfield(ics.q), ics.p, ics.λ, params) || return false
     equ.ψ === nothing ||
         applicable(equ.ψ, zero(ics.λ), timespan[begin], ics.q, vectorfield(ics.q),
@@ -390,9 +390,9 @@ _get_f(equ::LDAE, params) = (f, t, q, v) -> equ.f(f, t, q, v, params)
 _get_u(equ::LDAE, params) = (u, t, q, v, p, λ) -> equ.u(u, t, q, v, p, λ, params)
 _get_g(equ::LDAE, params) = (g, t, q, v, p, λ) -> equ.g(g, t, q, v, p, λ, params)
 _get_ϕ(equ::LDAE, params) = (ϕ, t, q, v, p) -> equ.ϕ(ϕ, t, q, v, p, params)
-_get_ū(equ::LDAE, params) = (u, t, q, v, p, λ) -> equ.ū(u, t, q, v, p, λ, params)
-_get_ḡ(equ::LDAE, params) = (g, t, q, v, p, λ) -> equ.ḡ(g, t, q, v, p, λ, params)
-_get_ψ(equ::LDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
+_get_ū(equ::LDAE, params) = (u, t, q, v, p, λ) -> equ.ū(u, t, q, v, p, λ, params)
+_get_ḡ(equ::LDAE, params) = (g, t, q, v, p, λ) -> equ.ḡ(g, t, q, v, p, λ, params)
+_get_ψ(equ::LDAE, params) = (ψ, t, q, v, p, q̇, ṗ) -> equ.ψ(ψ, t, q, v, p, q̇, ṗ, params)
 _get_v̄(equ::LDAE, params) = (v, t, q, p) -> equ.v̄(v, t, q, p, params)
 _get_f̄(equ::LDAE, params) = (f, t, q, v) -> equ.f̄(f, t, q, v, params)
 _get_ω(equ::LDAE, params) = (ω, t, q, v) -> equ.ω(ω, t, q, v, params)
@@ -401,8 +401,8 @@ _get_invariant(::LDAE, inv, params) = (t, q, v) -> inv(t, q, v, params)
 
 function _functions(equ::LDAE)
     if hassecondary(equ)
-        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū,
-            ḡ = equ.ḡ, ψ = equ.ψ, ω = equ.ω, l = equ.lagrangian)
+        (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g, ϕ = equ.ϕ, ū = equ.ū,
+            ḡ = equ.ḡ, ψ = equ.ψ, ω = equ.ω, l = equ.lagrangian)
     else
         (ϑ = equ.ϑ, f = equ.f, u = equ.u, g = equ.g,
             ϕ = equ.ϕ, ω = equ.ω, l = equ.lagrangian)
@@ -417,8 +417,8 @@ function _functions(equ::LDAE, params::OptionalParameters)
             u = _get_u(equ, params),
             g = _get_g(equ, params),
             ϕ = _get_ϕ(equ, params),
-            ū = _get_ū(equ, params),
-            ḡ = _get_ḡ(equ, params),
+            ū = _get_ū(equ, params),
+            ḡ = _get_ḡ(equ, params),
             ψ = _get_ψ(equ, params),
             ω = _get_ω(equ, params),
             l = _get_l(equ, params)
@@ -453,8 +453,8 @@ with initial condition ``(λ(t_{0}) = λ_{0}, μ(t_{0}) = μ_{0})`` take values 
 ### Constructors
 
 ```julia
-LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, ics; kwargs...)
-LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀), μ₀::StateVariable = zero(λ₀); kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, ics; kwargs...)
+LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀), μ₀::StateVariable = zero(λ₀); kwargs...)
 LDAEProblem(ϑ, f, u, g, ϕ, ω, l, timespan, timestep, ics; kwargs...)
 LDAEProblem(ϑ, f, u, g, ϕ, ω, l, timespan, timestep, q₀::StateVariable, p₀::StateVariable, λ₀::StateVariable = zero(q₀); kwargs...)
 ```
@@ -466,7 +466,7 @@ $(ldae_constructors)
 `ics` is a `NamedTuple` with entries `q` and `p`.
 The initial conditions `q₀`, `p₀`, `λ₀` and `μ₀` can also be prescribed
 directly, with `StateVariable` an `AbstractArray{<:Number}`.
-For the interfaces of the functions `ϑ`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ`, `ω` and `l` see [`LDAE`](@ref).
+For the interfaces of the functions `ϑ`, `f`, `u`, `g`, `ϕ`, `ū`, `ḡ`, `ψ`, `ω` and `l` see [`LDAE`](@ref).
 
 In addition to the standard keyword arguments for [`EquationProblem`](@ref GeometricEquations.EquationProblem) subtypes,
 a `LDAEProblem` accepts functions `v̄` and `f̄` for the computation of initial guesses for the vector fields with default
@@ -490,16 +490,16 @@ prob = LDAEProblem(ϑ, f, u, g, ϕ, ω, l, timespan, timestep, q₀, p₀, λ₀
 ```
 or
 ```julia
-prob = LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, q₀, p₀, λ₀, μ₀)
+prob = LDAEProblem(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, l, timespan, timestep, q₀, p₀, λ₀, μ₀)
 ```
 """
 const LDAEProblem = EquationProblem{LDAE}
 
 function LDAEProblem(
-        ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, timespan::Tuple, timestep::Real, ics...;
+        ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, timespan::Tuple, timestep::Real, ics...;
         v̄ = _ldae_default_v̄, f̄ = f, invariants = NullInvariants(),
         parameters = NullParameters(), periodicity = NullPeriodicity())
-    equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants,
+    equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian, invariants,
         parameter_types(parameters), periodicity)
     EquationProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
@@ -517,17 +517,17 @@ end
 
 function compute_vectorfields!(state::State, prob::LDAEProblem)
     initialguess(prob).v(state.q̇, state.t, state.q, state.p, parameters(prob))
-    initialguess(prob).f(state.ṗ, state.t, state.q, state.q̇, parameters(prob))
+    initialguess(prob).f(state.ṗ, state.t, state.q, state.q̇, parameters(prob))
 end
 
 const LDAEEnsemble = EnsembleProblem{LDAE}
 
-function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, timespan::Tuple,
+function LDAEEnsemble(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, lagrangian, timespan::Tuple,
         timestep::Real, ics...; v̄ = _ldae_default_v̄, f̄ = f,
         invariants = NullInvariants(),
         parameters = NullParameters(),
         periodicity = NullPeriodicity())
-    equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
+    equ = LDAE(ϑ, f, u, g, ϕ, ū, ḡ, ψ, ω, v̄, f̄, lagrangian,
         invariants, parameter_types(parameters), periodicity)
     EnsembleProblem(equ, timespan, timestep, initialstate(equ, ics...), parameters)
 end
