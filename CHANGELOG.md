@@ -12,7 +12,7 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
-## [Unreleased] — targeting 0.21.4
+## [0.21.4] — 2026-09-18
 
 ### Changed
 
