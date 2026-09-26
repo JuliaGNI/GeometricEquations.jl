@@ -2,10 +2,10 @@ using GeometricEquations
 using Random
 using Test
 
-Random.seed!(1234)
-
 include("../helpers/functions.jl")
 include("../helpers/initial_conditions.jl")
+
+Random.seed!(1234)
 
 _copy(x, n) = [x for _ in 1:n]
 

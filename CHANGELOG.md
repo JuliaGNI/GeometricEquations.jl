@@ -16,26 +16,12 @@ makes it worth keeping.
 
 ### Changed
 
-- The test suite is reorganised to follow the tree's shared layout convention. Test files now mirror
-  the `src/` directory structure (e.g. `ordinary_differential_equations_tests.jl` becomes
-  `test/odes/odes.jl`, `equation_problem_tests.jl` becomes `test/problems/equation_problem.jl`),
-  shared fixture functions move to `test/helpers/`, and `test/runtests.jl` coordinates them through
-  a `GROUPS` constant with a single "core" group. This change does not alter the package interface
-  and is invisible to users.
-
-- Test dependencies are now specified in `test/Project.toml` rather than in the Project.toml
-  `[extras]` and `[targets]` sections. New test dependencies are Aqua (for code quality checks) and
-  GeometricBase (shared test support). This permits test dependencies to vary without disturbing
-  the package's declared ones.
-
-- A new `test/quality/aqua.jl` runs `Aqua.test_all` on the package. Two checks are marked as broken
-  because they reflect known open issues: undefined export `AbstractEquationDELE` (issue #39) and
-  missing `[compat]` entry for `Random` (issue #40). These do not block the test suite; they are
-  noted for future resolution. The Aqua test adds nine passing checks and two broken ones.
-
-- Random draws in tests are seeded with a fixed constant (1234) to make tests reproducible and
-  comparable across runs. This is internal to testing and does not affect reproducibility of
-  package results.
+- The test files mirror `src/`, and the two shared fixtures are in `test/helpers/`.
+  `test/runtests.jl` runs them in one `core` group. The test dependencies are in
+  `test/Project.toml`, not in `[extras]` and `[targets]`. Random draws in the tests use a fixed
+  seed. The package itself does not change.
+- `test/quality/aqua.jl` runs `Aqua.test_all`. Two checks are marked broken: the undefined export
+  `AbstractEquationDELE` (#39) and the missing `[compat]` entry for `Random` (#40).
 
 ## [0.21.4] — 2026-09-18
 
