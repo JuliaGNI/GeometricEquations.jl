@@ -5,8 +5,8 @@ using Test
 
 import GeometricEquations: check_noise, ntimesteps
 
-include("functions.jl")
-include("initial_conditions.jl")
+include("../helpers/functions.jl")
+include("../helpers/initial_conditions.jl")
 
 @testset "$(rpad("Wiener process",80))" begin
     w = WienerProcess(3)

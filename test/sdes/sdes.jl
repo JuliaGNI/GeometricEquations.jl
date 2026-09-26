@@ -2,8 +2,8 @@
 using GeometricEquations
 using Test
 
-include("functions.jl")
-include("initial_conditions.jl")
+include("../helpers/functions.jl")
+include("../helpers/initial_conditions.jl")
 
 @testset "$(rpad("Stochastic Differential Equations (SDE)",80))" begin
     sde = SDE(sde_v, sde_B, sde_v, TestNoise(), NullInvariants(),

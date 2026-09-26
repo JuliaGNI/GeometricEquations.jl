@@ -1,8 +1,8 @@
 using GeometricEquations
 using Test
 
-include("functions.jl")
-include("initial_conditions.jl")
+include("helpers/functions.jl")
+include("helpers/initial_conditions.jl")
 
 @testset "$(rpad("Conversion between Problem Types",80))" begin
     pode = PODEProblem(pode_eqs..., (t₀, t₁), Δt, pode_ics)

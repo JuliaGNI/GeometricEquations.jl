@@ -2,8 +2,8 @@
 using GeometricEquations
 using Test
 
-include("functions.jl")
-include("initial_conditions.jl")
+include("../helpers/functions.jl")
+include("../helpers/initial_conditions.jl")
 
 @testset "$(rpad("Ordinary Differential Equations (ODE)",80))" begin
     ode = ODE(ode_eqs..., ode_igs..., NullInvariants(), NullParameters(), NullPeriodicity())

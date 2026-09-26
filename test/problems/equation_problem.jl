@@ -2,8 +2,8 @@ using GeometricEquations
 using GeometricEquations: VectorfieldVariable, functions
 using Test
 
-include("functions.jl")
-include("initial_conditions.jl")
+include("../helpers/functions.jl")
+include("../helpers/initial_conditions.jl")
 
 @testset "$(rpad("Geometric Problem",80))" begin
     ode = ODE(ode_v)

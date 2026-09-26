@@ -12,6 +12,18 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
+## [Unreleased]
+
+### Changed
+
+- The test files mirror `src/`, and the two shared fixtures are in `test/helpers/`.
+  `test/runtests.jl` runs them in one `core` group. The test dependencies are in
+  `test/Project.toml`, not in `[extras]` and `[targets]`. Random draws in the tests use a fixed
+  seed. Nothing under `src/` changes.
+- `test/quality/aqua.jl` runs `Aqua.test_all`. One check is marked broken: the undefined export
+  `AbstractEquationDELE` (#39).
+- `Project.toml` has a `[compat]` entry `Random = "1"` (#40).
+
 ## [0.21.4] — 2026-09-18
 
 ### Changed

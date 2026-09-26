@@ -2,8 +2,8 @@
 using GeometricEquations
 using Test
 
-include("functions.jl")
-include("initial_conditions.jl")
+include("../helpers/functions.jl")
+include("../helpers/initial_conditions.jl")
 
 @testset "$(rpad("Discrete Euler-Lagrange Equations (DELE)",80))" begin
     dele = DELE(dele_eqs..., NullInvariants(), NullParameters(), NullPeriodicity())
