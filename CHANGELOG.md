@@ -19,9 +19,10 @@ makes it worth keeping.
 - The test files mirror `src/`, and the two shared fixtures are in `test/helpers/`.
   `test/runtests.jl` runs them in one `core` group. The test dependencies are in
   `test/Project.toml`, not in `[extras]` and `[targets]`. Random draws in the tests use a fixed
-  seed. The package itself does not change.
-- `test/quality/aqua.jl` runs `Aqua.test_all`. Two checks are marked broken: the undefined export
-  `AbstractEquationDELE` (#39) and the missing `[compat]` entry for `Random` (#40).
+  seed. Nothing under `src/` changes.
+- `test/quality/aqua.jl` runs `Aqua.test_all`. One check is marked broken: the undefined export
+  `AbstractEquationDELE` (#39).
+- `Project.toml` has a `[compat]` entry `Random = "1"` (#40).
 
 ## [0.21.4] — 2026-09-18
 

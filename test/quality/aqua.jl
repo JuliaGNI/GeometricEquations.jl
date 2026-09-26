@@ -7,6 +7,5 @@ using Test
 # `[compat]` bounds, type piracy and persistent tasks.
 Aqua.test_all(
     GeometricEquations;
-    undefined_exports = (broken = true,),  # issue #39: AbstractEquationDELE is exported, not defined
-    deps_compat = (broken = true,)        # issue #40: Random has no [compat] entry
+    undefined_exports = (broken = true,)  # issue #39: AbstractEquationDELE is exported, not defined
 )
