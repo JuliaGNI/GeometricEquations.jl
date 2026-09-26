@@ -3,7 +3,7 @@ using GeometricEquations: function_dummy_v, initial_multiplier, symplectic_matri
                           promote_timespan, promote_timespan_and_timestep, parameter_types
 using Test
 
-include("initial_conditions.jl")
+include("helpers/initial_conditions.jl")
 
 @test function_dummy_v(t₀, q₀, λ₀) === nothing
 @test function_dummy_v(t₀, q₀, p₀, λ₀) === nothing

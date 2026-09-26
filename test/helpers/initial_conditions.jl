@@ -2,6 +2,8 @@ using GeometricEquations: parameter_types
 using GeometricEquations: AlgebraicVariable, StateVariable, TimeVariable
 using Random
 
+Random.seed!(1234)
+
 Δt = 0.1
 t₀ = 0.0
 t₁ = 1.0

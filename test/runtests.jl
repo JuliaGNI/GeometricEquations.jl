@@ -1,39 +1,19 @@
-
 using SafeTestsets
 
-@safetestset "Utility Functions                                                               " begin
-    include("utils_tests.jl")
-end
-@safetestset "Abstract Equation                                                               " begin
-    include("geometric_equations_tests.jl")
-end
-@safetestset "Ordinary Differential Equations                                                 " begin
-    include("ordinary_differential_equations_tests.jl")
-end
-@safetestset "Differential Algebraic Equations                                                " begin
-    include("differential_algebraic_equations_tests.jl")
-end
-@safetestset "Stochastic Differential Equations                                               " begin
-    include("stochastic_differential_equations_tests.jl")
-end
-@safetestset "Stochastic Processes                                                            " begin
-    include("stochastic_processes_tests.jl")
-end
-@safetestset "Discrete Equations                                                              " begin
-    include("discrete_equations_tests.jl")
-end
-@safetestset "Geometric Problem                                                               " begin
-    include("geometric_problem_tests.jl")
-end
-@safetestset "Equation Problem                                                                " begin
-    include("equation_problem_tests.jl")
-end
-@safetestset "Ensemble Problem                                                                " begin
-    include("ensemble_problem_tests.jl")
-end
-@safetestset "Conversion                                                                      " begin
-    include("conversion_tests.jl")
-end
-@safetestset "Test Problems                                                                   " begin
-    include("tests_tests.jl")
+const GROUPS = isempty(ARGS) ? ["core", "slow"] : ARGS
+
+if "core" in GROUPS
+    @safetestset "Aqua" include("quality/aqua.jl")
+    @safetestset "Utility Functions" include("utils.jl")
+    @safetestset "Abstract Equation" include("geometric_equation.jl")
+    @safetestset "Ordinary Differential Equations" include("odes/odes.jl")
+    @safetestset "Differential Algebraic Equations" include("daes/daes.jl")
+    @safetestset "Stochastic Differential Equations" include("sdes/sdes.jl")
+    @safetestset "Stochastic Processes" include("sdes/processes.jl")
+    @safetestset "Discrete Equations" include("discrete/dele.jl")
+    @safetestset "Geometric Problem" include("geometric_problem.jl")
+    @safetestset "Equation Problem" include("problems/equation_problem.jl")
+    @safetestset "Ensemble Problem" include("problems/ensemble_problem.jl")
+    @safetestset "Conversion" include("conversion.jl")
+    @safetestset "Test Problems" include("tests/Tests.jl")
 end

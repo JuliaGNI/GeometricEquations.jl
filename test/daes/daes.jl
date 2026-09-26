@@ -3,8 +3,8 @@ using GeometricEquations
 using GeometricEquations: check_parameters, parameter_types, symplectic_matrix
 using Test
 
-include("functions.jl")
-include("initial_conditions.jl")
+include("../helpers/functions.jl")
+include("../helpers/initial_conditions.jl")
 
 @testset "$(rpad("Differential Algebraic Equations (DAE)",80))" begin
     dae = DAE(dae_eqs...)
