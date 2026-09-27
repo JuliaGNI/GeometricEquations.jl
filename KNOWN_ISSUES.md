@@ -20,3 +20,22 @@
   increment short in exactly those cases.
 - **kind:** defect
 - **found:** 2026-09-02; one issue with StochasticIntegrators `K1`
+
+### K3 · `fatou lint` reports false `parse-error` findings in `test/helpers/functions.jl`.
+
+- **location:** `test/helpers/functions.jl:303`
+- **evidence:** measured with fatou 0.20.0: 2 findings, severity `error`. Each site is a `const`
+  declaration whose assignment is on the next line, for example
+  ```julia
+  const
+
+  dele_eqs = (dele_ld, dele_d1ld, dele_d2ld)
+  const
+  dele_igs = ()
+  ```
+  at lines 303 and 306. Julia parses the file with no error nodes: `Meta.parseall` on its source
+  returns zero `:error` expressions, and the test suite includes the file. A `# fatou-ignore`
+  comment does not suppress an `error`-severity finding, so the pre-commit hook shows it on every
+  commit that stages this file. The code is correct; it is not rewritten to satisfy the linter.
+- **kind:** upstream
+- **found:** 2026-09-13
