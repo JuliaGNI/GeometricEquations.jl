@@ -4,3 +4,6 @@ GeometricEquations = "c85262ba-a08a-430a-b926-d29770767bf2"
 
 [sources]
 GeometricEquations = {path = ".."}
+
+[compat]
+Documenter = "1.19.0"
