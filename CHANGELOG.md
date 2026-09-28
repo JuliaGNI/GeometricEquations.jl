@@ -26,6 +26,13 @@ makes it worth keeping.
 - The tests assert a predicate directly: `@test hasvectorfield(ode)` and
   `@test !hassecondary(ode)`, not `== true` and `== false`. The 222 assertions are stricter, as a
   predicate that returns a non-`Bool` now fails. Nothing under `src/` changes.
+- `test/quality/explicit_imports.jl` runs `ExplicitImports.test_explicit_imports` in the `core`
+  group. It checks for stale explicit imports, imports and qualified accesses through a module
+  that does not own the name, and self-qualified accesses.
+- The `ndims` method for `SubstepProblem` is defined as `Base.ndims`, its owner, rather than
+  through `GeometricBase.ndims`. It is the same function, so the method is unchanged.
+- The test constants `dele_eqs` and `dele_igs` are each declared on one line, as
+  `const dele_eqs = …`, rather than with `const` alone on the line before.
 
 ## [0.21.4] — 2026-09-18
 
