@@ -13,12 +13,12 @@ include("../helpers/initial_conditions.jl")
     @test parameters(dae) == NullParameters()
     @test periodicity(dae) == NullPeriodicity()
 
-    @test hasvectorfield(dae) == true
-    @test hasinitialguess(dae) == true
-    @test hassecondary(dae) == false
-    @test hasinvariants(dae) == false
-    @test hasparameters(dae) == false
-    @test hasperiodicity(dae) == false
+    @test hasvectorfield(dae)
+    @test hasinitialguess(dae)
+    @test !hassecondary(dae)
+    @test !hasinvariants(dae)
+    @test !hasparameters(dae)
+    @test !hasperiodicity(dae)
 
     funcs = functions(dae)
     @test funcs.v == dae_v == dae.v
@@ -68,14 +68,14 @@ include("../helpers/initial_conditions.jl")
     @test parameters(dae) == parameter_types(dae_args.parameters)
     @test periodicity(dae) == dae_args.periodicity
 
-    @test hasvectorfield(dae) == true
-    @test hasinitialguess(dae) == true
-    @test hassecondary(dae) == true
-    @test hasinvariants(dae) == true
-    @test hasparameters(dae) == true
-    @test hasperiodicity(dae) == true
+    @test hasvectorfield(dae)
+    @test hasinitialguess(dae)
+    @test hassecondary(dae)
+    @test hasinvariants(dae)
+    @test hasparameters(dae)
+    @test hasperiodicity(dae)
 
-    @test check_parameters(dae, dae_args.parameters) == true
+    @test check_parameters(dae, dae_args.parameters)
 
     funcs = functions(dae)
     @test funcs.v == dae_v == dae.v
@@ -115,19 +115,19 @@ include("../helpers/initial_conditions.jl")
 
     @test periodicity(daep) == (Float64[-π, 0], Float64[+π, 2π])
     @test getperiodicity(daep) == BitArray([true, true])
-    @test hasperiodicity(daep) == true
+    @test hasperiodicity(daep)
 
     daep = DAE(dae_eqs...; periodicity = ([-Inf, 0], [+Inf, 2π]))
 
     @test periodicity(daep) == (Float64[-Inf, 0], Float64[+Inf, 2π])
     @test getperiodicity(daep) == BitArray([false, true])
-    @test hasperiodicity(daep) == true
+    @test hasperiodicity(daep)
 
     daep = DAE(dae_eqs...; periodicity = ([-Inf, -Inf], [+Inf, +Inf]))
 
     @test periodicity(daep) == NullPeriodicity()
     @test ismissing(getperiodicity(daep))
-    @test hasperiodicity(daep) == false
+    @test !hasperiodicity(daep)
 end
 
 @testset "$(rpad("Partitioned Differential Algebraic Equations (PDAE)",80))" begin
@@ -137,12 +137,12 @@ end
     @test parameters(pdae) == NullParameters()
     @test periodicity(pdae) == NullPeriodicity()
 
-    @test hasvectorfield(pdae) == true
-    @test hasinitialguess(pdae) == true
-    @test hassecondary(pdae) == false
-    @test hasinvariants(pdae) == false
-    @test hasparameters(pdae) == false
-    @test hasperiodicity(pdae) == false
+    @test hasvectorfield(pdae)
+    @test hasinitialguess(pdae)
+    @test !hassecondary(pdae)
+    @test !hasinvariants(pdae)
+    @test !hasparameters(pdae)
+    @test !hasperiodicity(pdae)
 
     funcs = functions(pdae)
     @test funcs.v == pdae_v == pdae.v
@@ -191,12 +191,12 @@ end
     @test parameters(pdae) == parameter_types(pdae_args.parameters)
     @test periodicity(pdae) == pdae_args.periodicity
 
-    @test hasvectorfield(pdae) == true
-    @test hasinitialguess(pdae) == true
-    @test hassecondary(pdae) == true
-    @test hasinvariants(pdae) == true
-    @test hasparameters(pdae) == true
-    @test hasperiodicity(pdae) == true
+    @test hasvectorfield(pdae)
+    @test hasinitialguess(pdae)
+    @test hassecondary(pdae)
+    @test hasinvariants(pdae)
+    @test hasparameters(pdae)
+    @test hasperiodicity(pdae)
 
     funcs = functions(pdae)
     @test funcs.v == pdae_v == pdae.v
@@ -243,13 +243,13 @@ end
 
     @test periodicity(pdaep) == (Float64[0], Float64[2π])
     @test getperiodicity(pdaep) == BitArray([true])
-    @test hasperiodicity(pdaep) == true
+    @test hasperiodicity(pdaep)
 
     pdaep = PDAE(pdae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(pdaep) == NullPeriodicity()
     @test ismissing(getperiodicity(pdaep))
-    @test hasperiodicity(pdaep) == false
+    @test !hasperiodicity(pdaep)
 end
 
 @testset "$(rpad("Implicit Differential Algebraic Equations (IDAE)",80))" begin
@@ -259,12 +259,12 @@ end
     @test parameters(idae) == NullParameters()
     @test periodicity(idae) == NullPeriodicity()
 
-    @test hasvectorfield(idae) == true
-    @test hasinitialguess(idae) == true
-    @test hassecondary(idae) == false
-    @test hasinvariants(idae) == false
-    @test hasparameters(idae) == false
-    @test hasperiodicity(idae) == false
+    @test hasvectorfield(idae)
+    @test hasinitialguess(idae)
+    @test !hassecondary(idae)
+    @test !hasinvariants(idae)
+    @test !hasparameters(idae)
+    @test !hasperiodicity(idae)
 
     funcs = functions(idae)
     @test funcs.ϑ == idae_ϑ == idae.ϑ
@@ -309,12 +309,12 @@ end
     @test parameters(idae) == parameter_types(idae_args.parameters)
     @test periodicity(idae) == idae_args.periodicity
 
-    @test hasvectorfield(idae) == true
-    @test hasinitialguess(idae) == true
-    @test hassecondary(idae) == true
-    @test hasinvariants(idae) == true
-    @test hasparameters(idae) == true
-    @test hasperiodicity(idae) == true
+    @test hasvectorfield(idae)
+    @test hasinitialguess(idae)
+    @test hassecondary(idae)
+    @test hasinvariants(idae)
+    @test hasparameters(idae)
+    @test hasperiodicity(idae)
 
     funcs = functions(idae)
     @test funcs.ϑ == idae_ϑ == idae.ϑ
@@ -361,25 +361,25 @@ end
 
     @test periodicity(idaep) == (Float64[0], Float64[2π])
     @test getperiodicity(idaep) == BitArray([true])
-    @test hasperiodicity(idaep) == true
+    @test hasperiodicity(idaep)
 
     idaep = IDAE(idae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(idaep) == NullPeriodicity()
     @test ismissing(getperiodicity(idaep))
-    @test hasperiodicity(idaep) == false
+    @test !hasperiodicity(idaep)
 end
 
 @testset "$(rpad("Hamiltonian Differential Algebraic Equations (HDAE)",80))" begin
     hdae = HDAE(hdae_eqs...)
 
-    @test hasvectorfield(hdae) == true
-    @test hasinitialguess(hdae) == true
-    @test hashamiltonian(hdae) == true
-    @test hassecondary(hdae) == false
-    @test hasinvariants(hdae) == false
-    @test hasparameters(hdae) == false
-    @test hasperiodicity(hdae) == false
+    @test hasvectorfield(hdae)
+    @test hasinitialguess(hdae)
+    @test hashamiltonian(hdae)
+    @test !hassecondary(hdae)
+    @test !hasinvariants(hdae)
+    @test !hasparameters(hdae)
+    @test !hasperiodicity(hdae)
 
     funcs = functions(hdae)
     @test funcs.v == pdae_v == hdae.v
@@ -421,13 +421,13 @@ end
     hdae = HDAE(hdae_eqs_main..., hdae_args.invariants,
         parameter_types(hdae_args.parameters), hdae_args.periodicity)
 
-    @test hasvectorfield(hdae) == true
-    @test hasinitialguess(hdae) == true
-    @test hashamiltonian(hdae) == true
-    @test hassecondary(hdae) == true
-    @test hasinvariants(hdae) == true
-    @test hasparameters(hdae) == true
-    @test hasperiodicity(hdae) == true
+    @test hasvectorfield(hdae)
+    @test hasinitialguess(hdae)
+    @test hashamiltonian(hdae)
+    @test hassecondary(hdae)
+    @test hasinvariants(hdae)
+    @test hasparameters(hdae)
+    @test hasperiodicity(hdae)
 
     funcs = functions(hdae)
     @test funcs.v == pdae_v == hdae.v
@@ -476,23 +476,23 @@ end
 
     @test periodicity(hdaep) == (Float64[0], Float64[2π])
     @test getperiodicity(hdaep) == BitArray([true])
-    @test hasperiodicity(hdaep) == true
+    @test hasperiodicity(hdaep)
 
     hdaep = HDAE(hdae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(hdaep) == NullPeriodicity()
     @test ismissing(getperiodicity(hdaep))
-    @test hasperiodicity(hdaep) == false
+    @test !hasperiodicity(hdaep)
 end
 
 @testset "$(rpad("Variational Differential Algebraic Equations (LDAE)",80))" begin
     ldae = LDAE(ldae_eqs...)
 
-    @test hassecondary(ldae) == false
-    @test hasinitialguess(ldae) == true
-    @test hasinvariants(ldae) == false
-    @test hasparameters(ldae) == false
-    @test hasperiodicity(ldae) == false
+    @test !hassecondary(ldae)
+    @test hasinitialguess(ldae)
+    @test !hasinvariants(ldae)
+    @test !hasparameters(ldae)
+    @test !hasperiodicity(ldae)
 
     funcs = functions(ldae)
     @test funcs.ϑ == idae_ϑ == ldae.ϑ
@@ -543,11 +543,11 @@ end
     ldae = LDAE(idae_eqs_full..., ldae_ω, ldae_v, ldae_f, ldae_l, ldae_args.invariants,
         parameter_types(ldae_args.parameters), ldae_args.periodicity)
 
-    @test hassecondary(ldae) == true
-    @test hasinitialguess(ldae) == true
-    @test hasinvariants(ldae) == true
-    @test hasparameters(ldae) == true
-    @test hasperiodicity(ldae) == true
+    @test hassecondary(ldae)
+    @test hasinitialguess(ldae)
+    @test hasinvariants(ldae)
+    @test hasparameters(ldae)
+    @test hasperiodicity(ldae)
 
     funcs = functions(ldae)
     @test funcs.ϑ == idae_ϑ == ldae.ϑ
@@ -605,11 +605,11 @@ end
 
     @test periodicity(ldaep) == (Float64[0], Float64[2π])
     @test getperiodicity(ldaep) == BitArray([true])
-    @test hasperiodicity(ldaep) == true
+    @test hasperiodicity(ldaep)
 
     ldaep = LDAE(ldae_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(ldaep) == NullPeriodicity()
     @test ismissing(getperiodicity(ldaep))
-    @test hasperiodicity(ldaep) == false
+    @test !hasperiodicity(ldaep)
 end
