@@ -26,6 +26,10 @@ makes it worth keeping.
 - The tests assert a predicate directly: `@test hasvectorfield(ode)` and
   `@test !hassecondary(ode)`, not `== true` and `== false`. The 222 assertions are stricter, as a
   predicate that returns a non-`Bool` now fails. Nothing under `src/` changes.
+- `test/Project.toml` has no `[compat]` entries for `GeometricBase`, `Parameters` and `Random`.
+  These are dependencies of the package, so the root `Project.toml` alone bounds them: a test or
+  docs environment carries a `[compat]` entry only for a dependency that the package does not
+  have. Nothing under `src/` changes.
 
 ## [0.21.4] — 2026-09-18
 
