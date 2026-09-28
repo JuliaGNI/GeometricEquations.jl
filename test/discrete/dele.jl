@@ -31,18 +31,18 @@ include("../helpers/initial_conditions.jl")
     @test invariants(dele) == NullInvariants()
     @test periodicity(dele) == NullPeriodicity()
 
-    @test hasvectorfield(dele) == true
-    @test hassolution(dele) == false
-    @test hasinitialguess(dele) == false
-    @test hasprimary(dele) == false
-    @test hassecondary(dele) == false
+    @test hasvectorfield(dele)
+    @test !hassolution(dele)
+    @test !hasinitialguess(dele)
+    @test !hasprimary(dele)
+    @test !hassecondary(dele)
 
-    @test hasinvariants(dele) == false
-    @test hasparameters(dele) == false
-    @test hasperiodicity(dele) == false
+    @test !hasinvariants(dele)
+    @test !hasparameters(dele)
+    @test !hasperiodicity(dele)
 
-    @test hashamiltonian(dele) == false
-    @test haslagrangian(dele) == false
+    @test !hashamiltonian(dele)
+    @test !haslagrangian(dele)
 
     funcs = functions(dele)
 
@@ -61,17 +61,17 @@ include("../helpers/initial_conditions.jl")
 
     @test periodicity(delep) == (Float64[-π, 0], Float64[+π, 2π])
     @test getperiodicity(delep) == BitArray([true, true])
-    @test hasperiodicity(delep) == true
+    @test hasperiodicity(delep)
 
     delep = DELE(dele_eqs...; periodicity = ([-Inf, 0], [+Inf, 2π]))
 
     @test periodicity(delep) == (Float64[-Inf, 0], Float64[+Inf, 2π])
     @test getperiodicity(delep) == BitArray([false, true])
-    @test hasperiodicity(delep) == true
+    @test hasperiodicity(delep)
 
     delep = DELE(dele_eqs...; periodicity = ([-Inf, -Inf], [+Inf, +Inf]))
 
     @test periodicity(delep) == NullPeriodicity()
     @test ismissing(getperiodicity(delep))
-    @test hasperiodicity(delep) == false
+    @test !hasperiodicity(delep)
 end

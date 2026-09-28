@@ -23,6 +23,9 @@ makes it worth keeping.
 - `test/quality/aqua.jl` runs `Aqua.test_all`. One check is marked broken: the undefined export
   `AbstractEquationDELE` (#39).
 - `Project.toml` has a `[compat]` entry `Random = "1"` (#40).
+- The tests assert a predicate directly: `@test hasvectorfield(ode)` and
+  `@test !hassecondary(ode)`, not `== true` and `== false`. The 222 assertions are stricter, as a
+  predicate that returns a non-`Bool` now fails. Nothing under `src/` changes.
 
 ## [0.21.4] — 2026-09-18
 

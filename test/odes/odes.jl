@@ -30,18 +30,18 @@ include("../helpers/initial_conditions.jl")
     @test invariants(ode) == NullInvariants()
     @test periodicity(ode) == NullPeriodicity()
 
-    @test hasvectorfield(ode) == true
-    @test hassolution(ode) == false
-    @test hasinitialguess(ode) == true
-    @test hasprimary(ode) == false
-    @test hassecondary(ode) == false
+    @test hasvectorfield(ode)
+    @test !hassolution(ode)
+    @test hasinitialguess(ode)
+    @test !hasprimary(ode)
+    @test !hassecondary(ode)
 
-    @test hasinvariants(ode) == false
-    @test hasparameters(ode) == false
-    @test hasperiodicity(ode) == false
+    @test !hasinvariants(ode)
+    @test !hasparameters(ode)
+    @test !hasperiodicity(ode)
 
-    @test hashamiltonian(ode) == false
-    @test haslagrangian(ode) == false
+    @test !hashamiltonian(ode)
+    @test !haslagrangian(ode)
 
     funcs = functions(ode)
 
@@ -56,19 +56,19 @@ include("../helpers/initial_conditions.jl")
 
     @test periodicity(odep) == (Float64[-π, 0], Float64[+π, 2π])
     @test getperiodicity(odep) == BitArray([true, true])
-    @test hasperiodicity(odep) == true
+    @test hasperiodicity(odep)
 
     odep = ODE(ode_eqs...; periodicity = ([-Inf, 0], [+Inf, 2π]))
 
     @test periodicity(odep) == (Float64[-Inf, 0], Float64[+Inf, 2π])
     @test getperiodicity(odep) == BitArray([false, true])
-    @test hasperiodicity(odep) == true
+    @test hasperiodicity(odep)
 
     odep = ODE(ode_eqs...; periodicity = ([-Inf, -Inf], [+Inf, +Inf]))
 
     @test periodicity(odep) == NullPeriodicity()
     @test ismissing(getperiodicity(odep))
-    @test hasperiodicity(odep) == false
+    @test !hasperiodicity(odep)
 end
 
 @testset "$(rpad("Split Ordinary Differential Equations (SODE)",80))" begin
@@ -107,18 +107,18 @@ end
     @test invariants(sode) == NullInvariants()
     @test periodicity(sode) == NullPeriodicity()
 
-    @test hasvectorfield(sode) == true
-    @test hassolution(sode) == false
-    @test hasinitialguess(sode) == true
-    @test hasprimary(sode) == false
-    @test hassecondary(sode) == false
+    @test hasvectorfield(sode)
+    @test !hassolution(sode)
+    @test hasinitialguess(sode)
+    @test !hasprimary(sode)
+    @test !hassecondary(sode)
 
-    @test hasinvariants(sode) == false
-    @test hasparameters(sode) == false
-    @test hasperiodicity(sode) == false
+    @test !hasinvariants(sode)
+    @test !hasparameters(sode)
+    @test !hasperiodicity(sode)
 
-    @test hashamiltonian(sode) == false
-    @test haslagrangian(sode) == false
+    @test !hashamiltonian(sode)
+    @test !haslagrangian(sode)
 
     sode = SODE(
         sode_eqs, sode_sols, ode_v, NullInvariants(), NullParameters(), NullPeriodicity())
@@ -147,18 +147,18 @@ end
     @test invariants(sode) == NullInvariants()
     @test periodicity(sode) == NullPeriodicity()
 
-    @test hasvectorfield(sode) == true
-    @test hassolution(sode) == true
-    @test hasinitialguess(sode) == true
-    @test hasprimary(sode) == false
-    @test hassecondary(sode) == false
+    @test hasvectorfield(sode)
+    @test hassolution(sode)
+    @test hasinitialguess(sode)
+    @test !hasprimary(sode)
+    @test !hassecondary(sode)
 
-    @test hasinvariants(sode) == false
-    @test hasparameters(sode) == false
-    @test hasperiodicity(sode) == false
+    @test !hasinvariants(sode)
+    @test !hasparameters(sode)
+    @test !hasperiodicity(sode)
 
-    @test hashamiltonian(sode) == false
-    @test haslagrangian(sode) == false
+    @test !hashamiltonian(sode)
+    @test !haslagrangian(sode)
 
     sode = SODE(
         nothing, sode_sols, ode_v, NullInvariants(), NullParameters(), NullPeriodicity())
@@ -187,37 +187,37 @@ end
     @test invariants(sode) == NullInvariants()
     @test periodicity(sode) == NullPeriodicity()
 
-    @test hasvectorfield(sode) == false
-    @test hassolution(sode) == true
-    @test hasinitialguess(sode) == true
-    @test hasprimary(sode) == false
-    @test hassecondary(sode) == false
+    @test !hasvectorfield(sode)
+    @test hassolution(sode)
+    @test hasinitialguess(sode)
+    @test !hasprimary(sode)
+    @test !hassecondary(sode)
 
-    @test hasinvariants(sode) == false
-    @test hasparameters(sode) == false
-    @test hasperiodicity(sode) == false
+    @test !hasinvariants(sode)
+    @test !hasparameters(sode)
+    @test !hasperiodicity(sode)
 
-    @test hashamiltonian(sode) == false
-    @test haslagrangian(sode) == false
+    @test !hashamiltonian(sode)
+    @test !haslagrangian(sode)
 
     # Test for periodicity
     sodep = SODE(sode_eqs; periodicity = ([-π, 0], [+π, 2π]))
 
     @test periodicity(sodep) == (Float64[-π, 0], Float64[+π, 2π])
     @test getperiodicity(sodep) == BitArray([true, true])
-    @test hasperiodicity(sodep) == true
+    @test hasperiodicity(sodep)
 
     sodep = SODE(sode_eqs; periodicity = ([-Inf, 0], [+Inf, 2π]))
 
     @test periodicity(sodep) == (Float64[-Inf, 0], Float64[+Inf, 2π])
     @test getperiodicity(sodep) == BitArray([false, true])
-    @test hasperiodicity(sodep) == true
+    @test hasperiodicity(sodep)
 
     sodep = SODE(sode_eqs; periodicity = ([-Inf, -Inf], [+Inf, +Inf]))
 
     @test periodicity(sodep) == NullPeriodicity()
     @test ismissing(getperiodicity(sodep))
-    @test hasperiodicity(sodep) == false
+    @test !hasperiodicity(sodep)
 end
 
 @testset "$(rpad("Partitioned Ordinary Differential Equations (PODE)",80))" begin
@@ -246,18 +246,18 @@ end
     @test invariants(pode) == NullInvariants()
     @test periodicity(pode) == NullPeriodicity()
 
-    @test hasvectorfield(pode) == true
-    @test hassolution(pode) == false
-    @test hasinitialguess(pode) == true
-    @test hasprimary(pode) == false
-    @test hassecondary(pode) == false
+    @test hasvectorfield(pode)
+    @test !hassolution(pode)
+    @test hasinitialguess(pode)
+    @test !hasprimary(pode)
+    @test !hassecondary(pode)
 
-    @test hasinvariants(pode) == false
-    @test hasparameters(pode) == false
-    @test hasperiodicity(pode) == false
+    @test !hasinvariants(pode)
+    @test !hasparameters(pode)
+    @test !hasperiodicity(pode)
 
-    @test hashamiltonian(pode) == false
-    @test haslagrangian(pode) == false
+    @test !hashamiltonian(pode)
+    @test !haslagrangian(pode)
 
     funcs = functions(pode)
 
@@ -297,13 +297,13 @@ end
 
     @test periodicity(podep) == (Float64[0], Float64[2π])
     @test getperiodicity(podep) == BitArray([true])
-    @test hasperiodicity(podep) == true
+    @test hasperiodicity(podep)
 
     podep = PODE(pode_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(podep) == NullPeriodicity()
     @test ismissing(getperiodicity(podep))
-    @test hasperiodicity(podep) == false
+    @test !hasperiodicity(podep)
 end
 
 @testset "$(rpad("Implicit Ordinary Differential Equations (IODE)",80))" begin
@@ -345,18 +345,18 @@ end
     @test invariants(iode) == NullInvariants()
     @test periodicity(iode) == NullPeriodicity()
 
-    @test hasvectorfield(iode) == true
-    @test hassolution(iode) == false
-    @test hasinitialguess(iode) == true
-    @test hasprimary(iode) == false
-    @test hassecondary(iode) == false
+    @test hasvectorfield(iode)
+    @test !hassolution(iode)
+    @test hasinitialguess(iode)
+    @test !hasprimary(iode)
+    @test !hassecondary(iode)
 
-    @test hasinvariants(iode) == false
-    @test hasparameters(iode) == false
-    @test hasperiodicity(iode) == false
+    @test !hasinvariants(iode)
+    @test !hasparameters(iode)
+    @test !hasperiodicity(iode)
 
-    @test hashamiltonian(iode) == false
-    @test haslagrangian(iode) == false
+    @test !hashamiltonian(iode)
+    @test !haslagrangian(iode)
 
     funcs = functions(iode)
 
@@ -389,13 +389,13 @@ end
 
     @test periodicity(iodep) == (Float64[0], Float64[2π])
     @test getperiodicity(iodep) == BitArray([true])
-    @test hasperiodicity(iodep) == true
+    @test hasperiodicity(iodep)
 
     iodep = IODE(iode_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(iodep) == NullPeriodicity()
     @test ismissing(getperiodicity(iodep))
-    @test hasperiodicity(iodep) == false
+    @test !hasperiodicity(iodep)
 end
 
 @testset "$(rpad("Hamiltonian Ordinary Differential Equations (HODE)",80))" begin
@@ -425,18 +425,18 @@ end
     @test invariants(hode) == NullInvariants()
     @test periodicity(hode) == NullPeriodicity()
 
-    @test hasvectorfield(hode) == true
-    @test hassolution(hode) == false
-    @test hasinitialguess(hode) == true
-    @test hasprimary(hode) == false
-    @test hassecondary(hode) == false
+    @test hasvectorfield(hode)
+    @test !hassolution(hode)
+    @test hasinitialguess(hode)
+    @test !hasprimary(hode)
+    @test !hassecondary(hode)
 
-    @test hasinvariants(hode) == false
-    @test hasparameters(hode) == false
-    @test hasperiodicity(hode) == false
+    @test !hasinvariants(hode)
+    @test !hasparameters(hode)
+    @test !hasperiodicity(hode)
 
-    @test hashamiltonian(hode) == true
-    @test haslagrangian(hode) == false
+    @test hashamiltonian(hode)
+    @test !haslagrangian(hode)
 
     funcs = functions(hode)
 
@@ -496,13 +496,13 @@ end
 
     @test periodicity(hodep) == (Float64[0], Float64[2π])
     @test getperiodicity(hodep) == BitArray([true])
-    @test hasperiodicity(hodep) == true
+    @test hasperiodicity(hodep)
 
     hodep = HODE(hode_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(hodep) == NullPeriodicity()
     @test ismissing(getperiodicity(hodep))
-    @test hasperiodicity(hodep) == false
+    @test !hasperiodicity(hodep)
 end
 
 @testset "$(rpad("Lagrangian Ordinary Differential Equations (LODE)",80))" begin
@@ -532,18 +532,18 @@ end
     @test invariants(lode) == NullInvariants()
     @test periodicity(lode) == NullPeriodicity()
 
-    @test hasvectorfield(lode) == true
-    @test hassolution(lode) == false
-    @test hasinitialguess(lode) == true
-    @test hasprimary(lode) == false
-    @test hassecondary(lode) == false
+    @test hasvectorfield(lode)
+    @test !hassolution(lode)
+    @test hasinitialguess(lode)
+    @test !hasprimary(lode)
+    @test !hassecondary(lode)
 
-    @test hasinvariants(lode) == false
-    @test hasparameters(lode) == false
-    @test hasperiodicity(lode) == false
+    @test !hasinvariants(lode)
+    @test !hasparameters(lode)
+    @test !hasperiodicity(lode)
 
-    @test hashamiltonian(lode) == false
-    @test haslagrangian(lode) == true
+    @test !hashamiltonian(lode)
+    @test haslagrangian(lode)
 
     funcs = functions(lode)
 
@@ -601,11 +601,11 @@ end
 
     @test periodicity(lodep) == (Float64[0], Float64[2π])
     @test getperiodicity(lodep) == BitArray([true])
-    @test hasperiodicity(lodep) == true
+    @test hasperiodicity(lodep)
 
     lodep = LODE(lode_eqs...; periodicity = ([-Inf], [+Inf]))
 
     @test periodicity(lodep) == NullPeriodicity()
     @test ismissing(getperiodicity(lodep))
-    @test hasperiodicity(lodep) == false
+    @test !hasperiodicity(lodep)
 end

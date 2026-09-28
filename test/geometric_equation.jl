@@ -42,14 +42,14 @@ testeq = TestEquation()
 @test_throws ErrorException datatype(testeq, NamedTuple())
 @test_throws ErrorException arrtype(testeq, NamedTuple())
 
-@test hassolution(testeq) == false
-@test hasvectorfield(testeq) == false
-@test hasprimary(testeq) == false
-@test hassecondary(testeq) == false
+@test !hassolution(testeq)
+@test !hasvectorfield(testeq)
+@test !hasprimary(testeq)
+@test !hassecondary(testeq)
 
-@test hasinvariants(testeq) == false
-@test hasparameters(testeq) == false
-@test hasperiodicity(testeq) == false
+@test !hasinvariants(testeq)
+@test !hasparameters(testeq)
+@test !hasperiodicity(testeq)
 
-@test hashamiltonian(testeq) == false
-@test haslagrangian(testeq) == false
+@test !hashamiltonian(testeq)
+@test !haslagrangian(testeq)
