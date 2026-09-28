@@ -8,8 +8,9 @@ test_explicit_imports(
     GeometricEquations;
     # the package relies on `using` of its dependencies throughout
     no_implicit_imports = false,
-    # several imported names are internal to their owner, which is also a JuliaGNI package
+    # several imported names are not public in their owner (GeometricBase, and `Base.Callable`)
     all_explicit_imports_are_public = false,
-    # several qualified names are internal to their owner, as above
+    # several qualified names are not public in their owner (GeometricBase, and
+    # `Base.AbstractCartesianIndex`)
     all_qualified_accesses_are_public = false
 )

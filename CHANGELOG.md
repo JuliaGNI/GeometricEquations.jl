@@ -32,7 +32,7 @@ makes it worth keeping.
 - The `ndims` method for `SubstepProblem` is defined as `Base.ndims`, its owner, rather than
   through `GeometricBase.ndims`. It is the same function, so the method is unchanged.
 - The test constants `dele_eqs` and `dele_igs` are each declared on one line, as
-  `const dele_eqs = …`, rather than with `const` alone on the line before.
+  `const dele_eqs = …`, rather than with `const` alone on the line before. fatou reports no `parse-error` for them (K3).
 
 ## [0.21.4] — 2026-09-18
 
