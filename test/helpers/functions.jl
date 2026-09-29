@@ -300,8 +300,6 @@ function dele_d2ld(d, t₀, t₁, q₀, q₁, params)
     d[1] = v + h * sin(q) / 2
     return nothing
 end
-const
 
-dele_eqs = (dele_ld, dele_d1ld, dele_d2ld)
-const
-dele_igs = ()
+const dele_eqs = (dele_ld, dele_d1ld, dele_d2ld)
+const dele_igs = ()

@@ -30,6 +30,14 @@ makes it worth keeping.
   These are dependencies of the package, so the root `Project.toml` alone bounds them: a test or
   docs environment carries a `[compat]` entry only for a dependency that the package does not
   have. Nothing under `src/` changes.
+- `test/quality/explicit_imports.jl` runs `ExplicitImports.test_explicit_imports` in the `core`
+  group. It checks for stale explicit imports, imports and qualified accesses through a module
+  that does not own the name, and self-qualified accesses.
+- The `ndims` method for `SubstepProblem` is defined as `Base.ndims`, its owner, rather than
+  through `GeometricBase.ndims`. It is the same function, so the method is unchanged.
+- The test constants `dele_eqs` and `dele_igs` are each declared on one line, as
+  `const dele_eqs = …`, rather than with `const` alone on the line before. fatou reports
+  no `parse-error` for them (K3).
 
 ## [0.21.4] — 2026-09-18
 
