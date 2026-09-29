@@ -14,8 +14,6 @@ const size_one_warning = (:warn,
 
 @testset "$(rpad("Geometric Ensemble",80))" begin
     ics_tpl = [(q = StateVariable(x₀),), (q = StateVariable(rand(length(x₀))),)]
-    ics_sva = [StateVariable(x₀), StateVariable(rand(length(x₀)))]
-    ics_arr = [x₀, rand(length(x₀))]
 
     @test_nowarn EnsembleProblem(ODE(ode_v), (t₀, t₁), Δt, ics_tpl)
     @test_nowarn EnsembleProblem(ODE(ode_v), (t₀, t₁), Δt, ics_tpl, nothing)

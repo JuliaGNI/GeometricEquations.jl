@@ -38,6 +38,9 @@ makes it worth keeping.
 - The test constants `dele_eqs` and `dele_igs` are each declared on one line, as
   `const dele_eqs = …`, rather than with `const` alone on the line before. fatou reports
   no `parse-error` for them (K3).
+- The "Geometric Ensemble" testset no longer builds the two unused initial-condition vectors
+  `ics_sva` and `ics_arr`. fatou reports no `unused-binding` for them. Nothing under `src/`
+  changes.
 
 ## [0.21.4] — 2026-09-18
 
