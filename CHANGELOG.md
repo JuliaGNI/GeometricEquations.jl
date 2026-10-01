@@ -44,7 +44,8 @@ makes it worth keeping.
 - `KNOWN_ISSUES.md` follows the known-issues form, with one-sentence headings in the present
   tense; no code changes.
 - The `[compat]` floors are raised to `GeometricBase = "0.15.0"` and `julia = "1.11"`, because
-  GeometricBase 0.15 declares its stubs public and requires Julia 1.11.
+  GeometricBase 0.15 declares its stubs public and requires Julia 1.11. Julia 1.10 users keep
+  0.21.4.
 
 ## [0.21.4] — 2026-09-18
 
