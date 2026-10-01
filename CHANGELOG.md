@@ -41,6 +41,8 @@ makes it worth keeping.
 - The "Geometric Ensemble" testset no longer builds the two unused initial-condition vectors
   `ics_sva` and `ics_arr`. fatou reports no `unused-binding` for them. Nothing under `src/`
   changes.
+- `KNOWN_ISSUES.md` follows the known-issues form, with one-sentence headings in the present
+  tense; no code changes.
 
 ## [0.21.4] — 2026-09-18
 
