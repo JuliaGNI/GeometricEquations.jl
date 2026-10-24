@@ -12,12 +12,16 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
-## [Unreleased]
+## [Unreleased] — targeting 0.22.0
 
 ### Changed
 
 - CI uploads coverage from the `Julia 1 - ubuntu-latest` job instead of `Julia min`, and a test
   job saves the Julia cache only when it succeeds.
+- **Julia 1.12 is the floor** (`[compat] julia = "1.12"`, from 1.11). A breaking change under
+  this package's pre-1.0 convention: a caller on Julia 1.11 can no longer install this version.
+  The package has no version-conditional code and no workaround for Julia 1.11, so nothing is
+  deleted and nothing under `src/` changes.
 
 ## [0.21.5] — 2026-10-01
 
