@@ -12,6 +12,23 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
+## [Unreleased]
+
+### Changed
+
+- **The `Aqua` floor in `test/Project.toml` is 0.8.14** (from 0.8). Aqua 0.8.0 to 0.8.13 do not
+  know the method table of Julia 1.12, so at the old floor the piracy check errors with
+  `type Core.TypeName has no field mt` on the package's Julia floor; the method-ambiguity and
+  persistent-task checks also fail there. The CI `Downgrade` job resolves the test dependencies
+  at their lower bounds, and 0.8.14 is the first release that reads the method table of the
+  released Julia 1.12 (`Core.methodtable`).
+
+### Fixed
+
+- `getperiodicity` on an equation with periodicity no longer has the unbound type parameter
+  `DT` in its signature, which Aqua reports on Julia nightly. The method takes the element type
+  from `eltype(AT)` and returns the same result.
+
 ## [0.21.6] — 2026-10-24
 
 ### Changed
