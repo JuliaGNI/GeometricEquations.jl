@@ -57,7 +57,8 @@ hasperiodicity(::GEperType{<:NullPeriodicity}) = false
 hasperiodicity(::GEperType{<:Tuple{AT, AT}}) where {AT <: AbstractArray} = true
 
 getperiodicity(equ::GEperType{<:NullPeriodicity}) = missing
-function getperiodicity(equ::GEperType{<:Tuple{AT, AT}}) where {DT, AT <: AbstractArray{DT}}
+function getperiodicity(equ::GEperType{<:Tuple{AT, AT}}) where {AT <: AbstractArray}
+    DT = eltype(AT)
     BitArray(periodicity(equ)[begin][i] ≠ -DT(Inf) && periodicity(equ)[end][i] ≠ +DT(Inf)
     for i in eachindex(periodicity(equ)[begin], periodicity(equ)[end]))
 end
