@@ -1,0 +1,63 @@
+# Written by `harness dependents --apply` from the Project.toml files below Packages/ of the
+# research tree; run it again rather than edit this file. Dependents.yml reads it into the
+# matrix of its test job.
+
+[[dependent]]
+name = "ChargedParticleDynamics"
+repository = "JuliaPlasma/ChargedParticleDynamics.jl"
+
+[[dependent]]
+name = "EulerLagrange"
+repository = "JuliaGNI/EulerLagrange.jl"
+
+[[dependent]]
+name = "GeometricIntegrators"
+repository = "JuliaGNI/GeometricIntegrators.jl"
+
+[[dependent]]
+name = "GeometricIntegratorsBase"
+repository = "JuliaGNI/GeometricIntegratorsBase.jl"
+
+[[dependent]]
+name = "GeometricMachineLearning"
+repository = "JuliaGNI/GeometricMachineLearning.jl"
+
+[[dependent]]
+name = "GeometricProblems"
+repository = "JuliaGNI/GeometricProblems.jl"
+
+[[dependent]]
+name = "GeometricSolutions"
+repository = "JuliaGNI/GeometricSolutions.jl"
+
+[[dependent]]
+name = "MultisymplecticIntegrators"
+repository = "JuliaGNI/MultisymplecticIntegrators.jl"
+
+[[dependent]]
+name = "NonlinearIntegrators"
+repository = "JuliaGNI/NonlinearIntegrators.jl"
+
+[[dependent]]
+name = "PoincareInvariants"
+repository = "JuliaGNI/PoincareInvariants.jl"
+
+[[dependent]]
+name = "ReducedBasisMethods"
+repository = "JuliaRCM/ReducedBasisMethods.jl"
+
+[[dependent]]
+name = "ReducedComplexityModeling"
+repository = "JuliaRCM/ReducedComplexityModeling.jl"
+
+[[dependent]]
+name = "SparseIdentification"
+repository = "JuliaRCM/SparseIdentification.jl"
+
+[[dependent]]
+name = "StochasticIntegrators"
+repository = "JuliaGNI/StochasticIntegrators.jl"
+
+[[dependent]]
+name = "VlasovMethods"
+repository = "JuliaPlasma/VlasovMethods.jl"
