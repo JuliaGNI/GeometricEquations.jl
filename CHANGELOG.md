@@ -12,6 +12,15 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
+## [Unreleased]
+
+### Changed
+
+- **A cancelled step of `Dependents.yml` gives an inconclusive row.** When a step of a dependent
+  is cancelled, as after the job's timeout, the row names the cancelled step as inconclusive, and
+  the job fails. Before, `.github/dependents.jl` stopped with "cannot classify" and wrote no row.
+  An excluded dependent stays excluded.
+
 ## [0.21.7] — 2026-11-14
 
 ### Changed
