@@ -79,7 +79,18 @@ end
     @test ntimesteps((1.0, 0.0), -0.35) == 2
 
     # A zero time step has no step count.
-    @test_throws r"^ArgumentError: time step cannot be zero" ntimesteps((0.0, 1.0), 0.0)
+    zero_step = r"^ArgumentError: time step cannot be zero"
+    @test_throws zero_step ntimesteps((0.0, 1.0), 0.0)
+    @test_throws zero_step ntimesteps((0 // 1, 1 // 1), 0 // 1)
+
+    # Exact time types count whole steps exactly, forward and backward.
+    @test ntimesteps((0, 10), 3) == 3
+    @test ntimesteps((0 // 1, 1 // 1), 3 // 10) == 3
+    @test ntimesteps((0 // 1, 1 // 1), 1 // 10) == 10
+    @test ntimesteps((1 // 1, 0 // 1), -1 // 10) == 10
+    # The end `t₀ + n * timestep` of this span overflows `Rational{Int64}`.
+    span = (1_000_000_000 // 1, 1_000_000_001 // 1)
+    @test ntimesteps(span, 3_500_000_001 // 10_000_000_000) == 2
 end
 
 @testset "$(rpad("ODE Problem",80))" begin
