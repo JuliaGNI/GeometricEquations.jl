@@ -21,6 +21,26 @@ makes it worth keeping.
   the job fails. Before, `.github/dependents.jl` stopped with "cannot classify" and wrote no row.
   An excluded dependent stays excluded.
 
+### Fixed
+
+- **`ntime(::EquationProblem)` counts the steps of the time grid, and this changes results for
+  some spans.** The count (and the internal `ntimesteps(timespan, timestep)`, which also sets the
+  length `check_noise` demands of a `GridProcess`) was `abs(div(t₁ - t₀, Δt, RoundUp))`. It was
+  wrong in two ways:
+  - A span of whole steps whose float quotient lies just above the integer got one step too many.
+    Over spans `mλ` in steps `λ/k` (`k = 1:200`, `m = 1:10`, from zero), 1038 of 2000 `Float64`
+    and 985 of 2000 `Float32` spans counted one step too many.
+  - A span that is not a whole number of steps counted the partial step at the end, so the
+    problem ran past `t₁`. **Such spans now take one step fewer**: span 1.0 with step 0.3 gives
+    3 steps (before 4), and with step 0.35 gives 2. A caller that relied on the old count for
+    these spans sees a different step count, not a compat effect.
+
+  The rule is now `n = round((t₁ - t₀) / Δt)` when `t₀ + n·Δt` is within `8·eps·max(|t₀|, |t₁|)`
+  of `t₁`, else the quotient rounds toward zero; the count is the magnitude, whatever the sign of
+  `Δt`. It equals the number of steps of the grid that GeometricSolutions' `TimeSeries(t₀, t₁, Δt)`
+  builds, which uses the same rule. A `GridProcess` needs no increment for a partial last step.
+  A zero `Δt` throws `ArgumentError("time step cannot be zero")` (before, `InexactError`).
+
 ## [0.21.7] — 2026-11-14
 
 ### Changed

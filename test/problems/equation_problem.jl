@@ -1,5 +1,5 @@
 using GeometricEquations
-using GeometricEquations: VectorfieldVariable, functions
+using GeometricEquations: VectorfieldVariable, functions, ntimesteps
 using Test
 
 include("../helpers/functions.jl")
@@ -49,6 +49,37 @@ include("../helpers/initial_conditions.jl")
     @test prob == similar(prob; ics = Tuple(ode_ics))
     @test prob == similar(prob; ics = Tuple(ode_ics_raw))
     @test prob == similar(prob; parameters = NullParameters())
+end
+
+@testset "$(rpad("Step count",80))" begin
+    # The wavelength of a 100 GHz wave in centimetres. Steps `λ/k` over spans `mλ` give
+    # quotients `(t₁ - t₀)/Δt` within a few ulp of the integer `m * k`, on either side.
+    λ = 2π / (2π * 100e9 / 2.99792458e10)
+    ode = ODE(ode_v)
+
+    # λ in steps of λ/9: the float quotient is 9.0, and a count rounded up takes 10 steps.
+    @test ntime(EquationProblem(ode, (0.0, λ), λ / 9, ode_ics)) == 9
+    # 5λ in steps of λ/21: the float quotient is 104.99999999999999.
+    @test ntime(EquationProblem(ode, (0.0, 5λ), λ / 21, ode_ics)) == 105
+
+    for T in (Float64, Float32)
+        for t₀ in (zero(T), T(1.5))
+            counts = [ntimesteps((t₀, t₀ + m * T(λ)), T(λ) / k) for k in 1:200, m in 1:10]
+            @test counts == [m * k for k in 1:200, m in 1:10]
+        end
+    end
+
+    # A span that is no whole number of steps ends at the last step before `t₁`: the count
+    # rounds down, also where it is nearer the next integer (1/0.35 ≈ 2.86).
+    @test ntime(EquationProblem(ode, (0.0, 1.0), 0.3, ode_ics)) == 3
+    @test ntime(EquationProblem(ode, (0.0, 1.0), 0.35, ode_ics)) == 2
+
+    # A negative time step runs backward, and the count is its magnitude.
+    @test ntime(EquationProblem(ode, (1.0, 0.0), -0.1, ode_ics)) == 10
+    @test ntimesteps((1.0, 0.0), -0.35) == 2
+
+    # A zero time step has no step count.
+    @test_throws r"^ArgumentError: time step cannot be zero" ntimesteps((0.0, 1.0), 0.0)
 end
 
 @testset "$(rpad("ODE Problem",80))" begin

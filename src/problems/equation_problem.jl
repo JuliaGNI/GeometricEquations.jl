@@ -135,8 +135,26 @@ end
 @inline GeometricBase.parameters(prob::EquationProblem) = prob.parameters
 @inline GeometricBase.nsamples(::EquationProblem) = 1
 
+"""
+    ntimesteps(timespan, timestep)
+
+The number of whole steps `timestep` in `timespan = (t₀, t₁)`. A count `n` whose end
+`t₀ + n * timestep` lies within `8 * eps * max(abs(t₀), abs(t₁))` of `t₁` fills the span, on
+either side of `t₁`, so a quotient `(t₁ - t₀) / timestep` that rounds just below or above an
+integer neither loses nor adds a step. Any other count rounds toward zero, and the last step ends
+before `t₁`. The count is the magnitude, whatever the sign of `timestep`. A zero `timestep`
+throws an `ArgumentError`.
+
+This is the rule of `TimeSeries(t₀, t₁, timestep)` in GeometricSolutions, so the step count of
+a problem is the number of steps of its solution's time grid.
+"""
 @inline function ntimesteps(timespan, timestep)
-    Int(abs(div(timespan[end] - timespan[begin], timestep, RoundUp)))
+    iszero(timestep) && throw(ArgumentError("time step cannot be zero"))
+    t₀, t₁ = timespan[begin], timespan[end]
+    q = (t₁ - t₀) / timestep
+    n = round(q)
+    fills = abs(t₀ + n * timestep - t₁) ≤ 8 * eps(float(typeof(q))) * max(abs(t₀), abs(t₁))
+    return abs(Int(fills ? n : trunc(q)))
 end
 
 @inline function GeometricBase.ntime(prob::EquationProblem)
