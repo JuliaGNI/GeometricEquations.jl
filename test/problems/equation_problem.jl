@@ -1,5 +1,6 @@
 using GeometricEquations
 using GeometricEquations: VectorfieldVariable, functions, ntimesteps
+using Random
 using Test
 
 include("../helpers/functions.jl")
@@ -77,6 +78,37 @@ end
     # A negative time step runs backward, and the count is its magnitude.
     @test ntime(EquationProblem(ode, (1.0, 0.0), -0.1, ode_ics)) == 10
     @test ntimesteps((1.0, 0.0), -0.35) == 2
+
+    # The counting rule in exact arithmetic on the binary values of the span and the step.
+    function exact_count(a::T, b::T, h::T) where {T}
+        x₀, x₁, y = Rational{BigInt}(a), Rational{BigInt}(b), Rational{BigInt}(h)
+        q = (x₁ - x₀) / y
+        n = round(q)
+        fills = abs(x₀ + n * y - x₁) ≤ 8 * Rational{BigInt}(eps(T)) * max(abs(x₀), abs(x₁))
+        abs(Int(fills ? n : trunc(q)))
+    end
+
+    # In Float16, `t₁ - t₀ = 1024.5` rounds to 1024, which is one step short.
+    @test ntimesteps((Float16(0.5), Float16(1025)), Float16(0.5)) == 2049
+
+    # Two Float32 spans whose rounded difference changes the count.
+    for (a, b, h) in ((0.95651406f0, 8.94363f0, 0.001543704f0),
+        (9.835699f0, 11.890267f0, 0.011607794f0))
+        @test ntimesteps((a, b), h) == exact_count(a, b, h)
+    end
+
+    Random.seed!(1)
+    for T in (Float16, Float32, Float64)
+        wrong = 0
+        for _ in 1:10_000
+            a = T(10 * rand())
+            b = a + T(10 * rand())
+            h = T(rand() / 10 + 1e-3)
+            wrong += ntimesteps((a, b), h) != exact_count(a, b, h)
+            wrong += ntimesteps((b, a), -h) != exact_count(b, a, -h)
+        end
+        @test wrong == 0
+    end
 
     # A zero time step has no step count.
     zero_step = r"^ArgumentError: time step cannot be zero"

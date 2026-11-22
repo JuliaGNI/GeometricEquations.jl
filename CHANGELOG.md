@@ -37,8 +37,11 @@ makes it worth keeping.
 
   The rule is now `n = round((t₁ - t₀) / Δt)` when `t₀ + n·Δt` is within `8·eps·max(|t₀|, |t₁|)`
   of `t₁`, else the quotient rounds toward zero; the count is the magnitude, whatever the sign of
-  `Δt`. It equals the number of steps of the grid that GeometricSolutions' `TimeSeries(t₀, t₁, Δt)`
-  builds, which uses the same rule. Exact time types (integers, rationals) count whole steps
+  `Δt`. The endpoints and the step are converted to `promote_type(T, Float64)` before the quotient
+  and the end-point residual are computed, so that `t₁ - t₀` does not round in a narrow time type
+  (in `Float16`, the span 0.5 to 1025 in steps of 0.5 gave 2048 steps instead of 2049); the
+  tolerance stays that of the time type `T`. It equals the number of steps of the grid that
+  GeometricSolutions' `TimeSeries(t₀, t₁, Δt)` builds, which uses the same rule. Exact time types (integers, rationals) count whole steps
   exactly with `div(t₁ - t₀, Δt, RoundToZero)`, so a rational span cannot overflow in the
   end-point check. A `GridProcess` needs no increment for a partial last step.
   A zero `Δt` throws `ArgumentError("time step cannot be zero")` (before, `InexactError`).

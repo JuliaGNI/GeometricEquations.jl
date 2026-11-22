@@ -142,9 +142,10 @@ The number of whole steps `timestep` in `timespan = (t₀, t₁)`. A count `n` w
 `t₀ + n * timestep` lies within `8 * eps * max(abs(t₀), abs(t₁))` of `t₁` fills the span, on
 either side of `t₁`, so a quotient `(t₁ - t₀) / timestep` that rounds just below or above an
 integer neither loses nor adds a step. Any other count rounds toward zero, and the last step ends
-before `t₁`. Exact time types, such as integers and rationals, count the whole steps exactly. The
-count is the magnitude, whatever the sign of `timestep`. A zero `timestep` throws an
-`ArgumentError`.
+before `t₁`. A floating-point count is computed in at least `Float64`, with the tolerance of the
+time type, so that `t₁ - t₀` does not round in a narrower type. Exact time types, such as integers
+and rationals, count the whole steps exactly. The count is the magnitude, whatever the sign of
+`timestep`. A zero `timestep` throws an `ArgumentError`.
 
 This is the rule of `TimeSeries(t₀, t₁, timestep)` in GeometricSolutions, so the step count of
 a problem is the number of steps of its solution's time grid.
@@ -153,9 +154,11 @@ a problem is the number of steps of its solution's time grid.
     iszero(timestep) && throw(ArgumentError("time step cannot be zero"))
     t₀, t₁, h = promote(timespan[begin], timespan[end], timestep)
     h isa AbstractFloat || return abs(Int(div(t₁ - t₀, h, RoundToZero)))
-    q = (t₁ - t₀) / h
+    W = promote_type(typeof(h), Float64)
+    x₀, x₁, y = W(t₀), W(t₁), W(h)
+    q = (x₁ - x₀) / y
     n = round(q)
-    fills = abs(t₀ + n * h - t₁) ≤ 8 * eps(typeof(h)) * max(abs(t₀), abs(t₁))
+    fills = abs(x₀ + n * y - x₁) ≤ 8 * eps(typeof(h)) * max(abs(x₀), abs(x₁))
     return abs(Int(fills ? n : trunc(q)))
 end
 
