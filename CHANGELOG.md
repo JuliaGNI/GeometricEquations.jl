@@ -20,12 +20,26 @@ makes it worth keeping.
   `ntime(::EquationProblem)` and `check_noise(::GridProcess, …)` count the steps of a run, and it
   is declared `public`, not exported. A package that builds a time grid, such as GeometricSolutions
   with `TimeSeries(t₀, t₁, Δt)`, can call it instead of keeping a copy of the rule, so there is one
-  rule. The behaviour does not change. Its docstring, now on the Problems page, defines `T` (the
-  floating-point type of `t₀`, `t₁` and the time step after promotion) and writes the tolerance as
-  `8 * eps(T) * max(abs(t₀), abs(t₁))`.
+  rule. Its docstring, now on the Problems page, defines `T` (the one type to which `t₀`, `t₁` and
+  the time step are promoted) and states in which type the count is evaluated: floating-point
+  times are converted to `W = promote_type(T, Float64)` and every expression, the tolerance
+  `8 * eps(T) * max(abs(t₀), abs(t₁))` included, is evaluated in `W` (read in `T`, the formula can
+  round a `Float16` tolerance up and accept a count the code does not return); fixed-width integers
+  and their rationals count in `widen(T)`. The count equals the steps of GeometricSolutions'
+  `TimeSeries` grid for a time step that points from `t₀` to `t₁`; for a wrong-sign step
+  `ntimesteps` returns the magnitude, which GeometricSolutions does not.
 
 ### Fixed
 
+- **`ntimesteps` no longer overflows for integer and rational times over a wide span.** The exact
+  branch counted with `div(t₁ - t₀, h, RoundToZero)`, so `t₁ - t₀` overflowed when the span was
+  wider than `typemax` of the time type. With `Int64`, from −5·10¹⁸ to 5·10¹⁸ in steps of 10¹⁸,
+  the difference wrapped and the count was 8 instead of 10, silently; with `Rational{Int64}` the
+  same span threw `OverflowError`. Fixed-width integers and their rationals now count in `widen`
+  of the time type, so the count is 10 for both, in both directions; other exact types, such as
+  `Bool`, count in their own type as before. With `Int64`, GeometricSolutions' `TimeSeries`
+  already gave 10 steps on this span, so `ntime(problem)` and the solution grid disagreed there.
+  The overflow is in 0.21.8.
 - **K2 (`ntime(problem)` rounds up, 0.1/0.01 gave 11) is closed.** The fix was released in 0.21.8,
   and `ntimesteps((0.0, 0.1), 0.01)` is 10 there; the entry is removed from `KNOWN_ISSUES.md`.
 

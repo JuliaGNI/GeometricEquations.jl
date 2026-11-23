@@ -123,6 +123,13 @@ end
     # The end `t₀ + n * timestep` of this span overflows `Rational{Int64}`.
     span = (1_000_000_000 // 1, 1_000_000_001 // 1)
     @test ntimesteps(span, 3_500_000_001 // 10_000_000_000) == 2
+    # The difference `t₁ - t₀` of this span, 10^19, overflows `Int64`.
+    a, b, h = -5 * 10^18, 5 * 10^18, 10^18
+    @test ntimesteps((a, b), h) == 10
+    @test ntimesteps((b, a), -h) == 10
+    @test ntimesteps((a // 1, b // 1), h // 1) == 10
+    # An exact time type that is no fixed-width integer counts in its own type.
+    @test ntimesteps((false, true), true) == 1
 
     # A package that builds a time grid, such as GeometricSolutions, can count its steps with
     # `ntimesteps`, so it is public but not exported.
