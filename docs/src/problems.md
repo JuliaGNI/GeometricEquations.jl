@@ -8,6 +8,13 @@ CurrentModule = GeometricEquations
 EquationProblem
 ```
 
+The number of time steps of a problem, `ntime(problem)`, follows one counting rule, which is
+public but not exported:
+
+```@docs
+GeometricEquations.ntimesteps
+```
+
 
 ## Ordinary Differential Equation Problems
 

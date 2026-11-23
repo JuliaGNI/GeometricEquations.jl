@@ -12,6 +12,23 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
+## [Unreleased]
+
+### Changed
+
+- **`GeometricEquations.ntimesteps(timespan, timestep)` is public.** It is the rule by which
+  `ntime(::EquationProblem)` and `check_noise(::GridProcess, …)` count the steps of a run, and it
+  is declared `public`, not exported. A package that builds a time grid, such as GeometricSolutions
+  with `TimeSeries(t₀, t₁, Δt)`, can call it instead of keeping a copy of the rule, so there is one
+  rule. The behaviour does not change. Its docstring, now on the Problems page, defines `T` (the
+  floating-point type of `t₀`, `t₁` and the time step after promotion) and writes the tolerance as
+  `8 * eps(T) * max(abs(t₀), abs(t₁))`.
+
+### Fixed
+
+- **K2 (`ntime(problem)` rounds up, 0.1/0.01 gave 11) is closed.** The fix was released in 0.21.8,
+  and `ntimesteps((0.0, 0.1), 0.01)` is 10 there; the entry is removed from `KNOWN_ISSUES.md`.
+
 ## [0.21.8] — 2026-11-23
 
 ### Changed

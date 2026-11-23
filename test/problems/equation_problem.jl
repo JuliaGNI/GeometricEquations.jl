@@ -123,6 +123,11 @@ end
     # The end `t₀ + n * timestep` of this span overflows `Rational{Int64}`.
     span = (1_000_000_000 // 1, 1_000_000_001 // 1)
     @test ntimesteps(span, 3_500_000_001 // 10_000_000_000) == 2
+
+    # A package that builds a time grid, such as GeometricSolutions, can count its steps with
+    # `ntimesteps`, so it is public but not exported.
+    @test Base.ispublic(GeometricEquations, :ntimesteps)
+    @test !Base.isexported(GeometricEquations, :ntimesteps)
 end
 
 @testset "$(rpad("ODE Problem",80))" begin
