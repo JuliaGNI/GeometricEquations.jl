@@ -12,7 +12,7 @@ here: the record of that history is `git log` and the tags. It is named as a gap
 reconstructed, because a changelog assembled after the fact loses exactly the reasoning that
 makes it worth keeping.
 
-## [Unreleased]
+## [0.21.8] — 2026-11-23
 
 ### Changed
 
@@ -41,9 +41,10 @@ makes it worth keeping.
   and the end-point residual are computed, so that `t₁ - t₀` does not round in a narrow time type
   (in `Float16`, the span 0.5 to 1025 in steps of 0.5 gave 2048 steps instead of 2049); the
   tolerance stays that of the time type `T`. It equals the number of steps of the grid that
-  GeometricSolutions' `TimeSeries(t₀, t₁, Δt)` builds, which uses the same rule. Exact time types (integers, rationals) count whole steps
-  exactly with `div(t₁ - t₀, Δt, RoundToZero)`, so a rational span cannot overflow in the
-  end-point check. A `GridProcess` needs no increment for a partial last step.
+  GeometricSolutions' `TimeSeries(t₀, t₁, Δt)` builds, which uses the same rule. Exact time types
+  (integers, rationals) count whole steps exactly with `div(t₁ - t₀, Δt, RoundToZero)`, so a
+  rational span cannot overflow in the end-point check. A `GridProcess` needs no increment for a
+  partial last step.
   A zero `Δt` throws `ArgumentError("time step cannot be zero")` (before, `InexactError`).
 
 ## [0.21.7] — 2026-11-14
