@@ -135,25 +135,33 @@ end
 @inline GeometricBase.parameters(prob::EquationProblem) = prob.parameters
 @inline GeometricBase.nsamples(::EquationProblem) = 1
 
+# A fixed-width integer, or a rational of them, in the next wider type; any other value as it is.
+_widen(x::Union{Base.BitInteger, Rational{<:Base.BitInteger}}) = widen(x)
+_widen(x) = x
+
 """
     ntimesteps(timespan, timestep)
 
-The number of whole steps `timestep` in `timespan = (t₀, t₁)`. A count `n` whose end
-`t₀ + n * timestep` lies within `8 * eps * max(abs(t₀), abs(t₁))` of `t₁` fills the span, on
-either side of `t₁`, so a quotient `(t₁ - t₀) / timestep` that rounds just below or above an
-integer neither loses nor adds a step. Any other count rounds toward zero, and the last step ends
-before `t₁`. A floating-point count is computed in at least `Float64`, with the tolerance of the
-time type, so that `t₁ - t₀` does not round in a narrower type. Exact time types, such as integers
-and rationals, count the whole steps exactly. The count is the magnitude, whatever the sign of
-`timestep`. A zero `timestep` throws an `ArgumentError`.
+The number of whole steps `timestep` in `timespan = (t₀, t₁)`, with `t₀`, `t₁` and `timestep`
+promoted to one type `T`. Floating-point times are converted to `W = promote_type(T, Float64)`,
+so that `t₁ - t₀` does not round in a narrower type, and every expression below is evaluated in
+`W`: a count `n` whose end `t₀ + n * timestep` lies within `8 * eps(T) * max(abs(t₀), abs(t₁))` of
+`t₁` fills the span, on either side of `t₁`, so a quotient `(t₁ - t₀) / timestep` that rounds just
+below or above an integer neither loses nor adds a step. Any other count rounds toward zero, and
+the last step ends before `t₁`. Exact time types, such as integers and rationals, count the whole
+steps exactly; fixed-width integers and their rationals count in `widen(T)`, so that `t₁ - t₀`
+does not overflow. The count is the magnitude, whatever the sign of `timestep`. A zero `timestep`
+throws an `ArgumentError`.
 
-This is the rule of `TimeSeries(t₀, t₁, timestep)` in GeometricSolutions, so the step count of
-a problem is the number of steps of its solution's time grid.
+For a time step that points from `t₀` to `t₁`, this is the rule of `TimeSeries(t₀, t₁, timestep)`
+in GeometricSolutions, so the step count of a problem is the number of steps of its solution's
+time grid.
 """
 @inline function ntimesteps(timespan, timestep)
     iszero(timestep) && throw(ArgumentError("time step cannot be zero"))
     t₀, t₁, h = promote(timespan[begin], timespan[end], timestep)
-    h isa AbstractFloat || return abs(Int(div(t₁ - t₀, h, RoundToZero)))
+    h isa AbstractFloat ||
+        return abs(Int(div(_widen(t₁) - _widen(t₀), _widen(h), RoundToZero)))
     W = promote_type(typeof(h), Float64)
     x₀, x₁, y = W(t₀), W(t₁), W(h)
     q = (x₁ - x₀) / y

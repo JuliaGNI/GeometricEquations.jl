@@ -64,6 +64,7 @@ export invariants, parameters, periodicity, getperiodicity
 export initial_conditions, initialstate
 export compute_vectorfields!
 export ntime, nsamples, nconstraints, nsteps
+public ntimesteps
 export noise, noisedims
 
 export hassolution, hasvectorfield, hasinitialguess, hasprimary, hassecondary,
