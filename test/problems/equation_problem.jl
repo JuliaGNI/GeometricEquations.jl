@@ -1,5 +1,6 @@
 using GeometricEquations
-using GeometricEquations: VectorfieldVariable, functions
+using GeometricEquations: VectorfieldVariable, functions, ntimesteps
+using Random
 using Test
 
 include("../helpers/functions.jl")
@@ -49,6 +50,79 @@ include("../helpers/initial_conditions.jl")
     @test prob == similar(prob; ics = Tuple(ode_ics))
     @test prob == similar(prob; ics = Tuple(ode_ics_raw))
     @test prob == similar(prob; parameters = NullParameters())
+end
+
+@testset "$(rpad("Step count",80))" begin
+    # The wavelength of a 100 GHz wave in centimetres. Steps `λ/k` over spans `mλ` give
+    # quotients `(t₁ - t₀)/Δt` within a few ulp of the integer `m * k`, on either side.
+    λ = 2π / (2π * 100e9 / 2.99792458e10)
+    ode = ODE(ode_v)
+
+    # λ in steps of λ/9: the float quotient is 9.0, and a count rounded up takes 10 steps.
+    @test ntime(EquationProblem(ode, (0.0, λ), λ / 9, ode_ics)) == 9
+    # 5λ in steps of λ/21: the float quotient is 104.99999999999999.
+    @test ntime(EquationProblem(ode, (0.0, 5λ), λ / 21, ode_ics)) == 105
+
+    for T in (Float64, Float32)
+        for t₀ in (zero(T), T(1.5))
+            counts = [ntimesteps((t₀, t₀ + m * T(λ)), T(λ) / k) for k in 1:200, m in 1:10]
+            @test counts == [m * k for k in 1:200, m in 1:10]
+        end
+    end
+
+    # A span that is no whole number of steps ends at the last step before `t₁`: the count
+    # rounds down, also where it is nearer the next integer (1/0.35 ≈ 2.86).
+    @test ntime(EquationProblem(ode, (0.0, 1.0), 0.3, ode_ics)) == 3
+    @test ntime(EquationProblem(ode, (0.0, 1.0), 0.35, ode_ics)) == 2
+
+    # A negative time step runs backward, and the count is its magnitude.
+    @test ntime(EquationProblem(ode, (1.0, 0.0), -0.1, ode_ics)) == 10
+    @test ntimesteps((1.0, 0.0), -0.35) == 2
+
+    # The counting rule in exact arithmetic on the binary values of the span and the step.
+    function exact_count(a::T, b::T, h::T) where {T}
+        x₀, x₁, y = Rational{BigInt}(a), Rational{BigInt}(b), Rational{BigInt}(h)
+        q = (x₁ - x₀) / y
+        n = round(q)
+        fills = abs(x₀ + n * y - x₁) ≤ 8 * Rational{BigInt}(eps(T)) * max(abs(x₀), abs(x₁))
+        abs(Int(fills ? n : trunc(q)))
+    end
+
+    # In Float16, `t₁ - t₀ = 1024.5` rounds to 1024, which is one step short.
+    @test ntimesteps((Float16(0.5), Float16(1025)), Float16(0.5)) == 2049
+
+    # Two Float32 spans whose rounded difference changes the count.
+    for (a, b, h) in ((0.95651406f0, 8.94363f0, 0.001543704f0),
+        (9.835699f0, 11.890267f0, 0.011607794f0))
+        @test ntimesteps((a, b), h) == exact_count(a, b, h)
+    end
+
+    Random.seed!(1)
+    for T in (Float16, Float32, Float64)
+        wrong = 0
+        for _ in 1:10_000
+            a = T(10 * rand())
+            b = a + T(10 * rand())
+            h = T(rand() / 10 + 1e-3)
+            wrong += ntimesteps((a, b), h) != exact_count(a, b, h)
+            wrong += ntimesteps((b, a), -h) != exact_count(b, a, -h)
+        end
+        @test wrong == 0
+    end
+
+    # A zero time step has no step count.
+    zero_step = r"^ArgumentError: time step cannot be zero"
+    @test_throws zero_step ntimesteps((0.0, 1.0), 0.0)
+    @test_throws zero_step ntimesteps((0 // 1, 1 // 1), 0 // 1)
+
+    # Exact time types count whole steps exactly, forward and backward.
+    @test ntimesteps((0, 10), 3) == 3
+    @test ntimesteps((0 // 1, 1 // 1), 3 // 10) == 3
+    @test ntimesteps((0 // 1, 1 // 1), 1 // 10) == 10
+    @test ntimesteps((1 // 1, 0 // 1), -1 // 10) == 10
+    # The end `t₀ + n * timestep` of this span overflows `Rational{Int64}`.
+    span = (1_000_000_000 // 1, 1_000_000_001 // 1)
+    @test ntimesteps(span, 3_500_000_001 // 10_000_000_000) == 2
 end
 
 @testset "$(rpad("ODE Problem",80))" begin
